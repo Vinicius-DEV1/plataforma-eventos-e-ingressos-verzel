@@ -1,0 +1,13 @@
+{
+  "name": "plataforma-eventos-e-ingressos-verzel",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Plataforma de eventos e ingressos: o organizador publica eventos a partir de catálogos externos, o cliente reserva e paga, e a portaria valida o ingresso na entrada.",
+  "license": "MIT",
+  "workspaces": [
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=24"
+  }
+}

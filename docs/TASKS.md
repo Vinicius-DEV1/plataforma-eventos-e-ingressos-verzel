@@ -211,12 +211,12 @@ Detalhamento em docs/TASKS.md (Bloco 0).
 
 | Código | ID | Descrição da Tarefa Atômica | Pasta | Referência | Verificado? |
 |---|---|---|---|---|---|
-| 0.1 | 0.1.01 | Criar estrutura de pastas do monorepo (`apps/web`, `apps/api`, `docs/`) | raiz | DECISIONS.md — Estrutura de Diretórios | [ ] |
-| 0.1 | 0.1.02 | Criar `.gitignore` na raiz (`node_modules`, `.env` e variantes **com exceção de `.env.example`**, `dist`, `coverage`, `.claude/settings.local.json`) — **antes** de qualquer `npm install`, para o `node_modules` nunca chegar a aparecer no versionamento | raiz | - | [ ] |
-| 0.1 | 0.1.03 | Criar `package.json` na raiz com npm workspaces (`apps/*`) — base para Husky, lint-staged e Commitlint, que vivem na raiz junto ao `.git` | raiz | DECISIONS.md — Organização do repositório | [ ] |
-| 0.1 | 0.1.04 | Criar `.nvmrc` e campo `engines` fixando a versão do Node (reprodutibilidade do ambiente) | raiz | - | [ ] |
-| 0.1 | 0.1.05 | Criar `.env.example` em `apps/api` (DATABASE_URL, JWT_SECRET, ASAAS_API_KEY, TMDB_API_KEY, TICKETMASTER_API_KEY) | apps/api | - | [ ] |
-| 0.1 | 0.1.06 | Criar `.env.example` em `apps/web` (VITE_API_URL) | apps/web | - | [ ] |
+| 0.1 | 0.1.01 | Criar estrutura de pastas do monorepo (`apps/web`, `apps/api`, `docs/`) | raiz | DECISIONS.md — Estrutura de Diretórios | [~] |
+| 0.1 | 0.1.02 | Criar `.gitignore` na raiz (`node_modules`, `.env` e variantes **com exceção de `.env.example`**, `dist`, `coverage`, `.claude/settings.local.json`) — **antes** de qualquer `npm install`, para o `node_modules` nunca chegar a aparecer no versionamento | raiz | - | [~] |
+| 0.1 | 0.1.03 | Criar `package.json` na raiz com npm workspaces (`apps/*`) — base para Husky, lint-staged e Commitlint, que vivem na raiz junto ao `.git` | raiz | DECISIONS.md — Organização do repositório | [~] |
+| 0.1 | 0.1.04 | Criar `.nvmrc` e campo `engines` fixando a versão do Node (reprodutibilidade do ambiente) | raiz | - | [~] |
+| 0.1 | 0.1.05 | Criar `.env.example` em `apps/api` (DATABASE_URL, JWT_SECRET, ASAAS_API_KEY, TMDB_API_KEY, TICKETMASTER_API_KEY) | apps/api | - | [~] |
+| 0.1 | 0.1.06 | Criar `.env.example` em `apps/web` (VITE_API_URL) | apps/web | - | [~] |
 | 0.2 | 0.2.01 | Inicializar `apps/api` (`package.json` + Express) | apps/api | DECISIONS.md — Back-end | [ ] |
 | 0.2 | 0.2.02 | Configurar TypeScript em `apps/api` (`tsconfig.json`, `tsx` para dev, script de build via `tsc`, `@types/*`) | apps/api | DECISIONS.md — Linguagem | [ ] |
 | 0.2 | 0.2.03 | Criar estrutura de pastas (`routes/`, `controllers/`, `services/`, `middlewares/`, `config/`) | apps/api | - | [ ] |
