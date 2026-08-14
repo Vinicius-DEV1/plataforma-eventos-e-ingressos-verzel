@@ -60,76 +60,151 @@ antes de qualquer funcionalidade de negócio.
 
 **Issues para cadastrar no GitHub**
 
+> As issues abaixo estão na ordem de execução. O detalhamento fino de cada
+> uma fica na tabela de tarefas atômicas mais adiante — a issue é a versão
+> legível, a tabela é o controle.
+
 ```
 Título: [infra] Setup inicial do monorepo (apps/web, apps/api, docs/)
 Labels: infra
-Descrição: Criar estrutura de pastas do monorepo (apps/web, apps/api,
-docs/), inicializar Express + TypeScript em apps/api e Vite + React +
-TypeScript + Tailwind + shadcn em apps/web.
-Pronto quando: estrutura de pastas criada e ambos os projetos rodam
-localmente (mesmo sem funcionalidade ainda).
-```
 
-```
-Título: [infra] Configurar Docker Compose (API + Postgres)
-Labels: infra
-Descrição: Criar o Dockerfile da API (build TypeScript via tsc, execução
-do output em dist/) e o docker-compose.yml orquestrando o serviço da API
-e um container Postgres, com .env.example documentando as variáveis
-necessárias.
-Pronto quando: docker-compose up compila o TypeScript e sobe API + banco
-sem erro.
+Esqueleto do monorepo antes de qualquer funcionalidade de negócio: dois
+apps (apps/web e apps/api) sob um workspace único, ambos em TypeScript.
+
+**Raiz**
+- [ ] Criar as pastas apps/web, apps/api e docs/
+- [ ] Criar o .gitignore
+- [ ] Criar o package.json da raiz com os workspaces (apps/*)
+- [ ] Fixar a versão do Node (.nvmrc + engines)
+
+**API (apps/api)**
+- [ ] Inicializar com Express + TypeScript
+- [ ] Criar as pastas src/routes, src/controllers, src/services,
+      src/middlewares e src/config
+- [ ] Criar o .env.example
+
+**Web (apps/web)**
+- [ ] Criar com Vite (template react-ts)
+- [ ] Configurar o Tailwind
+- [ ] Instalar shadcn/ui com tema próprio
+- [ ] Criar o .env.example
+
+Pronto quando: npm install na raiz resolve os dois apps e ambos sobem
+localmente.
+
+Detalhamento em docs/TASKS.md (Bloco 0).
 ```
 
 ```
 Título: [back-end] Configurar Prisma e conexão com o banco
 Labels: back-end
-Descrição: Inicializar Prisma em apps/api, configurar a connection string
-via variável de ambiente, e criar uma rota GET /health que confirma
-conexão com o banco.
-Pronto quando: GET /health responde OK com o banco conectado via Docker
-Compose.
+
+Prisma inicializado e uma rota de health-check confirmando que a API
+enxerga o banco. A modelagem das entidades vem depois — aqui é só a
+conexão de pé.
+
+- [ ] Rodar prisma init e configurar o datasource
+- [ ] Criar a rota GET /health verificando a conexão com o banco
+
+Pronto quando: GET /health responde OK com o banco conectado.
+
+Detalhamento em docs/TASKS.md (Bloco 0).
+```
+
+```
+Título: [infra] Configurar Docker Compose (API + Postgres)
+Labels: infra
+
+Ambiente local reprodutível: API e Postgres subindo com um comando só.
+Como a API é TypeScript, a imagem precisa compilar antes de rodar — o
+container executa o output em dist/, não o fonte.
+
+- [ ] Escrever o Dockerfile da API
+- [ ] Criar o .dockerignore
+- [ ] Escrever o docker-compose.yml (api + postgres)
+- [ ] Subir com docker-compose up e confirmar o GET /health
+
+Pronto quando: docker-compose up compila e sobe API + banco sem erro.
+
+Detalhamento em docs/TASKS.md (Bloco 0).
 ```
 
 ```
 Título: [infra] Configurar qualidade de código e padronização de commits
 Labels: infra
-Descrição: Configurar ESLint (com typescript-eslint), Prettier e
-.editorconfig para padronização
-de código; Husky + lint-staged para rodar checks no pre-commit; Commitlint
-para validar Conventional Commits no commit-msg.
-Pronto quando: um commit com código mal formatado ou mensagem fora do
-padrão é automaticamente rejeitado.
+
+Padronização automática de estilo e de histórico, configurada na raiz do
+workspace.
+
+**Estilo**
+- [ ] Criar o .editorconfig
+- [ ] Configurar o ESLint com typescript-eslint nos dois apps
+- [ ] Configurar o Prettier integrado ao ESLint
+
+**Hooks**
+- [ ] Instalar o Husky (pre-commit e commit-msg)
+- [ ] Configurar o lint-staged
+- [ ] Configurar o Commitlint com config-conventional
+
+**Verificação**
+- [ ] Confirmar que commit com mensagem fora do padrão é rejeitado
+- [ ] Confirmar que commit com erro de lint é bloqueado
+
+Pronto quando: os dois cenários de verificação acima falham como
+esperado.
+
+Detalhamento em docs/TASKS.md (Bloco 0).
 ```
 
 ```
 Título: [infra] Configurar templates de Issue/PR e CI no GitHub
 Labels: infra
-Descrição: Criar .github/ISSUE_TEMPLATE/ e
-.github/PULL_REQUEST_TEMPLATE.md padronizados, e um workflow de CI
-(.github/workflows/ci.yml) que roda lint em cada Pull Request.
-Pronto quando: abrir uma issue/PR carrega o template automaticamente e o
-CI executa o lint no PR.
+
+Os hooks locais dependem da máquina de quem commita. O CI é a camada que
+roda independente disso.
+
+- [ ] Criar o template de issue (.github/ISSUE_TEMPLATE/)
+- [ ] Criar o .github/PULL_REQUEST_TEMPLATE.md
+- [ ] Criar o workflow de CI rodando lint nos PRs
+- [ ] Abrir um PR de teste e confirmar que o workflow executa
+
+Pronto quando: issue e PR carregam o template automaticamente e o lint
+roda no PR.
+
+Detalhamento em docs/TASKS.md (Bloco 0).
 ```
 
 ```
 Título: [back-end] Configurar Swagger (OpenAPI) para documentação da API
 Labels: back-end
-Descrição: Instalar e configurar swagger-ui-express em apps/api, expondo
-a documentação interativa em /api-docs, com suporte a autenticação
-Bearer JWT para testar endpoints protegidos.
-Pronto quando: /api-docs carrega a interface do Swagger com o endpoint
-GET /health documentado.
+
+Documentação interativa servida pela própria aplicação em /api-docs, em
+vez de uma coleção Postman que precisaria ser baixada e importada (ver
+docs/DECISIONS.md). O Bearer JWT já fica configurado agora, para os
+endpoints protegidos que virão.
+
+- [ ] Configurar o swagger-ui-express com a definição OpenAPI
+- [ ] Servir a interface em GET /api-docs
+- [ ] Declarar o esquema de segurança Bearer JWT
+- [ ] Documentar o GET /health
+
+Pronto quando: /api-docs carrega com o GET /health documentado.
+
+Detalhamento em docs/TASKS.md (Bloco 0).
 ```
 
 ```
 Título: [docs] Criar README inicial do projeto
 Labels: docs
-Descrição: Criar README.md com título, descrição do projeto, stack
-utilizada e links para os documentos em docs/ (PRD, DECISIONS, SPEC,
-TASKS, AI_USAGE). Será expandido progressivamente até o Bloco 11.
-Pronto quando: o README apresenta o projeto e aponta para toda a
-documentação existente.
+
+Versão inicial do README, expandida conforme o projeto avança.
+
+- [ ] Escrever o README (descrição, stack e links para docs/)
+
+Pronto quando: o README apresenta o projeto e aponta para a documentação
+existente.
+
+Detalhamento em docs/TASKS.md (Bloco 0).
 ```
 
 **Tabela de Controle de Tarefas Atômicas**
@@ -137,9 +212,11 @@ documentação existente.
 | Código | ID | Descrição da Tarefa Atômica | Pasta | Referência | Verificado? |
 |---|---|---|---|---|---|
 | 0.1 | 0.1.01 | Criar estrutura de pastas do monorepo (`apps/web`, `apps/api`, `docs/`) | raiz | DECISIONS.md — Estrutura de Diretórios | [ ] |
-| 0.1 | 0.1.02 | Criar `.gitignore` na raiz (`node_modules`, `.env`, `dist`, etc) | raiz | - | [ ] |
-| 0.1 | 0.1.03 | Criar `.env.example` em `apps/api` (DATABASE_URL, JWT_SECRET, ASAAS_API_KEY, TMDB_API_KEY, TICKETMASTER_API_KEY) | apps/api | - | [ ] |
-| 0.1 | 0.1.04 | Criar `.env.example` em `apps/web` (VITE_API_URL) | apps/web | - | [ ] |
+| 0.1 | 0.1.02 | Criar `.gitignore` na raiz (`node_modules`, `.env` e variantes **com exceção de `.env.example`**, `dist`, `coverage`, `.claude/settings.local.json`) — **antes** de qualquer `npm install`, para o `node_modules` nunca chegar a aparecer no versionamento | raiz | - | [ ] |
+| 0.1 | 0.1.03 | Criar `package.json` na raiz com npm workspaces (`apps/*`) — base para Husky, lint-staged e Commitlint, que vivem na raiz junto ao `.git` | raiz | DECISIONS.md — Organização do repositório | [ ] |
+| 0.1 | 0.1.04 | Criar `.nvmrc` e campo `engines` fixando a versão do Node (reprodutibilidade do ambiente) | raiz | - | [ ] |
+| 0.1 | 0.1.05 | Criar `.env.example` em `apps/api` (DATABASE_URL, JWT_SECRET, ASAAS_API_KEY, TMDB_API_KEY, TICKETMASTER_API_KEY) | apps/api | - | [ ] |
+| 0.1 | 0.1.06 | Criar `.env.example` em `apps/web` (VITE_API_URL) | apps/web | - | [ ] |
 | 0.2 | 0.2.01 | Inicializar `apps/api` (`package.json` + Express) | apps/api | DECISIONS.md — Back-end | [ ] |
 | 0.2 | 0.2.02 | Configurar TypeScript em `apps/api` (`tsconfig.json`, `tsx` para dev, script de build via `tsc`, `@types/*`) | apps/api | DECISIONS.md — Linguagem | [ ] |
 | 0.2 | 0.2.03 | Criar estrutura de pastas (`routes/`, `controllers/`, `services/`, `middlewares/`, `config/`) | apps/api | - | [ ] |
@@ -149,9 +226,10 @@ documentação existente.
 | 0.3 | 0.3.02 | Instalar e configurar Tailwind CSS | apps/web | DECISIONS.md — Estilização | [ ] |
 | 0.3 | 0.3.03 | Instalar shadcn/ui + inicializar tema base customizado (paleta, tipografia) | apps/web | DECISIONS.md — Estilização | [ ] |
 | 0.4 | 0.4.01 | Criar `Dockerfile` da API (build `tsc` → `dist/`, execução do output compilado) | apps/api | DECISIONS.md — Linguagem, Containerização | [ ] |
-| 0.4 | 0.4.02 | Criar `docker-compose.yml` (serviços `api` + `postgres`) | raiz | DECISIONS.md — Containerização | [ ] |
-| 0.4 | 0.4.03 | Testar: `docker-compose up` compila o TypeScript e sobe API + banco sem erro | raiz | - | [ ] |
-| 0.4 | 0.4.04 | Testar: `GET /health` responde 200 com banco conectado | raiz | - | [ ] |
+| 0.4 | 0.4.02 | Criar `.dockerignore` (`node_modules`, `.env`, `dist`) — evita inflar o contexto de build e vazar segredo para dentro da imagem | apps/api | - | [ ] |
+| 0.4 | 0.4.03 | Criar `docker-compose.yml` (serviços `api` + `postgres`) | raiz | DECISIONS.md — Containerização | [ ] |
+| 0.4 | 0.4.04 | Testar: `docker-compose up` compila o TypeScript e sobe API + banco sem erro | raiz | - | [ ] |
+| 0.4 | 0.4.05 | Testar: `GET /health` responde 200 com banco conectado | raiz | - | [ ] |
 | 0.5 | 0.5.01 | Criar `.editorconfig` na raiz | raiz | - | [ ] |
 | 0.5 | 0.5.02 | Instalar e configurar ESLint + `typescript-eslint` (`apps/api` e `apps/web`) | raiz | DECISIONS.md — Qualidade de código | [ ] |
 | 0.5 | 0.5.03 | Instalar e configurar Prettier | raiz | - | [ ] |
@@ -246,8 +324,11 @@ Descrição: Implementar hash de senha (bcrypt), geração/verificação de
 JWT, rotas POST /auth/registro (que força role=CLIENTE, conforme
 docs/PRD.md §3.12), POST /auth/login, GET /auth/me, e middlewares
 authenticate e requireRole(roles[]), conforme docs/SPEC.md §5.1.
-Pronto quando: os 3 papéis semeados conseguem logar e cada rota
-protegida bloqueia papéis não autorizados.
+Configurar também o CORS da API, já que front e back rodam em origens
+distintas (Vite local / Vercel em produção).
+Pronto quando: os 3 papéis semeados conseguem logar, cada rota
+protegida bloqueia papéis não autorizados, e o front consegue chamar a
+API sem erro de CORS.
 ```
 
 ```
@@ -272,6 +353,7 @@ protegidas redirecionam usuários sem permissão.
 | 2.1 | 2.1.06 | Middleware `requireRole(roles[])` | apps/api | SPEC.md §5.1 | [ ] |
 | 2.1 | 2.1.07 | Rota `GET /auth/me` | apps/api | SPEC.md §5.1 | [ ] |
 | 2.1 | 2.1.08 | Documentar endpoints de autenticação no Swagger | apps/api | SPEC.md §5.1 | [ ] |
+| 2.1 | 2.1.09 | Configurar CORS na API liberando a origem do front (local e produção) — front e back rodam em origens distintas | apps/api | DECISIONS.md — Deploy | [ ] |
 | 2.2 | 2.2.01 | Client de API base no front (fetch/axios configurado com `VITE_API_URL`) | apps/web | - | [ ] |
 | 2.2 | 2.2.02 | `AuthContext` (token, usuário logado, login, logout) | apps/web | - | [ ] |
 | 2.2 | 2.2.03 | Tela de login (formulário + integração com `POST /auth/login`) | apps/web | - | [ ] |
@@ -696,9 +778,10 @@ que todos passam.
 ```
 Título: [infra] Deploy do back-end e banco no Render
 Labels: infra
-Descrição: Publicar apps/api no Render como Web Service, com um banco
-PostgreSQL gerenciado na mesma plataforma, e variáveis de ambiente
-configuradas.
+Descrição: Publicar apps/api no Render como Web Service, com build
+command compilando o TypeScript (tsc) e start apontando para dist/, um
+banco PostgreSQL gerenciado na mesma plataforma, e variáveis de
+ambiente configuradas.
 Pronto quando: a API está acessível publicamente e conectada ao banco
 de produção.
 ```
@@ -706,8 +789,9 @@ de produção.
 ```
 Título: [infra] Deploy do front-end na Vercel
 Labels: infra
-Descrição: Publicar apps/web na Vercel, configurada para consumir a
-API publicada no Render.
+Descrição: Publicar apps/web na Vercel, com o root directory do
+projeto apontando para apps/web (o repositório é um monorepo),
+configurada para consumir a API publicada no Render.
 Pronto quando: o front está acessível publicamente e funcional,
 consumindo a API de produção.
 ```
@@ -715,8 +799,10 @@ consumindo a API de produção.
 ```
 Título: [docs] README completo com instruções de setup
 Labels: docs
-Descrição: Escrever README.md com pré-requisitos, setup local via
-Docker, variáveis de ambiente, como rodar o seed, links de deploy
+Descrição: Escrever README.md com pré-requisitos (incluindo a versão do
+Node fixada no .nvmrc), setup local via Docker, instalação de
+dependências via npm install na raiz do workspace, variáveis de
+ambiente, como rodar o seed, links de deploy
 (incluindo /api-docs), aviso sobre o cold start do free tier do Render
 (~1 min no primeiro acesso após 15 min de inatividade) e aviso sobre a
 expiração do Postgres free do Render (banco expira 30 dias após a
