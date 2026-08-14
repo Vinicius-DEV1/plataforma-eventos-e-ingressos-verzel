@@ -64,8 +64,8 @@ antes de qualquer funcionalidade de negócio.
 Título: [infra] Setup inicial do monorepo (apps/web, apps/api, docs/)
 Labels: infra
 Descrição: Criar estrutura de pastas do monorepo (apps/web, apps/api,
-docs/), inicializar Express em apps/api e Vite + React + Tailwind + shadcn
-em apps/web.
+docs/), inicializar Express + TypeScript em apps/api e Vite + React +
+TypeScript + Tailwind + shadcn em apps/web.
 Pronto quando: estrutura de pastas criada e ambos os projetos rodam
 localmente (mesmo sem funcionalidade ainda).
 ```
@@ -73,10 +73,12 @@ localmente (mesmo sem funcionalidade ainda).
 ```
 Título: [infra] Configurar Docker Compose (API + Postgres)
 Labels: infra
-Descrição: Criar docker-compose.yml orquestrando o serviço da API e um
-container Postgres, com .env.example documentando as variáveis
+Descrição: Criar o Dockerfile da API (build TypeScript via tsc, execução
+do output em dist/) e o docker-compose.yml orquestrando o serviço da API
+e um container Postgres, com .env.example documentando as variáveis
 necessárias.
-Pronto quando: docker-compose up sobe API + banco sem erro.
+Pronto quando: docker-compose up compila o TypeScript e sobe API + banco
+sem erro.
 ```
 
 ```
@@ -92,7 +94,8 @@ Compose.
 ```
 Título: [infra] Configurar qualidade de código e padronização de commits
 Labels: infra
-Descrição: Configurar ESLint, Prettier e .editorconfig para padronização
+Descrição: Configurar ESLint (com typescript-eslint), Prettier e
+.editorconfig para padronização
 de código; Husky + lint-staged para rodar checks no pre-commit; Commitlint
 para validar Conventional Commits no commit-msg.
 Pronto quando: um commit com código mal formatado ou mensagem fora do
@@ -138,17 +141,19 @@ documentação existente.
 | 0.1 | 0.1.03 | Criar `.env.example` em `apps/api` (DATABASE_URL, JWT_SECRET, ASAAS_API_KEY, TMDB_API_KEY, TICKETMASTER_API_KEY) | apps/api | - | [ ] |
 | 0.1 | 0.1.04 | Criar `.env.example` em `apps/web` (VITE_API_URL) | apps/web | - | [ ] |
 | 0.2 | 0.2.01 | Inicializar `apps/api` (`package.json` + Express) | apps/api | DECISIONS.md — Back-end | [ ] |
-| 0.2 | 0.2.02 | Criar estrutura de pastas (`routes/`, `controllers/`, `services/`, `middlewares/`, `config/`) | apps/api | - | [ ] |
-| 0.2 | 0.2.03 | Criar rota `GET /health` | apps/api | - | [ ] |
-| 0.2 | 0.2.04 | Inicializar Prisma (`prisma init`) | apps/api | DECISIONS.md — ORM | [ ] |
-| 0.3 | 0.3.01 | Inicializar `apps/web` com Vite + React | apps/web | DECISIONS.md — Front-end | [ ] |
+| 0.2 | 0.2.02 | Configurar TypeScript em `apps/api` (`tsconfig.json`, `tsx` para dev, script de build via `tsc`, `@types/*`) | apps/api | DECISIONS.md — Linguagem | [ ] |
+| 0.2 | 0.2.03 | Criar estrutura de pastas (`routes/`, `controllers/`, `services/`, `middlewares/`, `config/`) | apps/api | - | [ ] |
+| 0.2 | 0.2.04 | Criar rota `GET /health` | apps/api | - | [ ] |
+| 0.2 | 0.2.05 | Inicializar Prisma (`prisma init`) | apps/api | DECISIONS.md — ORM | [ ] |
+| 0.3 | 0.3.01 | Inicializar `apps/web` com Vite + React + TypeScript (template `react-ts`) | apps/web | DECISIONS.md — Front-end, Linguagem | [ ] |
 | 0.3 | 0.3.02 | Instalar e configurar Tailwind CSS | apps/web | DECISIONS.md — Estilização | [ ] |
 | 0.3 | 0.3.03 | Instalar shadcn/ui + inicializar tema base customizado (paleta, tipografia) | apps/web | DECISIONS.md — Estilização | [ ] |
-| 0.4 | 0.4.01 | Criar `docker-compose.yml` (serviços `api` + `postgres`) | raiz | DECISIONS.md — Containerização | [ ] |
-| 0.4 | 0.4.02 | Testar: `docker-compose up` sobe API + banco sem erro | raiz | - | [ ] |
-| 0.4 | 0.4.03 | Testar: `GET /health` responde 200 com banco conectado | raiz | - | [ ] |
+| 0.4 | 0.4.01 | Criar `Dockerfile` da API (build `tsc` → `dist/`, execução do output compilado) | apps/api | DECISIONS.md — Linguagem, Containerização | [ ] |
+| 0.4 | 0.4.02 | Criar `docker-compose.yml` (serviços `api` + `postgres`) | raiz | DECISIONS.md — Containerização | [ ] |
+| 0.4 | 0.4.03 | Testar: `docker-compose up` compila o TypeScript e sobe API + banco sem erro | raiz | - | [ ] |
+| 0.4 | 0.4.04 | Testar: `GET /health` responde 200 com banco conectado | raiz | - | [ ] |
 | 0.5 | 0.5.01 | Criar `.editorconfig` na raiz | raiz | - | [ ] |
-| 0.5 | 0.5.02 | Instalar e configurar ESLint (`apps/api` e `apps/web`) | raiz | - | [ ] |
+| 0.5 | 0.5.02 | Instalar e configurar ESLint + `typescript-eslint` (`apps/api` e `apps/web`) | raiz | DECISIONS.md — Qualidade de código | [ ] |
 | 0.5 | 0.5.03 | Instalar e configurar Prettier | raiz | - | [ ] |
 | 0.5 | 0.5.04 | Instalar Husky e configurar hooks (`pre-commit`, `commit-msg`) | raiz | - | [ ] |
 | 0.5 | 0.5.05 | Instalar lint-staged (roda ESLint + Prettier nos arquivos staged) | raiz | - | [ ] |
@@ -638,9 +643,9 @@ na API quanto na interface.
 **Issues para cadastrar no GitHub**
 
 ```
-Título: [infra] Configurar ambiente de testes (Jest/Vitest)
+Título: [infra] Configurar ambiente de testes (Jest + ts-jest)
 Labels: infra
-Descrição: Configurar Jest ou Vitest em apps/api, incluindo scripts de
+Descrição: Configurar Jest + ts-jest em apps/api, incluindo scripts de
 execução no package.json.
 Pronto quando: é possível rodar a suíte de testes com um único comando.
 ```
@@ -661,7 +666,7 @@ Pronto quando: toda a suíte de testes passa localmente.
 
 | Código | ID | Descrição da Tarefa Atômica | Pasta | Referência | Verificado? |
 |---|---|---|---|---|---|
-| 10.1 | 10.1.01 | Configurar Jest ou Vitest em `apps/api` | apps/api | DECISIONS.md — Testes | [ ] |
+| 10.1 | 10.1.01 | Configurar Jest + `ts-jest` em `apps/api` | apps/api | DECISIONS.md — Testes | [ ] |
 | 10.1 | 10.1.02 | Configurar banco Postgres de teste (via Docker Compose) para testes transacionais | apps/api | SPEC.md §6 | [ ] |
 | 10.1 | 10.1.03 | Adicionar execução da suíte de testes ao workflow de CI | raiz | - | [ ] |
 | 10.2 | 10.2.01 | Teste: concorrência de reserva de assento | apps/api | SPEC.md §6 | [ ] |
@@ -712,7 +717,11 @@ Título: [docs] README completo com instruções de setup
 Labels: docs
 Descrição: Escrever README.md com pré-requisitos, setup local via
 Docker, variáveis de ambiente, como rodar o seed, links de deploy
-(incluindo /api-docs) e aviso sobre o cold start do free tier do Render.
+(incluindo /api-docs), aviso sobre o cold start do free tier do Render
+(~1 min no primeiro acesso após 15 min de inatividade) e aviso sobre a
+expiração do Postgres free do Render (banco expira 30 dias após a
+criação, com 14 dias de carência para upgrade antes de ser deletado —
+https://render.com/docs/free#free-postgres).
 Revisar docs/PRD.md, DECISIONS.md, SPEC.md e completar docs/AI_USAGE.md.
 Pronto quando: um avaliador consegue rodar o projeto do zero seguindo
 apenas o README.
@@ -723,7 +732,7 @@ apenas o README.
 | Código | ID | Descrição da Tarefa Atômica | Pasta | Referência | Verificado? |
 |---|---|---|---|---|---|
 | 11.1 | 11.1.01 | Finalizar `docker-compose.yml` (api + postgres, web opcional) | raiz | DECISIONS.md — Containerização | [ ] |
-| 11.1 | 11.1.02 | Deploy do back-end no Render | apps/api | DECISIONS.md — Deploy Back | [ ] |
+| 11.1 | 11.1.02 | Deploy do back-end no Render (build command com `tsc`, start apontando para `dist/`) | apps/api | DECISIONS.md — Deploy Back, Linguagem | [ ] |
 | 11.1 | 11.1.03 | Configurar Postgres gerenciado no Render | infra | DECISIONS.md — Deploy Back | [ ] |
 | 11.1 | 11.1.04 | Deploy do front-end na Vercel | apps/web | DECISIONS.md — Deploy Front | [ ] |
 | 11.1 | 11.1.05 | Confirmar dados de teste semeados também em produção | infra | PRD.md §5 | [ ] |
@@ -731,7 +740,7 @@ apenas o README.
 | 11.2 | 11.2.02 | README: variáveis de ambiente | raiz | - | [ ] |
 | 11.2 | 11.2.03 | README: como rodar o seed | raiz | - | [ ] |
 | 11.2 | 11.2.04 | README: links de deploy (produção) + link do Swagger (`/api-docs`) | raiz | - | [ ] |
-| 11.2 | 11.2.05 | README: aviso sobre cold start do free tier do Render (~50s no primeiro acesso) | raiz | DECISIONS.md — Deploy Back | [ ] |
+| 11.2 | 11.2.05 | README: aviso sobre cold start (~1 min) e sobre expiração do Postgres free do Render (30 dias + 14 de carência) | raiz | DECISIONS.md — Deploy Back | [ ] |
 | 11.2 | 11.2.06 | Revisar `docs/PRD.md`, `DECISIONS.md`, `SPEC.md` (ajustar se algo mudou na implementação) | docs | - | [ ] |
 | 11.2 | 11.2.07 | Preencher seções pendentes de `docs/AI_USAGE.md` | docs | - | [ ] |
 | 11.2 | 11.2.08 | Testar: percorrer fluxo completo em produção, do zero, como avaliador | raiz | - | [ ] |

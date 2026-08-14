@@ -10,25 +10,26 @@
 | Camada | Escolha | Motivo |
 |---|---|---|
 | Organização do repositório | Monorepo (`apps/web`, `apps/api`) | Um único clone para o avaliador rodar tudo; Docker Compose orquestra front + back + banco juntos; commits de ambos os lados ficam no mesmo histórico, mostrando o processo de forma unificada |
+| Linguagem (front e back) | TypeScript | O domínio é denso em enums e transições de status (`Reserva`, `Ingresso`, `Assento`, `Pagamento`, `Evento` — ver `SPEC.md` §4.2): tipar essas transições transforma em erro de compilação o que em JavaScript seria bug silencioso descoberto só em runtime. Também é o que torna real a type-safety do Prisma citada abaixo — em JS puro os tipos gerados pelo client existem, mas nada impede passar um campo ou enum errado. Aplicado nos dois apps para manter uma linguagem só no monorepo |
 | Front-end | Vite + React (sem framework tipo Next.js) | O back-end já é servido separadamente por Express — um framework full-stack como Next.js adicionaria complexidade (SSR, rotas de API, Server Components) sem nenhum benefício real, já que a aplicação é 100% logada e não depende de SEO |
 | Roteamento (front) | React Router | Padrão maduro do ecossistema React sem framework full-stack; cobre rotas protegidas por papel e rotas dinâmicas sem fricção |
 | Estilização | Tailwind CSS + shadcn/ui, customizado | Tailwind acelera estilização mantendo consistência; shadcn/ui (construído sobre Radix UI) resolve componentes complexos (modal, dropdown, select) com acessibilidade pronta — porém com paleta, tipografia e componentes customizados para fugir da aparência padrão reconhecível ("AI slop") |
 | Back-end | Node.js + Express | Framework leve e direto, adequado ao escopo do desafio sem overhead de convenções de frameworks maiores (ex: NestJS) |
-| ORM | Prisma | Migrations automáticas, schema declarativo fácil de versionar, type-safety, e resolve bem o requisito de concorrência (transactions + constraints `@unique`) necessário para não vender o mesmo lugar duas vezes |
+| ORM | Prisma | Migrations automáticas, schema declarativo fácil de versionar, type-safety, e suporte a `$transaction` com updates condicionais — necessário para não vender o mesmo lugar duas vezes (ver `SPEC.md` §2.1: a exclusividade vem do update condicional dentro da transação, não da constraint `@unique`, que só evita duplicidade de assento no cadastro) |
 | Banco de dados | PostgreSQL | Relacional, com suporte forte a transactions e constraints — necessário para garantir integridade em reservas concorrentes |
 | Autenticação | JWT puro (sem Passport.js) | O sistema tem apenas uma estratégia de login (email/senha, 3 papéis fixos); Passport.js existe para orquestrar múltiplas estratégias (ex: OAuth), o que não se aplica aqui — JWT implementado diretamente é mais simples e mais fácil de justificar decisão por decisão |
 | Pagamento simulado | Asaas (sandbox) | Ambiente de testes de provedor real, já com familiaridade prévia |
 | Containerização | Docker + Docker Compose | Facilita reprodutibilidade do ambiente (API + Postgres) para o avaliador rodar localmente |
 | Deploy — Front | Vercel | Integração simples com Vite, free tier suficiente |
 | Deploy — Back + Banco | Render | Web Service + PostgreSQL gerenciado na mesma plataforma, reduzindo pontos de configuração externa |
-| Testes | Jest ou Vitest | Cobertura focada na lógica crítica de negócio (concorrência de reserva, validação de QR), não no projeto inteiro |
+| Testes | Jest | Os testes mais críticos aqui (concorrência de reserva, transações) precisam rodar contra um Postgres real, não mocks — e Jest tem mais estrada rodada em testes de integração com banco em Node (setup/teardown global, controle de paralelismo entre workers para evitar conflito de dados). Ferramenta completa (runner + mocking + coverage) sem depender de outra peça do stack, e sem criar acoplamento com o Vite do `apps/web`, que não compartilha config de teste com a API. Roda sobre TypeScript via `ts-jest` — a configuração extra é o custo aceito em troca da maturidade acima. Cobertura focada na lógica crítica de negócio (concorrência de reserva, validação de QR), não no projeto inteiro |
 | QR Code (geração) | Lib `qrcode` | Gera a imagem a partir do payload assinado |
 | QR Code (anti-forjamento) | JWT assinado no payload | Reaproveita a mesma abordagem já usada na autenticação — o conteúdo do QR (ex: `ingressoId`, `eventoId`) é assinado com a chave secreta do servidor; sem essa chave, não é possível forjar um QR que passe na validação |
 | Leitura de QR (portaria) | `html5-qrcode` (client-side, via `getUserMedia`) | Permite leitura por câmera direto no navegador, sem necessidade de app nativo; complementado por digitação manual como alternativa |
 | API externa — Cinema | TMDb | Catálogo de filmes (nome, sinopse, poster) — sessões, sala e preço são definidos pela própria plataforma |
 | API externa — Show | Ticketmaster Discovery | Catálogo de eventos ao vivo reais (nome, data, local) — mapa de assentos, quando aplicável, ainda é definido pela própria plataforma, já que a API não expõe isso |
 | Documentação de API | OpenAPI via `swagger-ui-express` | Documentação interativa servida em `/api-docs` pela própria aplicação — o avaliador testa a API direto pela URL do deploy, sem instalar nada. Preferido a uma coleção Postman/Insomnia, que exigiria download + importação manual e ficaria facilmente dessincronizada do código |
-| Qualidade de código | ESLint + Prettier + `.editorconfig` | Padronização automática de estilo e detecção de problemas, consistente entre editores e entre os dois apps do monorepo |
+| Qualidade de código | ESLint (com `typescript-eslint`) + Prettier + `.editorconfig` | Padronização automática de estilo e detecção de problemas, consistente entre editores e entre os dois apps do monorepo; o parser do `typescript-eslint` é o que permite ao ESLint entender a sintaxe de TypeScript |
 | Padronização de commits | Husky + lint-staged + Commitlint | `pre-commit` roda lint/format apenas nos arquivos staged; `commit-msg` valida o padrão Conventional Commits — garante histórico legível, que o desafio avalia explicitamente |
 | CI | GitHub Actions | Segunda camada de verificação: roda lint (e, a partir do Bloco 10, os testes) em cada Pull Request, independente da configuração local do desenvolvedor |
 
@@ -62,6 +63,19 @@
   customizar paleta, tipografia e componentes para evitar a aparência
   genérica associada a interfaces geradas por ferramentas de IA sem nenhuma
   decisão visual própria.
+- **JavaScript puro** — descartado apesar de dispensar setup de build e
+  tipagem. Seria mais rápido de iniciar, mas deixaria a type-safety do Prisma
+  como benefício apenas nominal e transformaria cada engano de enum de status
+  (`PAGA` vs. `PAGO`) em bug de runtime, num domínio que tem cinco conjuntos
+  de status distintos. O custo de TypeScript é concentrado no setup inicial; o
+  benefício se acumula ao longo de todos os blocos seguintes.
+- **Vitest** — descartado em favor do Jest. Seria menos configuração (ESM e
+  TypeScript nativos, sem `ts-jest`) e mais rápido, mas a vantagem de
+  "compartilhar ferramenta com o Vite do `apps/web`" é ilusória: os dois apps
+  não compartilham config de teste nem de build. Como os testes decisivos aqui
+  são de integração contra um Postgres real (`SPEC.md` §6), pesou mais a
+  maturidade do Jest nesse cenário — setup/teardown de banco e controle de
+  paralelismo entre workers — do que a economia de configuração.
 - **Sequelize** — descartado em favor do Prisma, pela melhor DX, migrations
   automáticas e type-safety.
 - **UUID + HMAC para o QR** — descartado em favor de JWT assinado, por
@@ -81,12 +95,12 @@
 ```mermaid
 graph TB
     subgraph Cliente["Navegador"]
-        WEB["apps/web<br/>Vite + React + React Router<br/>Tailwind + shadcn/ui"]
+        WEB["apps/web<br/>Vite + React + TypeScript + React Router<br/>Tailwind + shadcn/ui"]
         CAM["Câmera do dispositivo<br/>(html5-qrcode)"]
     end
 
     subgraph Servidor["Render"]
-        API["apps/api<br/>Node.js + Express"]
+        API["apps/api<br/>Node.js + Express + TypeScript"]
         DB[("PostgreSQL<br/>via Prisma ORM")]
     end
 
@@ -117,13 +131,13 @@ graph TB
 ```
 elite-dev-verzel/
 ├── apps/
-│   ├── web/                 # Front-end (Vite + React)
+│   ├── web/                 # Front-end (Vite + React + TypeScript)
 │   │   └── src/
 │   │       ├── pages/
 │   │       ├── components/
 │   │       ├── services/    # chamadas à API Express
 │   │       └── contexts/
-│   └── api/                 # Back-end (Express)
+│   └── api/                 # Back-end (Express + TypeScript)
 │       └── src/
 │           ├── routes/
 │           ├── controllers/
