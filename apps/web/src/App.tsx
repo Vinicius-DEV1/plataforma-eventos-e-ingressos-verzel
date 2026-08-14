@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 
 export default function App() {
   return (
@@ -46,5 +46,5 @@ export default function App() {
         </dl>
       </div>
     </main>
-  )
+  );
 }

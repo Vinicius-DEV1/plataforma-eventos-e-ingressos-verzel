@@ -1,0 +1,10 @@
+node_modules
+dist
+build
+coverage
+package-lock.json
+
+# Documentos em prosa, mantidos à mão. O Prettier realinha as tabelas de
+# Markdown ao conteúdo mais largo de cada coluna, o que gera centenas de
+# linhas de diff e dificulta a edição manual.
+docs/**/*.md

@@ -60,9 +60,10 @@ antes de qualquer funcionalidade de negócio.
 
 **Issues para cadastrar no GitHub**
 
-> As issues abaixo estão na ordem de execução. O detalhamento fino de cada
-> uma fica na tabela de tarefas atômicas mais adiante — a issue é a versão
-> legível, a tabela é o controle.
+> **A ordem das issues abaixo é a ordem de execução.** A tabela de tarefas
+> atômicas mais adiante está ordenada por ID, não por execução — ela é o
+> controle do que já foi feito, e a issue é a versão legível do trabalho.
+> Por isso os IDs não aparecem em sequência contínua ao seguir as issues.
 
 ```
 Título: [infra] Setup inicial do monorepo (apps/web, apps/api, docs/)
@@ -96,45 +97,13 @@ Detalhamento em docs/TASKS.md (Bloco 0).
 ```
 
 ```
-Título: [back-end] Configurar Prisma e conexão com o banco
-Labels: back-end
-
-Prisma inicializado e uma rota de health-check confirmando que a API
-enxerga o banco. A modelagem das entidades vem depois — aqui é só a
-conexão de pé.
-
-- [ ] Rodar prisma init e configurar o datasource
-- [ ] Criar a rota GET /health verificando a conexão com o banco
-
-Pronto quando: GET /health responde OK com o banco conectado.
-
-Detalhamento em docs/TASKS.md (Bloco 0).
-```
-
-```
-Título: [infra] Configurar Docker Compose (API + Postgres)
-Labels: infra
-
-Ambiente local reprodutível: API e Postgres subindo com um comando só.
-Como a API é TypeScript, a imagem precisa compilar antes de rodar — o
-container executa o output em dist/, não o fonte.
-
-- [ ] Escrever o Dockerfile da API
-- [ ] Criar o .dockerignore
-- [ ] Escrever o docker-compose.yml (api + postgres)
-- [ ] Subir com docker-compose up e confirmar o GET /health
-
-Pronto quando: docker-compose up compila e sobe API + banco sem erro.
-
-Detalhamento em docs/TASKS.md (Bloco 0).
-```
-
-```
 Título: [infra] Configurar qualidade de código e padronização de commits
 Labels: infra
 
 Padronização automática de estilo e de histórico, configurada na raiz do
-workspace.
+workspace. Vem cedo de propósito: formatar depois obrigaria a um commit
+que toca todos os arquivos do projeto, e cada commit feito antes do
+Commitlint escapa da validação de mensagem.
 
 **Estilo**
 - [ ] Criar o .editorconfig
@@ -170,6 +139,40 @@ roda independente disso.
 
 Pronto quando: issue e PR carregam o template automaticamente e o lint
 roda no PR.
+
+Detalhamento em docs/TASKS.md (Bloco 0).
+```
+
+```
+Título: [back-end] Configurar Prisma e conexão com o banco
+Labels: back-end
+
+Prisma inicializado e uma rota de health-check confirmando que a API
+enxerga o banco. A modelagem das entidades vem depois — aqui é só a
+conexão de pé.
+
+- [ ] Rodar prisma init e configurar o datasource
+- [ ] Criar a rota GET /health verificando a conexão com o banco
+
+Pronto quando: GET /health responde OK com o banco conectado.
+
+Detalhamento em docs/TASKS.md (Bloco 0).
+```
+
+```
+Título: [infra] Configurar Docker Compose (API + Postgres)
+Labels: infra
+
+Ambiente local reprodutível: API e Postgres subindo com um comando só.
+Como a API é TypeScript, a imagem precisa compilar antes de rodar — o
+container executa o output em dist/, não o fonte.
+
+- [ ] Escrever o Dockerfile da API
+- [ ] Criar o .dockerignore
+- [ ] Escrever o docker-compose.yml (api + postgres)
+- [ ] Subir com docker-compose up e confirmar o GET /health
+
+Pronto quando: docker-compose up compila e sobe API + banco sem erro.
 
 Detalhamento em docs/TASKS.md (Bloco 0).
 ```
@@ -219,9 +222,10 @@ Detalhamento em docs/TASKS.md (Bloco 0).
 | 0.1 | 0.1.06 | Criar `.env.example` em `apps/web` (VITE_API_URL) | apps/web | - | [~] |
 | 0.2 | 0.2.01 | Inicializar `apps/api` (`package.json` + Express) | apps/api | DECISIONS.md — Back-end | [~] |
 | 0.2 | 0.2.02 | Configurar TypeScript em `apps/api` (`tsconfig.json`, `tsx` para dev, script de build via `tsc`, `@types/*`) | apps/api | DECISIONS.md — Linguagem | [~] |
-| 0.2 | 0.2.03 | Criar estrutura de pastas (`routes/`, `controllers/`, `services/`, `middlewares/`, `config/`) | apps/api | - | [~] |
-| 0.2 | 0.2.04 | Criar rota `GET /health` | apps/api | - | [ ] |
-| 0.2 | 0.2.05 | Inicializar Prisma (`prisma init`) | apps/api | DECISIONS.md — ORM | [ ] |
+| 0.2 | 0.2.03 | Carregamento de variáveis de ambiente via `--env-file-if-exists` nativo do Node (sem `dotenv`), nos scripts `dev` e `start` | apps/api | DECISIONS.md — Variáveis de ambiente | [~] |
+| 0.2 | 0.2.04 | Criar estrutura de pastas (`routes/`, `controllers/`, `services/`, `middlewares/`, `config/`) | apps/api | - | [~] |
+| 0.2 | 0.2.05 | Criar rota `GET /health` | apps/api | - | [ ] |
+| 0.2 | 0.2.06 | Inicializar Prisma (`prisma init`) | apps/api | DECISIONS.md — ORM | [ ] |
 | 0.3 | 0.3.01 | Inicializar `apps/web` com Vite + React + TypeScript (template `react-ts`) | apps/web | DECISIONS.md — Front-end, Linguagem | [~] |
 | 0.3 | 0.3.02 | Instalar e configurar Tailwind CSS | apps/web | DECISIONS.md — Estilização | [~] |
 | 0.3 | 0.3.03 | Instalar shadcn/ui + inicializar tema base customizado (paleta, tipografia) | apps/web | DECISIONS.md — Estilização | [~] |
@@ -230,12 +234,12 @@ Detalhamento em docs/TASKS.md (Bloco 0).
 | 0.4 | 0.4.03 | Criar `docker-compose.yml` (serviços `api` + `postgres`) | raiz | DECISIONS.md — Containerização | [ ] |
 | 0.4 | 0.4.04 | Testar: `docker-compose up` compila o TypeScript e sobe API + banco sem erro | raiz | - | [ ] |
 | 0.4 | 0.4.05 | Testar: `GET /health` responde 200 com banco conectado | raiz | - | [ ] |
-| 0.5 | 0.5.01 | Criar `.editorconfig` na raiz | raiz | - | [ ] |
-| 0.5 | 0.5.02 | Instalar e configurar ESLint + `typescript-eslint` (`apps/api` e `apps/web`) | raiz | DECISIONS.md — Qualidade de código | [ ] |
-| 0.5 | 0.5.03 | Instalar e configurar Prettier | raiz | - | [ ] |
-| 0.5 | 0.5.04 | Instalar Husky e configurar hooks (`pre-commit`, `commit-msg`) | raiz | - | [ ] |
-| 0.5 | 0.5.05 | Instalar lint-staged (roda ESLint + Prettier nos arquivos staged) | raiz | - | [ ] |
-| 0.5 | 0.5.06 | Instalar Commitlint + `@commitlint/config-conventional` | raiz | - | [ ] |
+| 0.5 | 0.5.01 | Criar `.editorconfig` na raiz | raiz | - | [~] |
+| 0.5 | 0.5.02 | Instalar e configurar ESLint + `typescript-eslint` (`apps/api` e `apps/web`) | raiz | DECISIONS.md — Qualidade de código | [~] |
+| 0.5 | 0.5.03 | Instalar e configurar Prettier | raiz | - | [~] |
+| 0.5 | 0.5.04 | Instalar Husky e configurar hooks (`pre-commit`, `commit-msg`) | raiz | - | [~] |
+| 0.5 | 0.5.05 | Instalar lint-staged (roda ESLint + Prettier nos arquivos staged) | raiz | - | [~] |
+| 0.5 | 0.5.06 | Instalar Commitlint + `@commitlint/config-conventional` | raiz | - | [~] |
 | 0.5 | 0.5.07 | Testar: commit com mensagem fora do padrão Conventional Commits deve ser rejeitado | raiz | - | [ ] |
 | 0.5 | 0.5.08 | Testar: commit com código mal formatado/lint quebrado deve ser bloqueado | raiz | - | [ ] |
 | 0.6 | 0.6.01 | Criar `.github/ISSUE_TEMPLATE/` (template de issue padronizado) | raiz | - | [ ] |
