@@ -1,0 +1,172 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+@import '@fontsource-variable/archivo';
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Tema "ingresso impresso": papel off-white quente, tinta quase preta e um
+ * único acento vermelho, como o de um bilhete físico. Cantos praticamente
+ * retos (2px) — arredondamento generoso descaracterizaria a referência.
+ */
+@theme inline {
+  --font-heading: var(--font-sans);
+  --font-sans: 'Archivo Variable', system-ui, sans-serif;
+
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+
+  --radius-sm: calc(var(--radius) * 0.5);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) * 2);
+  --radius-xl: calc(var(--radius) * 3);
+  --radius-2xl: calc(var(--radius) * 4);
+  --radius-3xl: calc(var(--radius) * 6);
+  --radius-4xl: calc(var(--radius) * 8);
+}
+
+:root {
+  --radius: 2px;
+
+  /* Papel e tinta */
+  --background: #faf8f4;
+  --foreground: #141210;
+  --card: #ffffff;
+  --card-foreground: #141210;
+  --popover: #ffffff;
+  --popover-foreground: #141210;
+
+  /* Acento: vermelho-tinta de bilhete */
+  --primary: #d6403a;
+  --primary-foreground: #fffdf9;
+
+  /* Papel um tom abaixo, para superfícies secundárias */
+  --secondary: #f0ede6;
+  --secondary-foreground: #141210;
+  --muted: #f0ede6;
+  --muted-foreground: #6b655c;
+
+  /* Lavagem do acento, para estados de destaque */
+  --accent: #f7e9e7;
+  --accent-foreground: #8f2420;
+
+  --destructive: #b4241f;
+  --border: #e2ddd3;
+  --input: #e2ddd3;
+  --ring: #d6403a;
+
+  --chart-1: #d6403a;
+  --chart-2: #c97b32;
+  --chart-3: #7d8a5c;
+  --chart-4: #4f6b7a;
+  --chart-5: #6b655c;
+
+  --sidebar: #f4f1ea;
+  --sidebar-foreground: #141210;
+  --sidebar-primary: #d6403a;
+  --sidebar-primary-foreground: #fffdf9;
+  --sidebar-accent: #f7e9e7;
+  --sidebar-accent-foreground: #8f2420;
+  --sidebar-border: #e2ddd3;
+  --sidebar-ring: #d6403a;
+}
+
+/*
+ * Modo escuro: mesma lógica invertida — tinta vira fundo, papel vira texto.
+ * O vermelho é clareado para manter contraste legível sobre superfície escura.
+ */
+.dark {
+  --background: #141210;
+  --foreground: #f5f1ea;
+  --card: #1c1917;
+  --card-foreground: #f5f1ea;
+  --popover: #1c1917;
+  --popover-foreground: #f5f1ea;
+
+  --primary: #e8615a;
+  --primary-foreground: #1a0d0c;
+
+  --secondary: #26221f;
+  --secondary-foreground: #f5f1ea;
+  --muted: #26221f;
+  --muted-foreground: #a8a096;
+
+  --accent: #3a2320;
+  --accent-foreground: #f0b3ae;
+
+  --destructive: #e05951;
+  --border: #ffffff1a;
+  --input: #ffffff26;
+  --ring: #e8615a;
+
+  --chart-1: #e8615a;
+  --chart-2: #d99a55;
+  --chart-3: #9aa87a;
+  --chart-4: #7392a3;
+  --chart-5: #a8a096;
+
+  --sidebar: #1c1917;
+  --sidebar-foreground: #f5f1ea;
+  --sidebar-primary: #e8615a;
+  --sidebar-primary-foreground: #1a0d0c;
+  --sidebar-accent: #3a2320;
+  --sidebar-accent-foreground: #f0b3ae;
+  --sidebar-border: #ffffff1a;
+  --sidebar-ring: #e8615a;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    @apply font-sans;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  /*
+   * Numerais tabulares em preços, códigos de assento e contadores: alinham
+   * verticalmente em coluna e não "dançam" quando o valor muda a cada segundo
+   * (o contador de 15 minutos da reserva depende disso).
+   */
+  th,
+  td,
+  time,
+  [data-numeric] {
+    font-variant-numeric: tabular-nums;
+  }
+}

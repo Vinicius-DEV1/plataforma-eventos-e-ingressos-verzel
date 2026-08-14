@@ -217,14 +217,14 @@ Detalhamento em docs/TASKS.md (Bloco 0).
 | 0.1 | 0.1.04 | Criar `.nvmrc` e campo `engines` fixando a versão do Node (reprodutibilidade do ambiente) | raiz | - | [~] |
 | 0.1 | 0.1.05 | Criar `.env.example` em `apps/api` (DATABASE_URL, JWT_SECRET, ASAAS_API_KEY, TMDB_API_KEY, TICKETMASTER_API_KEY) | apps/api | - | [~] |
 | 0.1 | 0.1.06 | Criar `.env.example` em `apps/web` (VITE_API_URL) | apps/web | - | [~] |
-| 0.2 | 0.2.01 | Inicializar `apps/api` (`package.json` + Express) | apps/api | DECISIONS.md — Back-end | [ ] |
-| 0.2 | 0.2.02 | Configurar TypeScript em `apps/api` (`tsconfig.json`, `tsx` para dev, script de build via `tsc`, `@types/*`) | apps/api | DECISIONS.md — Linguagem | [ ] |
-| 0.2 | 0.2.03 | Criar estrutura de pastas (`routes/`, `controllers/`, `services/`, `middlewares/`, `config/`) | apps/api | - | [ ] |
+| 0.2 | 0.2.01 | Inicializar `apps/api` (`package.json` + Express) | apps/api | DECISIONS.md — Back-end | [~] |
+| 0.2 | 0.2.02 | Configurar TypeScript em `apps/api` (`tsconfig.json`, `tsx` para dev, script de build via `tsc`, `@types/*`) | apps/api | DECISIONS.md — Linguagem | [~] |
+| 0.2 | 0.2.03 | Criar estrutura de pastas (`routes/`, `controllers/`, `services/`, `middlewares/`, `config/`) | apps/api | - | [~] |
 | 0.2 | 0.2.04 | Criar rota `GET /health` | apps/api | - | [ ] |
 | 0.2 | 0.2.05 | Inicializar Prisma (`prisma init`) | apps/api | DECISIONS.md — ORM | [ ] |
-| 0.3 | 0.3.01 | Inicializar `apps/web` com Vite + React + TypeScript (template `react-ts`) | apps/web | DECISIONS.md — Front-end, Linguagem | [ ] |
-| 0.3 | 0.3.02 | Instalar e configurar Tailwind CSS | apps/web | DECISIONS.md — Estilização | [ ] |
-| 0.3 | 0.3.03 | Instalar shadcn/ui + inicializar tema base customizado (paleta, tipografia) | apps/web | DECISIONS.md — Estilização | [ ] |
+| 0.3 | 0.3.01 | Inicializar `apps/web` com Vite + React + TypeScript (template `react-ts`) | apps/web | DECISIONS.md — Front-end, Linguagem | [~] |
+| 0.3 | 0.3.02 | Instalar e configurar Tailwind CSS | apps/web | DECISIONS.md — Estilização | [~] |
+| 0.3 | 0.3.03 | Instalar shadcn/ui + inicializar tema base customizado (paleta, tipografia) | apps/web | DECISIONS.md — Estilização | [~] |
 | 0.4 | 0.4.01 | Criar `Dockerfile` da API (build `tsc` → `dist/`, execução do output compilado) | apps/api | DECISIONS.md — Linguagem, Containerização | [ ] |
 | 0.4 | 0.4.02 | Criar `.dockerignore` (`node_modules`, `.env`, `dist`) — evita inflar o contexto de build e vazar segredo para dentro da imagem | apps/api | - | [ ] |
 | 0.4 | 0.4.03 | Criar `docker-compose.yml` (serviços `api` + `postgres`) | raiz | DECISIONS.md — Containerização | [ ] |

@@ -5,15 +5,25 @@
 > para que qualquer decisão que pareça não-óbvia numa leitura rápida do código
 > tenha sua justificativa registrada aqui.
 
+> **Método.** As decisões deste documento são minhas. Usei IA como ferramenta
+> de análise — levantar alternativas, expor trade-offs, checar fatos contra a
+> documentação oficial — mas a escolha final em cada linha foi minha, e em
+> parte dos casos contrariou a recomendação inicial da ferramenta. O runner de
+> testes é um exemplo: a sugestão era Vitest, optei por Jest pela maturidade em
+> testes de integração contra banco real. O registro detalhado de onde a IA foi
+> usada está em `docs/AI_USAGE.md`.
+
 ## Stack Principal
 
 | Camada | Escolha | Motivo |
 |---|---|---|
 | Organização do repositório | Monorepo (`apps/web`, `apps/api`) | Um único clone para o avaliador rodar tudo; Docker Compose orquestra front + back + banco juntos; commits de ambos os lados ficam no mesmo histórico, mostrando o processo de forma unificada |
 | Linguagem (front e back) | TypeScript | O domínio é denso em enums e transições de status (`Reserva`, `Ingresso`, `Assento`, `Pagamento`, `Evento` — ver `SPEC.md` §4.2): tipar essas transições transforma em erro de compilação o que em JavaScript seria bug silencioso descoberto só em runtime. Também é o que torna real a type-safety do Prisma citada abaixo — em JS puro os tipos gerados pelo client existem, mas nada impede passar um campo ou enum errado. Aplicado nos dois apps para manter uma linguagem só no monorepo |
+| Formato de módulo (API) | CommonJS | Decisão tomada em função do Jest: rodar a suíte sobre ESM exige a flag `--experimental-vm-modules` no Node e configuração adicional no `ts-jest`, que é justamente a fricção apontada como ponto fraco do Jest quando ele foi escolhido no lugar do Vitest. Com CommonJS, o Jest roda sem nenhum desses ajustes. Na prática o `tsconfig.json` usa `module: nodenext`, que emite CommonJS porque o `package.json` da API não declara `"type": "module"` |
 | Front-end | Vite + React (sem framework tipo Next.js) | O back-end já é servido separadamente por Express — um framework full-stack como Next.js adicionaria complexidade (SSR, rotas de API, Server Components) sem nenhum benefício real, já que a aplicação é 100% logada e não depende de SEO |
 | Roteamento (front) | React Router | Padrão maduro do ecossistema React sem framework full-stack; cobre rotas protegidas por papel e rotas dinâmicas sem fricção |
-| Estilização | Tailwind CSS + shadcn/ui, customizado | Tailwind acelera estilização mantendo consistência; shadcn/ui (construído sobre Radix UI) resolve componentes complexos (modal, dropdown, select) com acessibilidade pronta — porém com paleta, tipografia e componentes customizados para fugir da aparência padrão reconhecível ("AI slop") |
+| Estilização | Tailwind CSS + shadcn/ui, customizado | Tailwind acelera estilização mantendo consistência; shadcn/ui (construído sobre Radix UI) resolve componentes complexos (modal, dropdown, select) com acessibilidade pronta — porém com paleta, tipografia e componentes customizados para fugir da aparência padrão reconhecível ("AI slop"). Tailwind 4: a configuração é feita em CSS via `@theme`, sem `tailwind.config.js` |
+| Identidade visual | Tema "ingresso impresso": papel off-white `#FAF8F4`, tinta `#141210`, acento vermelho `#D6403A`, raio de 2px, fonte Archivo | Escolhida entre três direções avaliadas — cinema noturno (fundo escuro, acento âmbar de marquise), ingresso impresso, e editorial de alto contraste. A referência ao bilhete físico dá identidade própria e coerente com o domínio (bilheteria), em vez do tema neutro que acompanha o shadcn. O preset do CLI serviu apenas como base técnica: paleta e tipografia foram inteiramente substituídas, e a fonte Geist que ele instala — fortemente associada ao visual padrão — deu lugar à Archivo, empacotada localmente via `@fontsource`, sem CDN. Cantos quase retos (2px) porque arredondamento generoso descaracterizaria a referência. Numerais tabulares em preços, assentos e horários: sem largura fixa, os dígitos se deslocam a cada atualização, o que ficaria visível no contador de 15 minutos da reserva (`PRD.md` §3.10). Há um modo escuro definido com a mesma lógica invertida, ainda sem alternador na interface |
 | Back-end | Node.js + Express | Framework leve e direto, adequado ao escopo do desafio sem overhead de convenções de frameworks maiores (ex: NestJS) |
 | ORM | Prisma | Migrations automáticas, schema declarativo fácil de versionar, type-safety, e suporte a `$transaction` com updates condicionais — necessário para não vender o mesmo lugar duas vezes (ver `SPEC.md` §2.1: a exclusividade vem do update condicional dentro da transação, não da constraint `@unique`, que só evita duplicidade de assento no cadastro) |
 | Banco de dados | PostgreSQL | Relacional, com suporte forte a transactions e constraints — necessário para garantir integridade em reservas concorrentes |
