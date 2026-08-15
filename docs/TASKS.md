@@ -252,7 +252,7 @@ Detalhamento em docs/TASKS.md (Bloco 0).
 | 0.7 | 0.7.02 | Expor documentação interativa em `GET /api-docs` | apps/api | DECISIONS.md — Documentação de API | [x] |
 | 0.7 | 0.7.03 | Configurar esquema de segurança Bearer JWT no Swagger | apps/api | DECISIONS.md — Documentação de API | [x] |
 | 0.7 | 0.7.04 | Documentar `GET /health` no Swagger (valida o setup) | apps/api | - | [x] |
-| 0.8 | 0.8.01 | Criar `README.md` inicial (título, descrição, stack, links para `docs/`) | raiz | - | [ ] |
+| 0.8 | 0.8.01 | Criar `README.md` inicial (título, descrição, stack, links para `docs/`) | raiz | - | [~] |
 
 **Checkpoint de revisão:** dev confirma que `docker-compose up` sobe tudo, o
 health-check responde, o front roda com `vite dev`, commits fora do padrão
