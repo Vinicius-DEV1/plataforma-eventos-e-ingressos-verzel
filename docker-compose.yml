@@ -1,0 +1,48 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: eventos-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: eventos
+    ports:
+      # Exposto no host para permitir rodar a API fora do container
+      # (npm run dev) apontando para o mesmo banco.
+      - '5432:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      # `pg_isready` responde antes de o banco aceitar conexões de verdade em
+      # alguns casos; o teste com -d confirma que o banco da aplicação existe.
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d eventos']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      # Contexto na raiz: o Dockerfile precisa do package.json e do lockfile
+      # do workspace, que ficam fora de apps/api.
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: eventos-api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3333
+      # O host é o nome do serviço, não localhost: dentro da rede do Compose,
+      # `localhost` seria o próprio container da API.
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/eventos?schema=public
+      JWT_SECRET: ${JWT_SECRET:-segredo-de-desenvolvimento-trocar-em-producao}
+    ports:
+      - '3333:3333'
+    depends_on:
+      postgres:
+        # Espera o healthcheck passar, e não apenas o container existir —
+        # sem isso a API sobe antes de o banco aceitar conexões.
+        condition: service_healthy
+
+volumes:
+  postgres-data:
