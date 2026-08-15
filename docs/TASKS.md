@@ -227,8 +227,8 @@ Detalhamento em docs/TASKS.md (Bloco 0).
 | 0.2 | 0.2.02 | Configurar TypeScript em `apps/api` (`tsconfig.json`, `tsx` para dev, script de build via `tsc`, `@types/*`) | apps/api | DECISIONS.md — Linguagem | [x] |
 | 0.2 | 0.2.03 | Carregamento de variáveis de ambiente via `--env-file-if-exists` nativo do Node (sem `dotenv`), nos scripts `dev` e `start` | apps/api | DECISIONS.md — Variáveis de ambiente | [x] |
 | 0.2 | 0.2.04 | Criar estrutura de pastas (`routes/`, `controllers/`, `services/`, `middlewares/`, `config/`) | apps/api | - | [x] |
-| 0.2 | 0.2.05 | Criar rota `GET /health` | apps/api | - | [ ] |
-| 0.2 | 0.2.06 | Inicializar Prisma (`prisma init`) | apps/api | DECISIONS.md — ORM | [ ] |
+| 0.2 | 0.2.05 | Criar rota `GET /health` | apps/api | - | [~] |
+| 0.2 | 0.2.06 | Inicializar Prisma (`prisma init`) | apps/api | DECISIONS.md — ORM | [~] |
 | 0.3 | 0.3.01 | Inicializar `apps/web` com Vite + React + TypeScript (template `react-ts`) | apps/web | DECISIONS.md — Front-end, Linguagem | [x] |
 | 0.3 | 0.3.02 | Instalar e configurar Tailwind CSS | apps/web | DECISIONS.md — Estilização | [x] |
 | 0.3 | 0.3.03 | Instalar shadcn/ui + inicializar tema base customizado (paleta, tipografia) | apps/web | DECISIONS.md — Estilização | [x] |
@@ -245,8 +245,8 @@ Detalhamento em docs/TASKS.md (Bloco 0).
 | 0.5 | 0.5.06 | Instalar Commitlint + `@commitlint/config-conventional` | raiz | - | [x] |
 | 0.5 | 0.5.07 | Testar: commit com mensagem fora do padrão Conventional Commits deve ser rejeitado | raiz | - | [x] |
 | 0.5 | 0.5.08 | Testar: commit com código mal formatado/lint quebrado deve ser bloqueado | raiz | - | [x] |
-| 0.6 | 0.6.01 | Criar `.github/ISSUE_TEMPLATE/` (template de issue padronizado) | raiz | - | [~] |
-| 0.6 | 0.6.02 | Criar workflow `.github/workflows/ci.yml` rodando lint em `push` na `main` e em `pull_request` | raiz | - | [~] |
+| 0.6 | 0.6.01 | Criar `.github/ISSUE_TEMPLATE/` (template de issue padronizado) | raiz | - | [x] |
+| 0.6 | 0.6.02 | Criar workflow `.github/workflows/ci.yml` rodando lint em `push` na `main` e em `pull_request` | raiz | - | [x] |
 | 0.6 | 0.6.03 | Testar: fazer um push e confirmar que o CI executa o lint | raiz | - | [ ] |
 | 0.7 | 0.7.01 | Instalar e configurar `swagger-ui-express` em `apps/api` | apps/api | DECISIONS.md — Documentação de API | [ ] |
 | 0.7 | 0.7.02 | Expor documentação interativa em `GET /api-docs` | apps/api | DECISIONS.md — Documentação de API | [ ] |

@@ -18,12 +18,31 @@ import prettier from 'eslint-config-prettier';
  */
 export default tseslint.config(
   {
-    ignores: ['**/dist/**', '**/coverage/**', '**/node_modules/**'],
+    ignores: [
+      '**/dist/**',
+      '**/coverage/**',
+      '**/node_modules/**',
+      // Client do Prisma: código gerado, dentro de src/ por padrão na v7.
+      'apps/api/src/generated/**',
+    ],
+  },
+
+  /*
+   * Arquivos de configuração na raiz dos apps ficam fora do `tsconfig`, que
+   * cobre apenas `src/`. Sem `allowDefaultProject` o serviço de tipos do
+   * typescript-eslint não consegue analisá-los e o lint falha ao parsear.
+   */
+  {
+    files: ['apps/api/*.ts'],
+    extends: [js.configs.recommended, ...tseslint.configs.recommended],
+    languageOptions: {
+      globals: globals.node,
+    },
   },
 
   // API — Node
   {
-    files: ['apps/api/**/*.ts'],
+    files: ['apps/api/src/**/*.ts'],
     extends: [
       js.configs.recommended,
       ...tseslint.configs.recommendedTypeChecked,

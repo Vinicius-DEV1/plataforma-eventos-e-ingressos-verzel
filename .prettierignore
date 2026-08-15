@@ -4,6 +4,9 @@ build
 coverage
 package-lock.json
 
+# Client do Prisma: código gerado a partir do schema.
+apps/api/src/generated
+
 # Documentos em prosa, mantidos à mão. O Prettier realinha as tabelas de
 # Markdown ao conteúdo mais largo de cada coluna, o que gera centenas de
 # linhas de diff e dificulta a edição manual.

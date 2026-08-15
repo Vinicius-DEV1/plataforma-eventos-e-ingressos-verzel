@@ -5,6 +5,9 @@ node_modules/
 dist/
 build/
 
+# Client do Prisma — gerado a partir do schema, recriado no npm install
+apps/api/src/generated/
+
 # Testes
 coverage/
 
@@ -24,3 +27,8 @@ npm-debug.log*
 
 # Ferramentas locais
 .claude/settings.local.json
+
+# Documentação para assistentes de IA, despejada pelo `prisma init`
+.agents/
+.windsurf/
+skills-lock.json
