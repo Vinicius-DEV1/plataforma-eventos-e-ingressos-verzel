@@ -1,6 +1,9 @@
+import cors from 'cors';
 import express, { type Express } from 'express';
 import swaggerUi from 'swagger-ui-express';
+import { corsOptions } from './config/cors';
 import { swaggerSpec } from './config/swagger';
+import { authRouter } from './routes/auth.routes';
 import { healthRouter } from './routes/health.routes';
 
 // Building the app is kept apart from starting it so integration tests can
@@ -8,6 +11,7 @@ import { healthRouter } from './routes/health.routes';
 export function createApp(): Express {
   const app = express();
 
+  app.use(cors(corsOptions));
   app.use(express.json());
 
   app.use(
@@ -23,6 +27,7 @@ export function createApp(): Express {
   });
 
   app.use(healthRouter);
+  app.use(authRouter);
 
   return app;
 }

@@ -382,19 +382,19 @@ rota restrita redireciona quem não tem permissão.
 
 | Código | ID | Descrição da Tarefa Atômica | Pasta | Referência | Verificado? |
 |---|---|---|---|---|---|
-| 2.1 | 2.1.01 | Util de hash de senha (`hashPassword`, `comparePassword` via bcrypt) | apps/api | DECISIONS.md — Autenticação | [ ] |
-| 2.1 | 2.1.02 | Service `generateToken(userId, role)` via `jsonwebtoken` | apps/api | DECISIONS.md — Autenticação | [ ] |
-| 2.1 | 2.1.03 | Rota `POST /auth/registro` (força `role = CLIENTE`) | apps/api | SPEC.md §5.1, PRD.md §3.12 | [ ] |
-| 2.1 | 2.1.04 | Rota `POST /auth/login` | apps/api | SPEC.md §5.1 | [ ] |
-| 2.1 | 2.1.05 | Middleware `authenticate` (valida JWT, popula `req.user`) | apps/api | SPEC.md §5.1 | [ ] |
-| 2.1 | 2.1.06 | Middleware `requireRole(roles[])` | apps/api | SPEC.md §5.1 | [ ] |
-| 2.1 | 2.1.07 | Rota `GET /auth/me` | apps/api | SPEC.md §5.1 | [ ] |
-| 2.1 | 2.1.08 | Documentar endpoints de autenticação no Swagger | apps/api | SPEC.md §5.1 | [ ] |
-| 2.1 | 2.1.09 | Configurar CORS na API liberando a origem do front (local e produção) — front e back rodam em origens distintas | apps/api | DECISIONS.md — Deploy | [ ] |
-| 2.2 | 2.2.01 | Client de API base no front (fetch/axios configurado com `VITE_API_URL`) | apps/web | - | [ ] |
-| 2.2 | 2.2.02 | `AuthContext` (token, usuário logado, login, logout) | apps/web | - | [ ] |
-| 2.2 | 2.2.03 | Tela de login (formulário + integração com `POST /auth/login`) | apps/web | - | [ ] |
-| 2.2 | 2.2.04 | Componente de rota protegida por papel (`PrivateRoute`) | apps/web | - | [ ] |
+| 2.1 | 2.1.01 | Util de hash de senha (`hashPassword`, `comparePassword` via bcrypt) | apps/api | DECISIONS.md — Autenticação | [x] |
+| 2.1 | 2.1.02 | Service `generateToken(userId, role)` via `jsonwebtoken` | apps/api | DECISIONS.md — Autenticação | [x] |
+| 2.1 | 2.1.03 | Rota `POST /auth/registro` (força `role = CLIENTE`) | apps/api | SPEC.md §5.1, PRD.md §3.12 | [x] |
+| 2.1 | 2.1.04 | Rota `POST /auth/login` | apps/api | SPEC.md §5.1 | [x] |
+| 2.1 | 2.1.05 | Middleware `authenticate` (valida JWT, popula `req.user`) | apps/api | SPEC.md §5.1 | [x] |
+| 2.1 | 2.1.06 | Middleware `requireRole(roles[])` | apps/api | SPEC.md §5.1 | [x] |
+| 2.1 | 2.1.07 | Rota `GET /auth/me` | apps/api | SPEC.md §5.1 | [x] |
+| 2.1 | 2.1.08 | Documentar endpoints de autenticação no Swagger | apps/api | SPEC.md §5.1 | [x] |
+| 2.1 | 2.1.09 | Configurar CORS na API liberando a origem do front (local e produção) — front e back rodam em origens distintas | apps/api | DECISIONS.md — Deploy | [x] |
+| 2.2 | 2.2.01 | Client de API base no front (fetch/axios configurado com `VITE_API_URL`) | apps/web | - | [~] |
+| 2.2 | 2.2.02 | `AuthContext` (token, usuário logado, login, logout) | apps/web | - | [~] |
+| 2.2 | 2.2.03 | Tela de login (formulário + integração com `POST /auth/login`) | apps/web | - | [~] |
+| 2.2 | 2.2.04 | Componente de rota protegida por papel (`PrivateRoute`) | apps/web | - | [~] |
 | 2.2 | 2.2.05 | Testar: login com os 3 papéis semeados + bloqueio de rota indevida | apps/web + apps/api | - | [ ] |
 
 **Checkpoint de revisão:** dev testa login com os 3 papéis semeados e
