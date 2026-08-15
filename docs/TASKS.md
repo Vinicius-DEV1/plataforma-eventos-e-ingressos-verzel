@@ -391,11 +391,11 @@ rota restrita redireciona quem não tem permissão.
 | 2.1 | 2.1.07 | Rota `GET /auth/me` | apps/api | SPEC.md §5.1 | [x] |
 | 2.1 | 2.1.08 | Documentar endpoints de autenticação no Swagger | apps/api | SPEC.md §5.1 | [x] |
 | 2.1 | 2.1.09 | Configurar CORS na API liberando a origem do front (local e produção) — front e back rodam em origens distintas | apps/api | DECISIONS.md — Deploy | [x] |
-| 2.2 | 2.2.01 | Client de API base no front (fetch/axios configurado com `VITE_API_URL`) | apps/web | - | [~] |
-| 2.2 | 2.2.02 | `AuthContext` (token, usuário logado, login, logout) | apps/web | - | [~] |
-| 2.2 | 2.2.03 | Tela de login (formulário + integração com `POST /auth/login`) | apps/web | - | [~] |
-| 2.2 | 2.2.04 | Componente de rota protegida por papel (`PrivateRoute`) | apps/web | - | [~] |
-| 2.2 | 2.2.05 | Testar: login com os 3 papéis semeados + bloqueio de rota indevida | apps/web + apps/api | - | [ ] |
+| 2.2 | 2.2.01 | Client de API base no front (fetch/axios configurado com `VITE_API_URL`) | apps/web | - | [x] |
+| 2.2 | 2.2.02 | `AuthContext` (token, usuário logado, login, logout) | apps/web | - | [x] |
+| 2.2 | 2.2.03 | Tela de login (formulário + integração com `POST /auth/login`) | apps/web | - | [x] |
+| 2.2 | 2.2.04 | Componente de rota protegida por papel (`PrivateRoute`) | apps/web | - | [x] |
+| 2.2 | 2.2.05 | Testar: login com os 3 papéis semeados + bloqueio de rota indevida | apps/web + apps/api | - | [x] |
 
 **Checkpoint de revisão:** dev testa login com os 3 papéis semeados e
 confirma que rotas protegidas bloqueiam acesso indevido entre papéis.
