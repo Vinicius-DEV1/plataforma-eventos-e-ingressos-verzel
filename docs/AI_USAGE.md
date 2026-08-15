@@ -8,8 +8,10 @@
 
 ## Ferramentas Utilizadas
 
-- **Claude (Anthropic)** — planejamento arquitetural, discussão de trade-offs
-  entre tecnologias, geração de código e documentação sob orientação direta.
+- **Claude Code (Anthropic)** — usado como agente no terminal, não como chat
+  de copiar e colar: ele lê e escreve arquivos do projeto e roda comandos
+  diretamente. Isso muda a natureza do controle necessário, e é o que motivou
+  as regras da seção seguinte.
 
 ## Fluxo de Trabalho Adotado
 
@@ -18,6 +20,30 @@ tarefas atômicas, com um checkpoint obrigatório ao final de cada bloco em que
 eu testava manualmente as funcionalidades antes de autorizar o avanço. A IA
 não marcava uma tarefa como concluída por conta própria — cada item só era
 validado após minha verificação.
+
+Como a ferramenta escreve arquivos e executa comandos sozinha, estabeleci três
+regras no começo e as reforcei quando foram desrespeitadas:
+
+**Nada é feito sem aprovação explícita, uma ação de cada vez.** Recomendação e
+execução não vêm no mesmo passo — mais de uma vez a ferramenta respondeu a uma
+pergunta minha e já implementou a resposta junto, e eu pedi que voltasse a
+apenas propor.
+
+**Comandos de git e da minha conta no GitHub são meus.** Ela escreve o comando,
+eu leio e executo. Isso vale inclusive para verificações de leitura.
+
+Essa regra começou restrita a git/GitHub, mas foi ampliada no Bloco 1: a
+ferramenta vinha rodando por conta própria tudo que classificava como "só
+verificação" — instalar dependências, rodar o próprio seed, abrir o Prisma
+Studio, checagens avulsas de lint e de tipo. Pedi para parar. Além do
+controle sobre o que entra no repositório, preciso saber rodar cada comando
+sozinho, porque posso ser questionado sobre o projeto numa entrevista técnica
+— e isso não se aprende vendo a IA rodar por mim.
+
+**Comentários no código só quando necessários.** O código vinha com blocos
+longos explicando o óbvio; pedi para enxugar, deixando comentário apenas onde
+há decisão não-óbvia ou armadilha conhecida. A justificativa longa foi para
+`DECISIONS.md`, que é o lugar dela.
 
 ## Como Conduzi o Processo
 
@@ -69,6 +95,17 @@ comportamento do pagamento recusado, e cancelamento de evento em cascata.
 - Antecipação de problemas que eu não teria previsto. Antes de eu testar o
   Docker, apareceu que o `npm ci` falharia porque o arquivo de lock descreve
   os dois apps e o `.dockerignore` estava excluindo um deles.
+- Identificação de uma lacuna de configuração no Bloco 1: `prisma/` ficava
+  fora tanto do ESLint quanto do `tsc` do back-end — os dois cobrem só
+  `src/`. Um script real como o de seed nunca seria checado no CI. Corrigi o
+  ESLint (regra type-aware com projeto sintético, sem tocar no
+  `tsconfig.json`); o ajuste do `tsc` fica pendente porque mexe no `rootDir`
+  que hoje separa o que entra no build do servidor do resto.
+- No script de seed, o QR Code de cada ingresso já nasce como um JWT
+  assinado de verdade — mesma chave e mesmo payload que a validação da
+  portaria vai usar quando esse endpoint existir — e a senha das quatro
+  contas é hash bcrypt real. Nenhum placeholder: o seed já serve de teste do
+  fluxo real assim que o Bloco correspondente for implementado.
 
 ## O Que Fiz Sem IA / Com Maior Intervenção Manual
 
@@ -85,6 +122,10 @@ comportamento do pagamento recusado, e cancelamento de evento em cascata.
   ingresso impresso e editorial de alto contraste — e escolhi a segunda. A
   paleta e a fonte saíram dessa escolha.
 - **Cadastro e fechamento das issues** no GitHub.
+- **Confirmação e execução do reset do banco (`prisma migrate reset`).** A
+  própria ferramenta do Prisma bloqueou a IA de rodar o comando sozinha, por
+  ser destrutivo — recebi a explicação do que o comando faz e por quê, e
+  rodei eu mesmo.
 - **Revisão do que ficou de fato pronto.** Numa das entregas a ferramenta
   afirmou que a issue podia ser fechada; conferi os itens um a um e um deles
   não tinha sido feito. Voltamos e completamos antes de fechar.
@@ -126,6 +167,12 @@ comportamento do pagamento recusado, e cancelamento de evento em cascata.
   confirmar e admitiu que era de memória. Fui à documentação oficial e trouxe
   os números corretos, que estão hoje registrados no plano de tarefas.
 
+- **Não reescrever o histórico para esconder um erro.** Dois commits ficaram
+  com o CI vermelho até a causa ser encontrada. Dava para juntar tudo e forçar
+  o envio, deixando o histórico limpo. Preferi manter: a sequência de quebra e
+  correção, com a mensagem explicando o quê e por quê, é mais honesta do que um
+  repositório onde nada nunca falhou.
+
 ## Artefatos de Processo Versionados
 
 Como recomendado pelo desafio, os seguintes artefatos do processo de
@@ -141,6 +188,10 @@ planejamento foram versionados junto ao código, e não descartados após o uso:
 - `docs/TASKS.md` — plano de execução em blocos, com tarefas atômicas,
   checkpoints obrigatórios de revisão e as regras que a IA seguiu durante a
   implementação
+- `docs/AI_USAGE.md` — este documento
+
+O `TASKS.md` também guarda um registro de revisões, preenchido a cada bloco
+aprovado, com a data e o que mudou em relação ao plano original.
 
 ## Uma Observação Sobre Versões
 

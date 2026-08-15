@@ -170,6 +170,12 @@ Nomear bem é preferível a explicar depois.
   são de integração contra um Postgres real (`SPEC.md` §6), pesou mais a
   maturidade do Jest nesse cenário — setup/teardown de banco e controle de
   paralelismo entre workers — do que a economia de configuração.
+- **oxlint** — apareceu sem ser convidado: o template do Vite passou a
+  instalá-lo como linter padrão do front. É bem mais rápido que o ESLint, por
+  ser escrito em Rust. Removido mesmo assim, porque a API ia usar ESLint de
+  qualquer forma, e manter um linter de cada lado significaria duas
+  configurações, duas entradas nos hooks de commit e dois passos no CI para
+  resolver o mesmo problema. Um linter só, nos dois apps.
 - **Sequelize** — descartado em favor do Prisma, pela melhor DX, migrations
   automáticas e type-safety.
 - **UUID + HMAC para o QR** — descartado em favor de JWT assinado, por

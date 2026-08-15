@@ -219,8 +219,10 @@ Para permitir que o fluxo seja percorrido sem configuração manual:
 - 1 evento tipo `CINEMA` publicado, com mapa de assentos gerado e lugares
   disponíveis. A sala tem **8 fileiras (A–H) por 12 assentos**, 96 lugares no
   total — grande o bastante para o mapa parecer uma sala real, pequeno o
-  bastante para caber na tela sem rolagem
-- 1 evento tipo `SHOW` publicado, com estoque de ingressos disponível
+  bastante para caber na tela sem rolagem. Data marcada para **30 dias** após a
+  execução do seed
+- 1 evento tipo `SHOW` publicado, com estoque de ingressos disponível. Data
+  marcada para **45 dias** após a execução do seed
 
 **Estado pré-existente** (permite testar cada tela isoladamente, sem
 percorrer o fluxo inteiro antes)
@@ -229,8 +231,9 @@ percorrer o fluxo inteiro antes)
 - 1 ingresso já `USED` — permite verificar o retorno "já utilizado" sem
   consumir o ingresso válido acima
 
-> Os dois eventos devem ter data futura o bastante para que o cancelamento
-> pelo cliente (janela de 24h, seção 3.8) seja testável.
+> Ambas as datas estão bem além da janela de 24h (seção 3.8), então o
+> cancelamento pelo cliente é testável nos dois eventos. Datas distintas
+> facilitam distingui-los na listagem.
 
 **Credenciais das contas semeadas**
 

@@ -28,7 +28,7 @@ export default tseslint.config(
 
   // API
   {
-    files: ['apps/api/src/**/*.ts'],
+    files: ['apps/api/src/**/*.ts', 'apps/api/prisma/**/*.ts'],
     extends: [
       js.configs.recommended,
       ...tseslint.configs.recommendedTypeChecked,
@@ -36,7 +36,11 @@ export default tseslint.config(
     languageOptions: {
       globals: globals.node,
       parserOptions: {
-        projectService: true,
+        projectService: {
+          // prisma/ sits outside tsconfig.json's rootDir (build-only
+          // concern), so it gets a synthetic default project instead.
+          allowDefaultProject: ['apps/api/prisma/*.ts'],
+        },
         tsconfigRootDir: import.meta.dirname,
       },
     },

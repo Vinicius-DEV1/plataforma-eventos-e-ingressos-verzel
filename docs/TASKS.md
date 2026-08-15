@@ -320,14 +320,14 @@ Detalhamento em docs/TASKS.md (Bloco 1).
 | 1.1 | 1.1.07 | Definir relacionamentos (FKs) entre os models | apps/api | SPEC.md §1.7 | [x] |
 | 1.1 | 1.1.08 | Rodar primeira migration (`prisma migrate dev`) | apps/api | - | [x] |
 | 1.1 | 1.1.09 | Definir convenção de datas em UTC (`TZ=UTC` no ambiente da API + util de data com as regras de prazo) | apps/api | PRD.md §3.13 | [x] |
-| 1.2 | 1.2.01 | Seed: 1 usuário organizador | apps/api/prisma | PRD.md §5 | [ ] |
-| 1.2 | 1.2.02 | Seed: 2 usuários clientes | apps/api/prisma | PRD.md §5 | [ ] |
-| 1.2 | 1.2.03 | Seed: 1 usuário portaria | apps/api/prisma | PRD.md §5 | [ ] |
-| 1.2 | 1.2.04 | Seed: 1 evento tipo CINEMA com assentos | apps/api/prisma | PRD.md §5 | [ ] |
-| 1.2 | 1.2.05 | Seed: 1 evento tipo SHOW com estoque | apps/api/prisma | PRD.md §5 | [ ] |
-| 1.2 | 1.2.06 | Seed: 1 reserva paga com ingresso `VALID` (para testar portaria e link) | apps/api/prisma | PRD.md §5 | [ ] |
-| 1.2 | 1.2.07 | Seed: 1 ingresso já `USED` (para testar retorno "já utilizado") | apps/api/prisma | PRD.md §5 | [ ] |
-| 1.2 | 1.2.08 | Testar: validar dados semeados via Prisma Studio | apps/api | - | [ ] |
+| 1.2 | 1.2.01 | Seed: 1 usuário organizador | apps/api/prisma | PRD.md §5 | [x] |
+| 1.2 | 1.2.02 | Seed: 2 usuários clientes | apps/api/prisma | PRD.md §5 | [x] |
+| 1.2 | 1.2.03 | Seed: 1 usuário portaria | apps/api/prisma | PRD.md §5 | [x] |
+| 1.2 | 1.2.04 | Seed: 1 evento tipo CINEMA com assentos | apps/api/prisma | PRD.md §5 | [x] |
+| 1.2 | 1.2.05 | Seed: 1 evento tipo SHOW com estoque | apps/api/prisma | PRD.md §5 | [x] |
+| 1.2 | 1.2.06 | Seed: 1 reserva paga com ingresso `VALID` (para testar portaria e link) | apps/api/prisma | PRD.md §5 | [x] |
+| 1.2 | 1.2.07 | Seed: 1 ingresso já `USED` (para testar retorno "já utilizado") | apps/api/prisma | PRD.md §5 | [x] |
+| 1.2 | 1.2.08 | Testar: validar dados semeados via Prisma Studio | apps/api | - | [x] |
 
 **Checkpoint de revisão:** dev roda o seed e confirma visualmente os dados
 no banco.
