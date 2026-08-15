@@ -126,19 +126,22 @@ Detalhamento em docs/TASKS.md (Bloco 0).
 ```
 
 ```
-Título: [infra] Configurar templates de Issue/PR e CI no GitHub
+Título: [infra] Configurar templates de Issue e CI no GitHub
 Labels: infra
 
 Os hooks locais dependem da máquina de quem commita. O CI é a camada que
 roda independente disso.
 
-- [ ] Criar o template de issue (.github/ISSUE_TEMPLATE/)
-- [ ] Criar o .github/PULL_REQUEST_TEMPLATE.md
-- [ ] Criar o workflow de CI rodando lint nos PRs
-- [ ] Abrir um PR de teste e confirmar que o workflow executa
+O trabalho acontece direto na main, sem branches: o gatilho do workflow é
+o push, e não a abertura de pull request, senão o CI nunca rodaria.
 
-Pronto quando: issue e PR carregam o template automaticamente e o lint
-roda no PR.
+- [ ] Criar o template de issue (.github/ISSUE_TEMPLATE/)
+- [ ] Criar o workflow de CI rodando lint em push na main e em pull
+      request
+- [ ] Fazer um push e confirmar que o workflow executa
+
+Pronto quando: abrir uma issue carrega o template automaticamente e o
+lint roda a cada push.
 
 Detalhamento em docs/TASKS.md (Bloco 0).
 ```
@@ -214,38 +217,37 @@ Detalhamento em docs/TASKS.md (Bloco 0).
 
 | Código | ID | Descrição da Tarefa Atômica | Pasta | Referência | Verificado? |
 |---|---|---|---|---|---|
-| 0.1 | 0.1.01 | Criar estrutura de pastas do monorepo (`apps/web`, `apps/api`, `docs/`) | raiz | DECISIONS.md — Estrutura de Diretórios | [~] |
-| 0.1 | 0.1.02 | Criar `.gitignore` na raiz (`node_modules`, `.env` e variantes **com exceção de `.env.example`**, `dist`, `coverage`, `.claude/settings.local.json`) — **antes** de qualquer `npm install`, para o `node_modules` nunca chegar a aparecer no versionamento | raiz | - | [~] |
-| 0.1 | 0.1.03 | Criar `package.json` na raiz com npm workspaces (`apps/*`) — base para Husky, lint-staged e Commitlint, que vivem na raiz junto ao `.git` | raiz | DECISIONS.md — Organização do repositório | [~] |
-| 0.1 | 0.1.04 | Criar `.nvmrc` e campo `engines` fixando a versão do Node (reprodutibilidade do ambiente) | raiz | - | [~] |
-| 0.1 | 0.1.05 | Criar `.env.example` em `apps/api` (DATABASE_URL, JWT_SECRET, ASAAS_API_KEY, TMDB_API_KEY, TICKETMASTER_API_KEY) | apps/api | - | [~] |
-| 0.1 | 0.1.06 | Criar `.env.example` em `apps/web` (VITE_API_URL) | apps/web | - | [~] |
-| 0.2 | 0.2.01 | Inicializar `apps/api` (`package.json` + Express) | apps/api | DECISIONS.md — Back-end | [~] |
-| 0.2 | 0.2.02 | Configurar TypeScript em `apps/api` (`tsconfig.json`, `tsx` para dev, script de build via `tsc`, `@types/*`) | apps/api | DECISIONS.md — Linguagem | [~] |
-| 0.2 | 0.2.03 | Carregamento de variáveis de ambiente via `--env-file-if-exists` nativo do Node (sem `dotenv`), nos scripts `dev` e `start` | apps/api | DECISIONS.md — Variáveis de ambiente | [~] |
-| 0.2 | 0.2.04 | Criar estrutura de pastas (`routes/`, `controllers/`, `services/`, `middlewares/`, `config/`) | apps/api | - | [~] |
+| 0.1 | 0.1.01 | Criar estrutura de pastas do monorepo (`apps/web`, `apps/api`, `docs/`) | raiz | DECISIONS.md — Estrutura de Diretórios | [x] |
+| 0.1 | 0.1.02 | Criar `.gitignore` na raiz (`node_modules`, `.env` e variantes **com exceção de `.env.example`**, `dist`, `coverage`, `.claude/settings.local.json`) — **antes** de qualquer `npm install`, para o `node_modules` nunca chegar a aparecer no versionamento | raiz | - | [x] |
+| 0.1 | 0.1.03 | Criar `package.json` na raiz com npm workspaces (`apps/*`) — base para Husky, lint-staged e Commitlint, que vivem na raiz junto ao `.git` | raiz | DECISIONS.md — Organização do repositório | [x] |
+| 0.1 | 0.1.04 | Criar `.nvmrc` e campo `engines` fixando a versão do Node (reprodutibilidade do ambiente) | raiz | - | [x] |
+| 0.1 | 0.1.05 | Criar `.env.example` em `apps/api` (DATABASE_URL, JWT_SECRET, ASAAS_API_KEY, TMDB_API_KEY, TICKETMASTER_API_KEY) | apps/api | - | [x] |
+| 0.1 | 0.1.06 | Criar `.env.example` em `apps/web` (VITE_API_URL) | apps/web | - | [x] |
+| 0.2 | 0.2.01 | Inicializar `apps/api` (`package.json` + Express) | apps/api | DECISIONS.md — Back-end | [x] |
+| 0.2 | 0.2.02 | Configurar TypeScript em `apps/api` (`tsconfig.json`, `tsx` para dev, script de build via `tsc`, `@types/*`) | apps/api | DECISIONS.md — Linguagem | [x] |
+| 0.2 | 0.2.03 | Carregamento de variáveis de ambiente via `--env-file-if-exists` nativo do Node (sem `dotenv`), nos scripts `dev` e `start` | apps/api | DECISIONS.md — Variáveis de ambiente | [x] |
+| 0.2 | 0.2.04 | Criar estrutura de pastas (`routes/`, `controllers/`, `services/`, `middlewares/`, `config/`) | apps/api | - | [x] |
 | 0.2 | 0.2.05 | Criar rota `GET /health` | apps/api | - | [ ] |
 | 0.2 | 0.2.06 | Inicializar Prisma (`prisma init`) | apps/api | DECISIONS.md — ORM | [ ] |
-| 0.3 | 0.3.01 | Inicializar `apps/web` com Vite + React + TypeScript (template `react-ts`) | apps/web | DECISIONS.md — Front-end, Linguagem | [~] |
-| 0.3 | 0.3.02 | Instalar e configurar Tailwind CSS | apps/web | DECISIONS.md — Estilização | [~] |
-| 0.3 | 0.3.03 | Instalar shadcn/ui + inicializar tema base customizado (paleta, tipografia) | apps/web | DECISIONS.md — Estilização | [~] |
+| 0.3 | 0.3.01 | Inicializar `apps/web` com Vite + React + TypeScript (template `react-ts`) | apps/web | DECISIONS.md — Front-end, Linguagem | [x] |
+| 0.3 | 0.3.02 | Instalar e configurar Tailwind CSS | apps/web | DECISIONS.md — Estilização | [x] |
+| 0.3 | 0.3.03 | Instalar shadcn/ui + inicializar tema base customizado (paleta, tipografia) | apps/web | DECISIONS.md — Estilização | [x] |
 | 0.4 | 0.4.01 | Criar `Dockerfile` da API (build `tsc` → `dist/`, execução do output compilado) | apps/api | DECISIONS.md — Linguagem, Containerização | [ ] |
 | 0.4 | 0.4.02 | Criar `.dockerignore` (`node_modules`, `.env`, `dist`) — evita inflar o contexto de build e vazar segredo para dentro da imagem | apps/api | - | [ ] |
 | 0.4 | 0.4.03 | Criar `docker-compose.yml` (serviços `api` + `postgres`) | raiz | DECISIONS.md — Containerização | [ ] |
 | 0.4 | 0.4.04 | Testar: `docker-compose up` compila o TypeScript e sobe API + banco sem erro | raiz | - | [ ] |
 | 0.4 | 0.4.05 | Testar: `GET /health` responde 200 com banco conectado | raiz | - | [ ] |
-| 0.5 | 0.5.01 | Criar `.editorconfig` na raiz | raiz | - | [~] |
-| 0.5 | 0.5.02 | Instalar e configurar ESLint + `typescript-eslint` (`apps/api` e `apps/web`) | raiz | DECISIONS.md — Qualidade de código | [~] |
-| 0.5 | 0.5.03 | Instalar e configurar Prettier | raiz | - | [~] |
-| 0.5 | 0.5.04 | Instalar Husky e configurar hooks (`pre-commit`, `commit-msg`) | raiz | - | [~] |
-| 0.5 | 0.5.05 | Instalar lint-staged (roda ESLint + Prettier nos arquivos staged) | raiz | - | [~] |
-| 0.5 | 0.5.06 | Instalar Commitlint + `@commitlint/config-conventional` | raiz | - | [~] |
-| 0.5 | 0.5.07 | Testar: commit com mensagem fora do padrão Conventional Commits deve ser rejeitado | raiz | - | [ ] |
-| 0.5 | 0.5.08 | Testar: commit com código mal formatado/lint quebrado deve ser bloqueado | raiz | - | [ ] |
-| 0.6 | 0.6.01 | Criar `.github/ISSUE_TEMPLATE/` (template de issue padronizado) | raiz | - | [ ] |
-| 0.6 | 0.6.02 | Criar `.github/PULL_REQUEST_TEMPLATE.md` | raiz | - | [ ] |
-| 0.6 | 0.6.03 | Criar workflow `.github/workflows/ci.yml` rodando lint em cada PR | raiz | - | [ ] |
-| 0.6 | 0.6.04 | Testar: abrir um PR de teste e confirmar que o CI executa o lint | raiz | - | [ ] |
+| 0.5 | 0.5.01 | Criar `.editorconfig` na raiz | raiz | - | [x] |
+| 0.5 | 0.5.02 | Instalar e configurar ESLint + `typescript-eslint` (`apps/api` e `apps/web`) | raiz | DECISIONS.md — Qualidade de código | [x] |
+| 0.5 | 0.5.03 | Instalar e configurar Prettier | raiz | - | [x] |
+| 0.5 | 0.5.04 | Instalar Husky e configurar hooks (`pre-commit`, `commit-msg`) | raiz | - | [x] |
+| 0.5 | 0.5.05 | Instalar lint-staged (roda ESLint + Prettier nos arquivos staged) | raiz | - | [x] |
+| 0.5 | 0.5.06 | Instalar Commitlint + `@commitlint/config-conventional` | raiz | - | [x] |
+| 0.5 | 0.5.07 | Testar: commit com mensagem fora do padrão Conventional Commits deve ser rejeitado | raiz | - | [x] |
+| 0.5 | 0.5.08 | Testar: commit com código mal formatado/lint quebrado deve ser bloqueado | raiz | - | [x] |
+| 0.6 | 0.6.01 | Criar `.github/ISSUE_TEMPLATE/` (template de issue padronizado) | raiz | - | [~] |
+| 0.6 | 0.6.02 | Criar workflow `.github/workflows/ci.yml` rodando lint em `push` na `main` e em `pull_request` | raiz | - | [~] |
+| 0.6 | 0.6.03 | Testar: fazer um push e confirmar que o CI executa o lint | raiz | - | [ ] |
 | 0.7 | 0.7.01 | Instalar e configurar `swagger-ui-express` em `apps/api` | apps/api | DECISIONS.md — Documentação de API | [ ] |
 | 0.7 | 0.7.02 | Expor documentação interativa em `GET /api-docs` | apps/api | DECISIONS.md — Documentação de API | [ ] |
 | 0.7 | 0.7.03 | Configurar esquema de segurança Bearer JWT no Swagger | apps/api | DECISIONS.md — Documentação de API | [ ] |

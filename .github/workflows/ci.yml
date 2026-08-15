@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Um push logo após o outro cancela a execução anterior, que já está obsoleta.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qualidade:
+    name: Lint, formatação e build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      # `npm ci` instala exatamente o que está no lockfile. O HUSKY=0 desliga
+      # a instalação dos hooks pelo script `prepare`: no runner não existe
+      # commit a validar, e sem isso o passo falharia.
+      - name: Instalar dependências
+        run: npm ci
+        env:
+          HUSKY: 0
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Formatação
+        run: npm run format:check
+
+      - name: Build
+        run: npm run build
