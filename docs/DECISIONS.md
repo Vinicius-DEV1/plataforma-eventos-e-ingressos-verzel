@@ -10,15 +10,15 @@
 > documentação oficial — mas a escolha final em cada linha foi minha, e em
 > parte dos casos contrariou a recomendação inicial da ferramenta. O runner de
 > testes é um exemplo: a sugestão era Vitest, optei por Jest pela maturidade em
-> testes de integração contra banco real. O registro detalhado de onde a IA foi
-> usada está em `docs/AI_USAGE.md`.
+> testes de integração contra banco real. O registro de onde a IA foi
+> usada será registrado à parte.
 
 ## Stack Principal
 
 | Camada | Escolha | Motivo |
 |---|---|---|
 | Organização do repositório | Monorepo (`apps/web`, `apps/api`) | Um único clone para o avaliador rodar tudo; Docker Compose orquestra front + back + banco juntos; commits de ambos os lados ficam no mesmo histórico, mostrando o processo de forma unificada |
-| Linguagem (front e back) | TypeScript | O domínio é denso em enums e transições de status (`Reserva`, `Ingresso`, `Assento`, `Pagamento`, `Evento` — ver `SPEC.md` §4.2): tipar essas transições transforma em erro de compilação o que em JavaScript seria bug silencioso descoberto só em runtime. Também é o que torna real a type-safety do Prisma citada abaixo — em JS puro os tipos gerados pelo client existem, mas nada impede passar um campo ou enum errado. Aplicado nos dois apps para manter uma linguagem só no monorepo |
+| Linguagem (front e back) | TypeScript | O domínio é denso em enums e transições de status (`Reservation`, `Ticket`, `Seat`, `Payment`, `Event` — ver `SPEC.md` §4.2): tipar essas transições transforma em erro de compilação o que em JavaScript seria bug silencioso descoberto só em runtime. Também é o que torna real a type-safety do Prisma citada abaixo — em JS puro os tipos gerados pelo client existem, mas nada impede passar um campo ou enum errado. Aplicado nos dois apps para manter uma linguagem só no monorepo |
 | Variáveis de ambiente | `--env-file-if-exists` nativo do Node, sem `dotenv` | O Node 24 carrega arquivos `.env` por conta própria, o que elimina uma dependência. A variante `if-exists` foi escolhida em vez de `--env-file` porque em produção não existe arquivo `.env` — Render e Docker injetam as variáveis pelo próprio ambiente — e a versão estrita abortaria o processo na ausência do arquivo. Cada app tem um `.env.example` versionado como modelo; o `.env` real nunca vai para o repositório |
 | Formato de módulo (API) | CommonJS | Decisão tomada em função do Jest: rodar a suíte sobre ESM exige a flag `--experimental-vm-modules` no Node e configuração adicional no `ts-jest`, que é justamente a fricção apontada como ponto fraco do Jest quando ele foi escolhido no lugar do Vitest. Com CommonJS, o Jest roda sem nenhum desses ajustes. Na prática o `tsconfig.json` usa `module: nodenext`, que emite CommonJS porque o `package.json` da API não declara `"type": "module"` |
 | Front-end | Vite + React (sem framework tipo Next.js) | O back-end já é servido separadamente por Express — um framework full-stack como Next.js adicionaria complexidade (SSR, rotas de API, Server Components) sem nenhum benefício real, já que a aplicação é 100% logada e não depende de SEO |
@@ -35,7 +35,7 @@
 | Deploy — Back + Banco | Render | Web Service + PostgreSQL gerenciado na mesma plataforma, reduzindo pontos de configuração externa |
 | Testes | Jest | Os testes mais críticos aqui (concorrência de reserva, transações) precisam rodar contra um Postgres real, não mocks — e Jest tem mais estrada rodada em testes de integração com banco em Node (setup/teardown global, controle de paralelismo entre workers para evitar conflito de dados). Ferramenta completa (runner + mocking + coverage) sem depender de outra peça do stack, e sem criar acoplamento com o Vite do `apps/web`, que não compartilha config de teste com a API. Roda sobre TypeScript via `ts-jest` — a configuração extra é o custo aceito em troca da maturidade acima. Cobertura focada na lógica crítica de negócio (concorrência de reserva, validação de QR), não no projeto inteiro |
 | QR Code (geração) | Lib `qrcode` | Gera a imagem a partir do payload assinado |
-| QR Code (anti-forjamento) | JWT assinado no payload | Reaproveita a mesma abordagem já usada na autenticação — o conteúdo do QR (ex: `ingressoId`, `eventoId`) é assinado com a chave secreta do servidor; sem essa chave, não é possível forjar um QR que passe na validação |
+| QR Code (anti-forjamento) | JWT assinado no payload | Reaproveita a mesma abordagem já usada na autenticação — o conteúdo do QR (ex: `ticketId`, `eventId`) é assinado com a chave secreta do servidor; sem essa chave, não é possível forjar um QR que passe na validação |
 | Leitura de QR (portaria) | `html5-qrcode` (client-side, via `getUserMedia`) | Permite leitura por câmera direto no navegador, sem necessidade de app nativo; complementado por digitação manual como alternativa |
 | API externa — Cinema | TMDb | Catálogo de filmes (nome, sinopse, poster) — sessões, sala e preço são definidos pela própria plataforma |
 | API externa — Show | Ticketmaster Discovery | Catálogo de eventos ao vivo reais (nome, data, local) — mapa de assentos, quando aplicável, ainda é definido pela própria plataforma, já que a API não expõe isso |
@@ -45,6 +45,25 @@
 | CI | GitHub Actions | Segunda camada de verificação: roda lint (e, a partir do Bloco 10, os testes) a cada `push`, independente da configuração local do desenvolvedor |
 | Fluxo de branches | Trabalho direto na `main`, sem branches nem pull requests | O projeto tem um único autor. Pull request existe para revisão por outra pessoa; abrir e aprovar o próprio PR seria cerimônia sem função, e um `PULL_REQUEST_TEMPLATE.md` que nunca fosse usado descreveria um processo inexistente. Por isso o CI é disparado por `push` e não por `pull_request` — do contrário nunca rodaria. A proteção contra código quebrado fica com os hooks locais (que bloqueiam antes do commit) e com o CI (que verifica depois do push) |
 
+## Convenções de Código
+
+**Idioma.** Todo o código é escrito em inglês: models, campos, enums, tipos,
+variáveis, funções, nomes de arquivo e pasta, e comentários. Fica em português
+tudo aquilo que é conteúdo do produto e não estrutura — as rotas da API, o
+texto da interface, as descrições dos endpoints no Swagger e a prosa destes
+documentos.
+
+A fronteira é essa: quem escreve o sistema lê inglês, porque é a língua das
+bibliotecas e das ferramentas com que o código convive (`prisma.event
+.findMany()` não deveria misturar dois idiomas na mesma linha). Quem usa o
+sistema lê português, porque o produto é brasileiro.
+
+**Comentários.** Só onde há algo que o código não diz sozinho: uma decisão
+não-óbvia, uma armadilha conhecida, o motivo de uma abordagem ter sido
+escolhida em vez da mais direta. Comentário que reafirma o que a linha ao lado
+já expressa é ruído, e envelhece mal — o código muda, o comentário fica.
+Nomear bem é preferível a explicar depois.
+
 ## Decisões de Produto (fluxos)
 
 | Decisão | Escolha | Motivo |
@@ -53,12 +72,12 @@
 | Busca e filtro de eventos | Implementado (opcional) | Data, categoria, local e faixa de preço — considerado essencial para a experiência de navegação, mesmo sendo opcional no desafio |
 | Cancelamento com devolução ao estoque | Implementado (opcional) | Ver regra completa em `docs/PRD.md`, seção 3.8 |
 | Expiração de reserva não paga | 15 minutos, verificação *lazy* | Sem expiração, uma reserva nunca paga travaria o lugar indefinidamente. A verificação preguiçosa (no momento da consulta/disputa) evita a necessidade de cron job ou worker — infraestrutura adicional que não se justifica para um comportamento que só precisa estar correto na leitura. Ver `PRD.md` §3.10 |
-| Ingressos por reserva | 1 ingresso por entrada (1:N) | Uma reserva de N ingressos gera N ingressos independentes. Com um único ingresso compartilhado, a validação do primeiro portador marcaria o registro como `UTILIZADO` e barraria os demais. Ver `PRD.md` §3.7 |
-| Papéis no cadastro público | Apenas `CLIENTE` | Permitir auto-cadastro como `ORGANIZADOR` ou `PORTARIA` seria uma falha de controle de acesso: qualquer visitante poderia publicar eventos ou validar ingressos. Esses papéis vêm exclusivamente do seed. Ver `PRD.md` §3.12 |
+| Ingressos por reserva | 1 ingresso por entrada (1:N) | Uma reserva de N ingressos gera N ingressos independentes. Com um único ingresso compartilhado, a validação do primeiro portador marcaria o registro como `USED` e barraria os demais. Ver `PRD.md` §3.7 |
+| Papéis no cadastro público | Apenas `CUSTOMER` | Permitir auto-cadastro como `ORGANIZER` ou `GATEKEEPER` seria uma falha de controle de acesso: qualquer visitante poderia publicar eventos ou validar ingressos. Esses papéis vêm exclusivamente do seed. Ver `PRD.md` §3.12 |
 | Compartilhamento de ingresso | Link exibe o ingresso completo, sem transferir titularidade | Atende ao requisito de compartilhamento sem entrar em revenda/transferência entre contas, explicitamente fora do escopo do desafio. Ver `PRD.md` §3.7 |
 | Pagamento recusado | Encerra a reserva, sem retentativa | Manter a reserva viva após uma recusa exigiria bloquear o lugar por tempo indeterminado, conflitando com a devolução imediata do estoque. Preferimos devolver o lugar ao mercado e deixar o cliente reservar novamente. Ver `SPEC.md` §4.3 |
 | Cancelamento de evento | Cascata com reembolso automático | Padrão de mercado: quando a falha é do organizador, o cliente não deve precisar agir nem ficar sujeito à janela de 24h. Ver `PRD.md` §3.11 |
-| Contexto da portaria | Evento selecionado no início da sessão | O retorno "evento errado" só é possível se a validação ocorrer no contexto de um evento conhecido; o `eventoId` acompanha cada requisição de validação. Ver `PRD.md` §3.9 |
+| Contexto da portaria | Evento selecionado no início da sessão | O retorno "evento errado" só é possível se a validação ocorrer no contexto de um evento conhecido; o `eventId` acompanha cada requisição de validação. Ver `PRD.md` §3.9 |
 | Confirmação de pagamento | Polling como caminho principal | O webhook do Asaas não alcança `localhost`. Polling em `GET /pagamentos/:id` funciona em qualquer ambiente; o webhook fica ativo apenas em produção, e um endpoint de simulação cobre desenvolvimento e testes. Ver `SPEC.md` §5.5 |
 | Fuso horário | UTC no armazenamento e transporte | Regras sensíveis a tempo (janela de 24h, expiração de 15 min) precisam de referência única para não divergir conforme o fuso do cliente ou do servidor. Conversão apenas na apresentação. Ver `PRD.md` §3.13 |
 | Rate limit de APIs externas | Debounce no front + cache curto no back | TMDb e Ticketmaster impõem limites diários; buscar a cada tecla digitada esgotaria a cota rapidamente. Ver `SPEC.md` §5.8 |
@@ -78,7 +97,7 @@
 - **JavaScript puro** — descartado apesar de dispensar setup de build e
   tipagem. Seria mais rápido de iniciar, mas deixaria a type-safety do Prisma
   como benefício apenas nominal e transformaria cada engano de enum de status
-  (`PAGA` vs. `PAGO`) em bug de runtime, num domínio que tem cinco conjuntos
+  (`PAID` vs. `PAGO`) em bug de runtime, num domínio que tem cinco conjuntos
   de status distintos. O custo de TypeScript é concentrado no setup inicial; o
   benefício se acumula ao longo de todos os blocos seguintes.
 - **Vitest** — descartado em favor do Jest. Seria menos configuração (ESM e

@@ -1,17 +1,17 @@
-# Dependências
+# Dependencies
 node_modules/
 
 # Build
 dist/
 build/
 
-# Client do Prisma — gerado a partir do schema, recriado no npm install
+# Prisma client: generated from the schema by the build step
 apps/api/src/generated/
 
-# Testes
+# Tests
 coverage/
 
-# Variáveis de ambiente
+# Environment
 .env
 .env.*
 !.env.example
@@ -20,15 +20,15 @@ coverage/
 *.log
 npm-debug.log*
 
-# Sistema operacional e editores
+# OS and editors
 .DS_Store
 .vscode/
 .idea/
 
-# Ferramentas locais
+# Local tooling
 .claude/settings.local.json
 
-# Documentação para assistentes de IA, despejada pelo `prisma init`
+# AI assistant docs dumped by `prisma init`
 .agents/
 .windsurf/
 skills-lock.json

@@ -1,18 +1,12 @@
 import { defineConfig } from 'prisma/config';
 
-/*
- * O arquivo gerado pelo `prisma init` carrega as variáveis com `dotenv`. Aqui
- * usamos `process.loadEnvFile`, a API nativa equivalente (Node 20.12+), para
- * não introduzir uma dependência que a aplicação decidiu não ter — ver
- * docs/DECISIONS.md, "Variáveis de ambiente".
- *
- * O try/catch cobre o ambiente de produção, onde não existe arquivo .env e as
- * variáveis chegam pelo próprio ambiente.
- */
+// `prisma init` generates this file using dotenv; replaced by the native
+// loader to avoid the dependency. The catch covers production, where the
+// variables come from the environment and no .env file exists.
 try {
   process.loadEnvFile('.env');
 } catch {
-  // Sem arquivo .env: as variáveis vêm do ambiente.
+  // No .env file: variables come from the environment.
 }
 
 export default defineConfig({

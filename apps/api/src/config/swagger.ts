@@ -1,13 +1,6 @@
 import path from 'node:path';
 import swaggerJsdoc from 'swagger-jsdoc';
 
-/*
- * A definição OpenAPI é montada a partir de anotações JSDoc nos próprios
- * arquivos de rota. A alternativa seria um objeto único com todos os
- * endpoints, mas com cerca de vinte rotas previstas ele viraria um arquivo
- * longo e desconectado do código que descreve — e documentação distante do
- * código é documentação que dessincroniza.
- */
 export const swaggerSpec = swaggerJsdoc({
   definition: {
     openapi: '3.1.0',
@@ -34,12 +27,8 @@ export const swaggerSpec = swaggerJsdoc({
     },
   },
 
-  /*
-   * Os dois padrões cobrem os dois modos de execução: `.ts` quando roda via
-   * tsx em desenvolvimento, `.js` quando roda o compilado em dist/. O
-   * tsconfig não usa `removeComments`, então as anotações sobrevivem à
-   * compilação.
-   */
+  // Both extensions: `.ts` when running from source via tsx, `.js` when
+  // running the compiled output.
   apis: [
     path.join(__dirname, '..', 'routes', '*.ts'),
     path.join(__dirname, '..', 'routes', '*.js'),

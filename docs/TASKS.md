@@ -274,7 +274,7 @@ Labels: back-end
 As seis entidades do domínio, conforme docs/SPEC.md §1. Só a estrutura —
 nenhuma regra de negócio ainda.
 
-- [ ] Modelar User, Evento, Assento, Reserva, Ingresso e Pagamento
+- [ ] Modelar User, Event, Seat, Reservation, Ticket e Payment
 - [ ] Declarar os relacionamentos entre eles
 - [ ] Adicionar a constraint de unicidade de assento por evento
 - [ ] Definir a convenção de datas em UTC
@@ -312,11 +312,11 @@ Detalhamento em docs/TASKS.md (Bloco 1).
 | Código | ID | Descrição da Tarefa Atômica | Pasta | Referência | Verificado? |
 |---|---|---|---|---|---|
 | 1.1 | 1.1.01 | Definir model `User` no `schema.prisma` | apps/api | SPEC.md §1.1 | [ ] |
-| 1.1 | 1.1.02 | Definir model `Evento` no `schema.prisma` | apps/api | SPEC.md §1.2 | [ ] |
-| 1.1 | 1.1.03 | Definir model `Assento` + constraint `@@unique([eventoId, fileira, numero])` | apps/api | SPEC.md §1.3 | [ ] |
-| 1.1 | 1.1.04 | Definir model `Reserva` (incl. `expiraEm` e status `EXPIRADA`) | apps/api | SPEC.md §1.4 | [ ] |
-| 1.1 | 1.1.05 | Definir model `Ingresso` (relação 1:N com `Reserva`) | apps/api | SPEC.md §1.5 | [ ] |
-| 1.1 | 1.1.06 | Definir model `Pagamento` | apps/api | SPEC.md §1.6 | [ ] |
+| 1.1 | 1.1.02 | Definir model `Event` no `schema.prisma` | apps/api | SPEC.md §1.2 | [ ] |
+| 1.1 | 1.1.03 | Definir model `Seat` + constraint `@@unique([eventId, row, number])` | apps/api | SPEC.md §1.3 | [ ] |
+| 1.1 | 1.1.04 | Definir model `Reservation` (incl. `expiresAt` e status `EXPIRED`) | apps/api | SPEC.md §1.4 | [ ] |
+| 1.1 | 1.1.05 | Definir model `Ticket` (relação 1:N com `Reservation`) | apps/api | SPEC.md §1.5 | [ ] |
+| 1.1 | 1.1.06 | Definir model `Payment` | apps/api | SPEC.md §1.6 | [ ] |
 | 1.1 | 1.1.07 | Definir relacionamentos (FKs) entre os models | apps/api | SPEC.md §1.7 | [ ] |
 | 1.1 | 1.1.08 | Rodar primeira migration (`prisma migrate dev`) | apps/api | - | [ ] |
 | 1.2 | 1.2.01 | Seed: 1 usuário organizador | apps/api/prisma | PRD.md §5 | [ ] |
@@ -324,8 +324,8 @@ Detalhamento em docs/TASKS.md (Bloco 1).
 | 1.2 | 1.2.03 | Seed: 1 usuário portaria | apps/api/prisma | PRD.md §5 | [ ] |
 | 1.2 | 1.2.04 | Seed: 1 evento tipo CINEMA com assentos | apps/api/prisma | PRD.md §5 | [ ] |
 | 1.2 | 1.2.05 | Seed: 1 evento tipo SHOW com estoque | apps/api/prisma | PRD.md §5 | [ ] |
-| 1.2 | 1.2.06 | Seed: 1 reserva paga com ingresso `VALIDO` (para testar portaria e link) | apps/api/prisma | PRD.md §5 | [ ] |
-| 1.2 | 1.2.07 | Seed: 1 ingresso já `UTILIZADO` (para testar retorno "já utilizado") | apps/api/prisma | PRD.md §5 | [ ] |
+| 1.2 | 1.2.06 | Seed: 1 reserva paga com ingresso `VALID` (para testar portaria e link) | apps/api/prisma | PRD.md §5 | [ ] |
+| 1.2 | 1.2.07 | Seed: 1 ingresso já `USED` (para testar retorno "já utilizado") | apps/api/prisma | PRD.md §5 | [ ] |
 | 1.2 | 1.2.08 | Definir convenção de datas em UTC (util de data + config do Prisma) | apps/api | PRD.md §3.13 | [ ] |
 | 1.2 | 1.2.09 | Testar: validar dados semeados via Prisma Studio | apps/api | - | [ ] |
 
@@ -499,35 +499,55 @@ tratada.
 ```
 Título: [back-end] Reserva de assento (CINEMA) com controle de concorrência
 Labels: back-end
-Descrição: Implementar GET /eventos/:id/assentos e POST
-/reservas/assento, com prisma.$transaction garantindo que um assento
-não seja reservado por dois clientes simultaneamente (docs/SPEC.md
-§2.1), e o service de expiração lazy de reservas vencidas (§2.3), com
-janela de 15 minutos para pagamento.
-Pronto quando: duas tentativas simultâneas de reservar o mesmo assento
-resultam em apenas uma reserva bem-sucedida, e uma reserva não paga
-libera o assento após 15 minutos.
+
+Reserva de lugar marcado. A exclusividade vem de um update condicional
+dentro de transação, não de constraint — a estratégia está detalhada em
+docs/SPEC.md §2.1, e a expiração de reservas vencidas em §2.3.
+
+- [ ] GET /eventos/:id/assentos, com o status de cada lugar
+- [ ] Service de expiração das reservas vencidas, executado antes de
+      consultar disponibilidade ou criar reserva
+- [ ] Lógica de reserva em transação, com prazo de 15 minutos para pagar
+- [ ] POST /reservas/assento
+- [ ] Documentar os endpoints no Swagger
+
+Pronto quando: duas tentativas simultâneas no mesmo assento resultam em
+uma única reserva, e um assento reservado e não pago volta a ficar
+disponível depois de 15 minutos.
 ```
 
 ```
 Título: [back-end] Reserva por quantidade (SHOW) com controle de concorrência
 Labels: back-end
-Descrição: Implementar POST /reservas/quantidade e GET
-/reservas/minhas, com prisma.$transaction garantindo que a soma de
-ingressos reservados nunca ultrapasse a capacidade do evento, conforme
-docs/SPEC.md §2.2.
+
+Reserva de pista, sem lugar marcado. A verificação de estoque e o
+decremento precisam ser atômicos, ou o evento vende mais do que cabe —
+ver docs/SPEC.md §2.2.
+
+- [ ] Lógica de reserva por quantidade em transação, com prazo de 15
+      minutos para pagar
+- [ ] POST /reservas/quantidade
+- [ ] GET /reservas/minhas
+- [ ] Documentar os endpoints no Swagger
+
 Pronto quando: uma tentativa de reservar mais ingressos do que o
-disponível é rejeitada.
+disponível é rejeitada, inclusive sob requisições simultâneas.
 ```
 
 ```
 Título: [front-end] Telas de reserva (mapa de assentos + seletor de quantidade)
 Labels: front-end
-Descrição: Criar listagem de eventos, tela de mapa de assentos
-(CINEMA), tela de seleção de quantidade (SHOW) e tela de confirmação de
-reserva.
-Pronto quando: cliente consegue reservar em ambos os fluxos pela
-interface.
+
+Os dois fluxos de reserva na interface, escolhidos conforme o tipo do
+evento.
+
+- [ ] Listagem de eventos em cards
+- [ ] Mapa de assentos, com estado visual por lugar
+- [ ] Seletor de quantidade para eventos de pista
+- [ ] Tela de confirmação, com o contador do tempo restante da reserva
+
+Pronto quando: o cliente reserva pelos dois fluxos na interface, e
+tentar um assento já ocupado mostra erro em vez de falhar em silêncio.
 ```
 
 **Tabela de Controle de Tarefas Atômicas**
@@ -536,9 +556,9 @@ interface.
 |---|---|---|---|---|---|
 | 4.1 | 4.1.01 | Rota `GET /eventos/:id/assentos` | apps/api | SPEC.md §5.3 | [ ] |
 | 4.1 | 4.1.02 | Service de expiração *lazy* de reservas vencidas (usado antes de consultas/reservas) | apps/api | SPEC.md §2.3, PRD.md §3.10 | [ ] |
-| 4.1 | 4.1.03 | Lógica de reserva de assento: `updateMany` condicional (`status = DISPONIVEL`) + checagem de `count`, dentro de transação; define `expiraEm` = +15 min | apps/api | SPEC.md §2.1, §2.3 | [ ] |
+| 4.1 | 4.1.03 | Lógica de reserva de assento: `updateMany` condicional (`status = DISPONIVEL`) + checagem de `count`, dentro de transação; define `expiresAt` = +15 min | apps/api | SPEC.md §2.1, §2.3 | [ ] |
 | 4.1 | 4.1.04 | Rota `POST /reservas/assento` | apps/api | SPEC.md §5.4 | [ ] |
-| 4.1 | 4.1.05 | Lógica de reserva por quantidade com `prisma.$transaction` (define `expiraEm` = +15 min) | apps/api | SPEC.md §2.2, §2.3 | [ ] |
+| 4.1 | 4.1.05 | Lógica de reserva por quantidade com `prisma.$transaction` (define `expiresAt` = +15 min) | apps/api | SPEC.md §2.2, §2.3 | [ ] |
 | 4.1 | 4.1.06 | Rota `POST /reservas/quantidade` | apps/api | SPEC.md §5.4 | [ ] |
 | 4.1 | 4.1.07 | Rota `GET /reservas/minhas` | apps/api | SPEC.md §5.4 | [ ] |
 | 4.1 | 4.1.08 | Documentar endpoints de reserva no Swagger | apps/api | SPEC.md §5.3, §5.4 | [ ] |
@@ -565,22 +585,36 @@ sandbox.
 ```
 Título: [back-end] Integração com Asaas sandbox e endpoints de pagamento
 Labels: back-end
-Descrição: Integrar com o ambiente sandbox do Asaas, implementar POST
-/pagamentos/:reservaId/processar, GET /pagamentos/:id (polling), POST
-/webhooks/asaas (produção) e POST /pagamentos/:id/simular-callback
-(dev/testes), conforme docs/SPEC.md §5.5, com lógica de confirmação
-(reserva → PAGA) e recusa (reserva → RECUSADA + libera assento/estoque).
-Pronto quando: os dois desfechos (confirmação e recusa) funcionam
-corretamente, incluindo a liberação do estoque na recusa.
+
+Cobrança simulada no ambiente de testes do Asaas. A confirmação chega
+por três caminhos — polling, webhook e um endpoint de simulação —
+porque o webhook não alcança um servidor local; ver docs/SPEC.md §5.5.
+
+- [ ] Client de integração com o Asaas sandbox
+- [ ] POST /pagamentos/:reservaId/processar
+- [ ] GET /pagamentos/:id, consumido por polling
+- [ ] POST /webhooks/asaas
+- [ ] POST /pagamentos/:id/simular-callback, para desenvolvimento e testes
+- [ ] Pagamento confirmado: reserva vira PAID e o assento vira SOLD
+- [ ] Pagamento recusado: reserva vira DECLINED e o estoque volta
+- [ ] Documentar os endpoints no Swagger
+
+Pronto quando: os dois desfechos funcionam, e a recusa devolve o
+assento ou a quantidade ao estoque.
 ```
 
 ```
 Título: [front-end] Tela de checkout
 Labels: front-end
-Descrição: Criar tela de checkout/pagamento simulado com feedback
-visual de confirmação e recusa.
-Pronto quando: cliente consegue concluir o pagamento simulado pela
-interface e visualizar o resultado.
+
+Pagamento simulado na interface, com o resultado visível para o cliente.
+
+- [ ] Tela de checkout
+- [ ] Polling do status do pagamento enquanto ele estiver pendente
+- [ ] Retorno visual distinto para confirmação e para recusa
+
+Pronto quando: o cliente conclui o pagamento pela interface e vê o
+desfecho, sem precisar recarregar a página.
 ```
 
 **Tabela de Controle de Tarefas Atômicas**
@@ -614,32 +648,48 @@ recusa) e confirma que a recusa libera o assento/estoque corretamente.
 ```
 Título: [back-end] Geração de ingresso com QR assinado (JWT)
 Labels: back-end
-Descrição: Ao confirmar pagamento, gerar N ingressos (um por entrada,
-conforme docs/PRD.md §3.7), cada um com QR próprio (JWT assinado
-contendo ingressoId e eventoId, renderizado via lib qrcode) e link
-compartilhável. Implementar GET /ingressos/meus, GET /ingressos/:id e
-GET /ingressos/compartilhar/:linkToken.
-Pronto quando: uma reserva de N ingressos gera N QRs distintos, todos
-visíveis e compartilháveis.
+
+Emissão dos ingressos na confirmação do pagamento: um por entrada, cada
+um com QR e ciclo de validação próprios (docs/PRD.md §3.7). O QR carrega
+um JWT assinado, o que impede forjar um ingresso sem a chave do
+servidor.
+
+- [ ] Service que assina o JWT do ingresso
+- [ ] Gerar N ingressos ao confirmar o pagamento, um por entrada
+- [ ] Service que renderiza o QR a partir do JWT
+- [ ] Gerar o token do link compartilhável
+- [ ] GET /ingressos/meus
+- [ ] GET /ingressos/:id
+- [ ] GET /ingressos/compartilhar/:linkToken, público
+- [ ] Documentar os endpoints no Swagger
+
+Pronto quando: uma reserva de N ingressos gera N QRs distintos, e o link
+de compartilhamento exibe o ingresso completo para quem o abre.
 ```
 
 ```
 Título: [front-end] Tela Meus Ingressos e compartilhamento via link
 Labels: front-end
-Descrição: Criar tela "Meus Ingressos", tela de detalhe do ingresso com
-QR renderizado, e botão de compartilhamento via link.
-Pronto quando: cliente completa o fluxo ponta a ponta (login → reservar
-→ pagar → ver QR) pela interface.
+
+Onde o cliente encontra o que comprou. Fecha o primeiro fluxo completo:
+entrar, reservar, pagar e ter o ingresso em mãos.
+
+- [ ] Lista de ingressos do cliente
+- [ ] Detalhe do ingresso, com o QR renderizado
+- [ ] Botão de compartilhar o link
+
+Pronto quando: é possível percorrer login, reserva, pagamento e
+visualização do QR inteiramente pela interface.
 ```
 
 **Tabela de Controle de Tarefas Atômicas**
 
 | Código | ID | Descrição da Tarefa Atômica | Pasta | Referência | Verificado? |
 |---|---|---|---|---|---|
-| 6.1 | 6.1.01 | Service de geração de JWT assinado do ingresso (payload `ingressoId`, `eventoId`) | apps/api | SPEC.md §3.1 | [ ] |
+| 6.1 | 6.1.01 | Service de geração de JWT assinado do ingresso (payload `ticketId`, `eventId`) | apps/api | SPEC.md §3.1 | [ ] |
 | 6.1 | 6.1.02 | Integração: gerar **N ingressos** ao confirmar pagamento (1 por entrada) | apps/api | SPEC.md §3.1, PRD.md §3.7 | [ ] |
 | 6.1 | 6.1.03 | Service de geração de imagem QR a partir do JWT (lib `qrcode`) | apps/api | DECISIONS.md — QR Code | [ ] |
-| 6.1 | 6.1.04 | Geração de `linkCompartilhavel` (token único) | apps/api | SPEC.md §1.5 | [ ] |
+| 6.1 | 6.1.04 | Geração de `shareToken` (token único) | apps/api | SPEC.md §1.5 | [ ] |
 | 6.1 | 6.1.05 | Rota `GET /ingressos/meus` | apps/api | SPEC.md §5.6 | [ ] |
 | 6.1 | 6.1.06 | Rota `GET /ingressos/:id` | apps/api | SPEC.md §5.6 | [ ] |
 | 6.1 | 6.1.07 | Rota `GET /ingressos/compartilhar/:linkToken` (exibe ingresso completo com QR, sem transferir titularidade) | apps/api | SPEC.md §5.6, PRD.md §3.7 | [ ] |
@@ -665,21 +715,37 @@ pede como prioridade.
 ```
 Título: [back-end] Endpoint de validação de ingresso na portaria
 Labels: back-end
-Descrição: Implementar POST /portaria/validar (body: codigo +
-eventoId), verificando assinatura do JWT, status do ingresso e
-correspondência com o evento selecionado, conforme docs/SPEC.md §3.2.
-Pronto quando: os 4 cenários de retorno (válido, inválido, já
-utilizado, evento errado) funcionam corretamente.
+
+Validação na entrada do evento. O código chega junto do evento que está
+sendo fiscalizado, e é essa comparação que distingue um ingresso de
+outro evento de um ingresso inválido — a ordem completa das verificações
+está em docs/SPEC.md §3.2.
+
+- [ ] Service que verifica a assinatura do JWT lido do QR
+- [ ] POST /portaria/validar, recebendo o código e o evento
+- [ ] Marcar como utilizado em transação, para que duas leituras
+      simultâneas do mesmo QR não sejam ambas aceitas
+- [ ] Documentar o endpoint no Swagger
+
+Pronto quando: os quatro retornos possíveis funcionam — válido,
+inválido, já utilizado e evento errado.
 ```
 
 ```
 Título: [front-end] Tela de portaria (câmera + digitação manual)
 Labels: front-end
-Descrição: Criar tela de seleção do evento a fiscalizar, leitura de QR
-via câmera (html5-qrcode), campo de digitação manual como alternativa,
-e feedback visual claro dos 4 estados de validação.
-Pronto quando: usuário de portaria consegue validar um ingresso pela
-interface, via câmera ou digitação.
+
+A tela usada na entrada do evento. É operada às pressas, com fila
+esperando: o retorno precisa ser legível em um relance, não lido com
+atenção.
+
+- [ ] Seleção do evento a fiscalizar, no início da sessão
+- [ ] Leitura do QR pela câmera do dispositivo
+- [ ] Campo de digitação manual como alternativa
+- [ ] Retorno visual distinto para os quatro estados de validação
+
+Pronto quando: é possível validar um ingresso pela câmera e pela
+digitação, e os quatro estados são distinguíveis à primeira vista.
 ```
 
 **Tabela de Controle de Tarefas Atômicas**
@@ -711,21 +777,36 @@ correta.
 ```
 Título: [back-end] Cancelamento com regra de 24h e devolução ao estoque
 Labels: back-end
-Descrição: Implementar POST /reservas/:id/cancelar, validando a janela
-de 24h antes do evento (docs/PRD.md §3.8) e devolvendo o assento
-(CINEMA) ou incrementando o estoque (SHOW) ao cancelar.
-Pronto quando: cancelamento dentro do prazo funciona com devolução
-correta, e fora do prazo é bloqueado.
+
+Cancelamento por iniciativa do cliente, permitido até 24 horas antes do
+evento (docs/PRD.md §3.8). Cancelar não basta: o lugar precisa voltar
+ao mercado e os ingressos emitidos deixarem de valer.
+
+- [ ] Validar a janela de 24 horas antes de permitir o cancelamento
+- [ ] POST /reservas/:id/cancelar
+- [ ] Devolver o assento à disponibilidade
+- [ ] Devolver a quantidade ao estoque
+- [ ] Cancelar todos os ingressos vinculados à reserva
+- [ ] Documentar o endpoint no Swagger
+
+Pronto quando: cancelar dentro do prazo devolve o lugar corretamente,
+fora do prazo é recusado, e o ingresso cancelado passa a ser rejeitado
+na portaria.
 ```
 
 ```
 Título: [front-end] Ação de cancelamento
 Labels: front-end
-Descrição: Adicionar botão de cancelar em "Meus Ingressos"/"Minhas
-Reservas", com feedback claro quando o cancelamento estiver fora do
-prazo permitido.
-Pronto quando: cliente consegue cancelar uma reserva elegível pela
-interface e recebe mensagem clara quando não pode.
+
+Cancelamento pela interface. Quando não for permitido, o cliente
+precisa entender o motivo — "não foi possível" deixa a pessoa sem saber
+se o problema é dela ou do sistema.
+
+- [ ] Botão de cancelar na lista de reservas e ingressos
+- [ ] Mensagem explicando o bloqueio quando estiver fora do prazo
+
+Pronto quando: uma reserva elegível é cancelada pela interface, e uma
+fora do prazo exibe o motivo da recusa.
 ```
 
 **Tabela de Controle de Tarefas Atômicas**
@@ -735,7 +816,7 @@ interface e recebe mensagem clara quando não pode.
 | 8.1 | 8.1.01 | Validação da janela de 24h antes do cancelamento | apps/api | PRD.md §3.8 | [ ] |
 | 8.1 | 8.1.02 | Rota `POST /reservas/:id/cancelar` | apps/api | SPEC.md §5.4, §4.0 | [ ] |
 | 8.1 | 8.1.03 | Devolução de assento (`status → DISPONIVEL`) | apps/api | SPEC.md §4.0, §4.2 | [ ] |
-| 8.1 | 8.1.04 | Devolução de estoque (incrementa `ingressosDisponiveis`) | apps/api | SPEC.md §4.0, §4.2 | [ ] |
+| 8.1 | 8.1.04 | Devolução de estoque (incrementa `availableTickets`) | apps/api | SPEC.md §4.0, §4.2 | [ ] |
 | 8.1 | 8.1.05 | Cancelar **todos** os ingressos vinculados à reserva (`VALIDO → CANCELADO`) | apps/api | SPEC.md §4.0, §4.2 | [ ] |
 | 8.1 | 8.1.06 | Documentar endpoint de cancelamento no Swagger | apps/api | SPEC.md §5.4 | [ ] |
 | 8.2 | 8.2.01 | Botão de cancelar em "Meus Ingressos"/"Minhas Reservas" | apps/web | - | [ ] |
@@ -757,11 +838,16 @@ confirmando que o estoque volta corretamente.
 ```
 Título: [full-stack] Filtros de busca de eventos (data, categoria, local, preço)
 Labels: back-end, front-end
-Descrição: Adicionar suporte a filtros (data, categoria, local, faixa
-de preço) em GET /eventos, e criar a UI de filtros correspondente na
-listagem de eventos.
-Pronto quando: cada filtro funciona isoladamente e em combinação, tanto
-na API quanto na interface.
+
+Navegação no catálogo publicado, pelos quatro critérios definidos em
+docs/PRD.md §3.2.
+
+- [ ] Query params em GET /eventos: data, categoria, local e faixa de preço
+- [ ] Atualizar a documentação do endpoint no Swagger
+- [ ] Controles de filtro na listagem de eventos
+
+Pronto quando: cada filtro funciona sozinho e combinado com os demais,
+tanto pela API quanto pela interface.
 ```
 
 **Tabela de Controle de Tarefas Atômicas**
@@ -786,21 +872,41 @@ na API quanto na interface.
 ```
 Título: [infra] Configurar ambiente de testes (Jest + ts-jest)
 Labels: infra
-Descrição: Configurar Jest + ts-jest em apps/api, incluindo scripts de
-execução no package.json.
-Pronto quando: é possível rodar a suíte de testes com um único comando.
+
+Ambiente para a suíte da API. Os testes que importam aqui exercitam
+transações e concorrência, e mock de ORM não reproduz esse
+comportamento — por isso eles rodam contra um PostgreSQL real, em banco
+separado do de desenvolvimento (docs/SPEC.md §6).
+
+- [ ] Configurar Jest com ts-jest em apps/api
+- [ ] Provisionar o banco de teste
+- [ ] Acrescentar a suíte ao workflow de CI
+
+Pronto quando: a suíte roda com um único comando, contra um banco real,
+sem interferir no banco de desenvolvimento.
 ```
 
 ```
 Título: [back-end] Testes de concorrência e regras críticas
 Labels: back-end
-Descrição: Escrever testes cobrindo concorrência de reserva de
-assento, concorrência de reserva por quantidade, validação de QR
-(assinatura válida e forjada), regra de cancelamento (dentro e fora do
-prazo), expiração de reserva não paga, geração de N ingressos,
-cancelamento de evento em cascata, e um teste de integração do fluxo
-feliz. Testes transacionais devem rodar contra um Postgres real.
-Pronto quando: toda a suíte de testes passa localmente.
+
+Cobertura das regras cuja falha só aparece em produção: disputa por
+lugar, venda acima da capacidade e ingresso forjado. A ordem abaixo é de
+prioridade, do mais crítico ao mais opcional (docs/SPEC.md §6).
+
+- [ ] Dois clientes disputando o mesmo assento
+- [ ] Reservas simultâneas que somadas excedem a capacidade
+- [ ] Validação de QR com assinatura válida
+- [ ] Validação de QR com assinatura forjada
+- [ ] Cancelamento dentro do prazo
+- [ ] Cancelamento fora do prazo
+- [ ] Expiração de reserva não paga, com devolução ao estoque
+- [ ] Reserva de quantidade N gerando N ingressos
+- [ ] Cancelamento de evento em cascata
+- [ ] Pagamento recusado encerrando a reserva
+- [ ] Integração do fluxo feliz: criar evento e reservar
+
+Pronto quando: a suíte inteira passa localmente e no CI.
 ```
 
 **Tabela de Controle de Tarefas Atômicas**
@@ -837,38 +943,54 @@ que todos passam.
 ```
 Título: [infra] Deploy do back-end e banco no Render
 Labels: infra
-Descrição: Publicar apps/api no Render como Web Service, com build
-command compilando o TypeScript (tsc) e start apontando para dist/, um
-banco PostgreSQL gerenciado na mesma plataforma, e variáveis de
-ambiente configuradas.
-Pronto quando: a API está acessível publicamente e conectada ao banco
-de produção.
+
+API e banco publicados na mesma plataforma. O build precisa compilar o
+TypeScript e gerar o client do Prisma antes de iniciar o processo, que
+roda a partir de dist/.
+
+- [ ] Publicar a API como Web Service, com build e start configurados
+- [ ] Provisionar o PostgreSQL gerenciado
+- [ ] Configurar as variáveis de ambiente
+- [ ] Aplicar as migrations no banco de produção
+- [ ] Semear os dados de teste em produção
+
+Pronto quando: a API responde publicamente, conectada ao banco, com os
+dados de teste disponíveis.
 ```
 
 ```
 Título: [infra] Deploy do front-end na Vercel
 Labels: infra
-Descrição: Publicar apps/web na Vercel, com o root directory do
-projeto apontando para apps/web (o repositório é um monorepo),
-configurada para consumir a API publicada no Render.
-Pronto quando: o front está acessível publicamente e funcional,
-consumindo a API de produção.
+
+Front publicado, consumindo a API de produção. Por ser um monorepo, o
+diretório raiz do projeto precisa apontar para apps/web.
+
+- [ ] Publicar apps/web, com o diretório raiz configurado
+- [ ] Apontar a URL da API para o ambiente publicado
+- [ ] Liberar a origem do front no CORS da API
+
+Pronto quando: o front está acessível publicamente e conversa com a API
+de produção sem erro de origem.
 ```
 
 ```
 Título: [docs] README completo com instruções de setup
 Labels: docs
-Descrição: Escrever README.md com pré-requisitos (incluindo a versão do
-Node fixada no .nvmrc), setup local via Docker, instalação de
-dependências via npm install na raiz do workspace, variáveis de
-ambiente, como rodar o seed, links de deploy
-(incluindo /api-docs), aviso sobre o cold start do free tier do Render
-(~1 min no primeiro acesso após 15 min de inatividade) e aviso sobre a
-expiração do Postgres free do Render (banco expira 30 dias após a
-criação, com 14 dias de carência para upgrade antes de ser deletado —
-https://render.com/docs/free#free-postgres).
-Revisar docs/PRD.md, DECISIONS.md, SPEC.md e completar docs/AI_USAGE.md.
-Pronto quando: um avaliador consegue rodar o projeto do zero seguindo
+
+Revisão final da documentação, com o README cobrindo tudo que alguém
+precisa para rodar o projeto sem conhecê-lo. Inclui as duas limitações
+conhecidas do plano gratuito do Render, que afetam quem for testar o
+ambiente publicado.
+
+- [ ] Atualizar o README com o seed e os links do ambiente publicado
+- [ ] Avisar sobre o cold start (~1 min após 15 min de inatividade)
+- [ ] Avisar que o banco gratuito expira 30 dias após a criação, com 14
+      dias de carência antes de ser removido
+      (https://render.com/docs/free#free-postgres)
+- [ ] Revisar PRD, SPEC e DECISIONS contra o que foi de fato implementado
+- [ ] Percorrer o fluxo completo em produção, do zero
+
+Pronto quando: alguém que nunca viu o projeto consegue rodá-lo seguindo
 apenas o README.
 ```
 

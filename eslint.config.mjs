@@ -5,33 +5,19 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import prettier from 'eslint-config-prettier';
 
-/*
- * Configuração única na raiz do workspace, cobrindo os dois apps. Cada um
- * recebe o conjunto de regras que faz sentido para o seu ambiente: a API roda
- * em Node, o front no navegador com React.
- *
- * Os dois usam `recommendedTypeChecked`, que habilita regras apoiadas no
- * compilador — é o que permite pegar coisas como promise não aguardada, algo
- * que análise puramente sintática não alcança. Isso importa especialmente na
- * lógica de reserva, onde uma escrita não aguardada dentro de uma transação
- * quebraria o controle de concorrência de forma silenciosa.
- */
 export default tseslint.config(
   {
     ignores: [
       '**/dist/**',
       '**/coverage/**',
       '**/node_modules/**',
-      // Client do Prisma: código gerado, dentro de src/ por padrão na v7.
+      // Prisma client: generated code, placed inside src/ since v7.
       'apps/api/src/generated/**',
     ],
   },
 
-  /*
-   * Arquivos de configuração na raiz dos apps ficam fora do `tsconfig`, que
-   * cobre apenas `src/`. Sem `allowDefaultProject` o serviço de tipos do
-   * typescript-eslint não consegue analisá-los e o lint falha ao parsear.
-   */
+  // Config files at each app root sit outside the tsconfig, which only
+  // covers src/ — so they get the rules that do not need type information.
   {
     files: ['apps/api/*.ts'],
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
@@ -40,7 +26,7 @@ export default tseslint.config(
     },
   },
 
-  // API — Node
+  // API
   {
     files: ['apps/api/src/**/*.ts'],
     extends: [
@@ -56,15 +42,14 @@ export default tseslint.config(
     },
   },
 
-  // Front — navegador + React
+  // Web
   {
     files: ['apps/web/**/*.{ts,tsx}'],
     extends: [
       js.configs.recommended,
       ...tseslint.configs.recommendedTypeChecked,
-      // `configs.flat.recommended`, e não `configs['recommended-latest']`:
-      // este último ainda vem no formato antigo do ESLint, incompatível com
-      // a configuração plana.
+      // `flat.recommended`, not `recommended-latest`: the latter still ships
+      // in the legacy ESLint format.
       reactHooks.configs.flat.recommended,
       reactRefresh.configs.vite,
     ],
@@ -77,13 +62,9 @@ export default tseslint.config(
     },
   },
 
-  /*
-   * Componentes vindos do registry do shadcn exportam o componente e as suas
-   * variantes no mesmo arquivo (ex.: `Button` e `buttonVariants`). A regra
-   * `only-export-components` reclama disso porque atrapalha o hot reload —
-   * é uma questão de experiência de desenvolvimento, não de correção, e o
-   * padrão vem de fora. Desligada só nesta pasta.
-   */
+  // shadcn components export the component and its variants from the same
+  // file, which this rule flags. It affects hot reload only, and the pattern
+  // comes from the registry.
   {
     files: ['apps/web/src/components/ui/**/*.{ts,tsx}'],
     rules: {
@@ -91,9 +72,6 @@ export default tseslint.config(
     },
   },
 
-  /*
-   * Precisa ser o último: desliga as regras de estilo do ESLint que
-   * conflitariam com o Prettier. Sem isso, os dois brigam pelo mesmo arquivo.
-   */
+  // Must come last: turns off stylistic rules that would fight Prettier.
   prettier,
 );

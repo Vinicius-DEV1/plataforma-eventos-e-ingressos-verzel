@@ -5,11 +5,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/*
- * Tema "ingresso impresso": papel off-white quente, tinta quase preta e um
- * único acento vermelho, como o de um bilhete físico. Cantos praticamente
- * retos (2px) — arredondamento generoso descaracterizaria a referência.
- */
+/* "Printed ticket" theme — see docs/DECISIONS.md, "Identidade visual". */
 @theme inline {
   --font-heading: var(--font-sans);
   --font-sans: 'Archivo Variable', system-ui, sans-serif;
@@ -58,7 +54,7 @@
 :root {
   --radius: 2px;
 
-  /* Papel e tinta */
+  /* Paper and ink */
   --background: #faf8f4;
   --foreground: #141210;
   --card: #ffffff;
@@ -66,17 +62,17 @@
   --popover: #ffffff;
   --popover-foreground: #141210;
 
-  /* Acento: vermelho-tinta de bilhete */
+  /* Accent: ticket ink red */
   --primary: #d6403a;
   --primary-foreground: #fffdf9;
 
-  /* Papel um tom abaixo, para superfícies secundárias */
+  /* One shade down, for secondary surfaces */
   --secondary: #f0ede6;
   --secondary-foreground: #141210;
   --muted: #f0ede6;
   --muted-foreground: #6b655c;
 
-  /* Lavagem do acento, para estados de destaque */
+  /* Washed accent, for highlighted states */
   --accent: #f7e9e7;
   --accent-foreground: #8f2420;
 
@@ -101,10 +97,7 @@
   --sidebar-ring: #d6403a;
 }
 
-/*
- * Modo escuro: mesma lógica invertida — tinta vira fundo, papel vira texto.
- * O vermelho é clareado para manter contraste legível sobre superfície escura.
- */
+/* Dark mode: ink becomes background, paper becomes text. */
 .dark {
   --background: #141210;
   --foreground: #f5f1ea;
@@ -158,11 +151,7 @@
     @apply bg-background text-foreground;
   }
 
-  /*
-   * Numerais tabulares em preços, códigos de assento e contadores: alinham
-   * verticalmente em coluna e não "dançam" quando o valor muda a cada segundo
-   * (o contador de 15 minutos da reserva depende disso).
-   */
+  /* Tabular figures keep digits from shifting as values update. */
   th,
   td,
   time,

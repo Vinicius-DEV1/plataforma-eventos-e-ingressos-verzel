@@ -8,14 +8,13 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: eventos
     ports:
-      # Exposto no host para permitir rodar a API fora do container
-      # (npm run dev) apontando para o mesmo banco.
+      # Exposed on the host so the API can run outside the container
+      # against the same database.
       - '5432:5432'
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      # `pg_isready` responde antes de o banco aceitar conexões de verdade em
-      # alguns casos; o teste com -d confirma que o banco da aplicação existe.
+      # -d confirms the application database exists, not just the server.
       test: ['CMD-SHELL', 'pg_isready -U postgres -d eventos']
       interval: 5s
       timeout: 5s
@@ -23,8 +22,7 @@ services:
 
   api:
     build:
-      # Contexto na raiz: o Dockerfile precisa do package.json e do lockfile
-      # do workspace, que ficam fora de apps/api.
+      # Root context: the Dockerfile needs the workspace manifests.
       context: .
       dockerfile: apps/api/Dockerfile
     container_name: eventos-api
@@ -32,16 +30,15 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3333
-      # O host é o nome do serviço, não localhost: dentro da rede do Compose,
-      # `localhost` seria o próprio container da API.
+      # Host is the service name: inside the Compose network `localhost`
+      # would point at the API container itself.
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/eventos?schema=public
       JWT_SECRET: ${JWT_SECRET:-segredo-de-desenvolvimento-trocar-em-producao}
     ports:
       - '3333:3333'
     depends_on:
       postgres:
-        # Espera o healthcheck passar, e não apenas o container existir —
-        # sem isso a API sobe antes de o banco aceitar conexões.
+        # Waits for the healthcheck, not just for the container to exist.
         condition: service_healthy
 
 volumes:

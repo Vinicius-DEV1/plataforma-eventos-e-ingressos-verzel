@@ -3,17 +3,13 @@ import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './config/swagger';
 import { healthRouter } from './routes/health.routes';
 
-/**
- * Monta a aplicação Express sem colocá-la no ar.
- * Separar isso de `server.ts` permite instanciar a app nos testes de
- * integração sem ocupar uma porta.
- */
+// Building the app is kept apart from starting it so integration tests can
+// instantiate it without binding a port.
 export function createApp(): Express {
   const app = express();
 
   app.use(express.json());
 
-  // Documentação interativa servida pela própria aplicação.
   app.use(
     '/api-docs',
     swaggerUi.serve,
@@ -22,7 +18,6 @@ export function createApp(): Express {
     }),
   );
 
-  // A definição crua, útil para importar em outras ferramentas.
   app.get('/api-docs.json', (_req, res) => {
     res.json(swaggerSpec);
   });

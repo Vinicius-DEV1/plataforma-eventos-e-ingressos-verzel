@@ -85,7 +85,7 @@ Critérios de filtro disponíveis:
 ### 3.6 Pagamento (Simulado)
 - Processado via Asaas (ambiente sandbox), sem transação financeira real
 - Contempla dois desfechos: confirmação (reserva vira ingressos) e recusa
-- **Em caso de recusa, a reserva é encerrada** (`RECUSADA`) e o estoque
+- **Em caso de recusa, a reserva é encerrada** (`DECLINED`) e o estoque
   devolvido imediatamente. Não há retentativa sobre a mesma reserva — o
   cliente refaz o fluxo do início. Manter o lugar bloqueado após uma falha de
   pagamento conflitaria com a devolução imediata do estoque
@@ -142,8 +142,8 @@ revenda entre usuários, explicitamente fora do escopo (seção 4).
 
 - Toda reserva criada recebe um prazo de **15 minutos** para ter o pagamento
   confirmado
-- Expirado o prazo sem confirmação, a reserva passa ao status `EXPIRADA` e o
-  estoque é devolvido automaticamente: assento volta a `DISPONIVEL` (CINEMA)
+- Expirado o prazo sem confirmação, a reserva passa ao status `EXPIRED` e o
+  estoque é devolvido automaticamente: assento volta a `AVAILABLE` (CINEMA)
   ou a quantidade é reincorporada ao estoque (SHOW)
 - A liberação é verificada de forma preguiçosa (*lazy*): sempre que assentos
   ou disponibilidade de um evento são consultados, ou quando uma nova reserva
@@ -163,21 +163,21 @@ Quando o organizador cancela um evento, o sistema segue o padrão adotado por
 plataformas de bilheteria: o evento é cancelado e **todos os ingressos são
 reembolsados automaticamente**, sem exigir ação do cliente.
 
-- O evento passa a `CANCELADO` e deixa de aparecer na listagem pública
-- Todas as reservas ativas (`PENDENTE` ou `PAGA`) passam a `CANCELADA`
-- Todos os ingressos `VALIDO` do evento passam a `CANCELADO`, deixando de
+- O evento passa a `CANCELLED` e deixa de aparecer na listagem pública
+- Todas as reservas ativas (`PENDING` ou `PAID`) passam a `CANCELLED`
+- Todos os ingressos `VALID` do evento passam a `CANCELLED`, deixando de
   ser aceitos na portaria
 - Reservas pagas geram reembolso total simulado, **independentemente da
   janela de 24 horas** — essa restrição se aplica apenas ao cancelamento
   por iniciativa do cliente (seção 3.8), nunca quando a falha é do
   organizador
-- Ingressos já `UTILIZADO` não são alterados (preservam a trilha de
+- Ingressos já `USED` não são alterados (preservam a trilha de
   auditoria de quem efetivamente entrou)
 
 ### 3.12 Cadastro de Usuários e Papéis
 
 O cadastro público (`/auth/registro`) cria **exclusivamente** usuários com o
-papel `CLIENTE`. Usuários `ORGANIZADOR` e `PORTARIA` existem apenas via seed.
+papel `CUSTOMER`. Usuários `ORGANIZER` e `GATEKEEPER` existem apenas via seed.
 
 > Justificativa: permitir que qualquer visitante se cadastrasse como
 > organizador ou portaria seria uma falha de controle de acesso — qualquer
@@ -220,9 +220,9 @@ Para permitir que o fluxo seja percorrido sem configuração manual:
 
 **Estado pré-existente** (permite testar cada tela isoladamente, sem
 percorrer o fluxo inteiro antes)
-- 1 reserva paga do cliente 1, com ingresso `VALIDO` — permite testar a tela
+- 1 reserva paga do cliente 1, com ingresso `VALID` — permite testar a tela
   de portaria e o compartilhamento por link imediatamente
-- 1 ingresso já `UTILIZADO` — permite verificar o retorno "já utilizado" sem
+- 1 ingresso já `USED` — permite verificar o retorno "já utilizado" sem
   consumir o ingresso válido acima
 
 > Os dois eventos devem ter data futura o bastante para que o cancelamento

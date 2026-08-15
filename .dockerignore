@@ -1,6 +1,5 @@
-# O contexto de build é a raiz do repositório, porque o Dockerfile precisa do
-# package.json e do lockfile do workspace — não só dos arquivos de apps/api.
-# Por isso este arquivo fica aqui, e não dentro de apps/api.
+# Build context is the repository root, because the Dockerfile needs the
+# workspace manifests — hence this file lives here, not in apps/api.
 
 node_modules
 **/node_modules
@@ -23,11 +22,10 @@ coverage
 docs
 README.md
 
-# Client do Prisma: gerado dentro da imagem pelo passo de build.
+# Prisma client: generated inside the image by the build step.
 apps/api/src/generated
 
-# O código do front não entra na imagem da API — mas o package.json dele sim:
-# o lockfile da raiz descreve os dois workspaces, e o `npm ci` falha se um
-# deles não existir no contexto.
+# The web source stays out of the API image, but its package.json does not:
+# the root lockfile describes both workspaces and `npm ci` needs them present.
 apps/web
 !apps/web/package.json

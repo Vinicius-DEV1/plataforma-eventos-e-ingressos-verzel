@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { verificarSaude } from '../controllers/health.controller';
+import { checkHealth } from '../controllers/health.controller';
 
 export const healthRouter = Router();
 
@@ -25,10 +25,10 @@ export const healthRouter = Router();
  *                 status:
  *                   type: string
  *                   example: ok
- *                 banco:
+ *                 database:
  *                   type: string
- *                   example: conectado
- *                 horario:
+ *                   example: connected
+ *                 timestamp:
  *                   type: string
  *                   format: date-time
  *       503:
@@ -42,14 +42,14 @@ export const healthRouter = Router();
  *               properties:
  *                 status:
  *                   type: string
- *                   example: indisponivel
- *                 banco:
+ *                   example: unavailable
+ *                 database:
  *                   type: string
- *                   example: desconectado
- *                 detalhe:
+ *                   example: disconnected
+ *                 detail:
  *                   type: string
- *                 horario:
+ *                 timestamp:
  *                   type: string
  *                   format: date-time
  */
-healthRouter.get('/health', verificarSaude);
+healthRouter.get('/health', checkHealth);
