@@ -252,7 +252,7 @@ Detalhamento em docs/TASKS.md (Bloco 0).
 | 0.7 | 0.7.02 | Expor documentação interativa em `GET /api-docs` | apps/api | DECISIONS.md — Documentação de API | [x] |
 | 0.7 | 0.7.03 | Configurar esquema de segurança Bearer JWT no Swagger | apps/api | DECISIONS.md — Documentação de API | [x] |
 | 0.7 | 0.7.04 | Documentar `GET /health` no Swagger (valida o setup) | apps/api | - | [x] |
-| 0.8 | 0.8.01 | Criar `README.md` inicial (título, descrição, stack, links para `docs/`) | raiz | - | [~] |
+| 0.8 | 0.8.01 | Criar `README.md` inicial (título, descrição, stack, links para `docs/`) | raiz | - | [x] |
 
 **Checkpoint de revisão:** dev confirma que `docker-compose up` sobe tudo, o
 health-check responde, o front roda com `vite dev`, commits fora do padrão
@@ -270,24 +270,41 @@ Swagger, e o CI roda no PR de teste.
 ```
 Título: [back-end] Criar schema Prisma completo
 Labels: back-end
-Descrição: Modelar no schema.prisma as entidades User, Evento, Assento,
-Reserva, Ingresso e Pagamento, conforme docs/SPEC.md §1, incluindo os
-relacionamentos (atenção: Reserva 1:N Ingresso), o campo expiraEm em
-Reserva, e a constraint de unicidade de assento por evento. Definir
-convenção de datas em UTC. Rodar a primeira migration.
-Pronto quando: migration aplicada com sucesso e todas as entidades
-visíveis no Prisma Studio.
+
+As seis entidades do domínio, conforme docs/SPEC.md §1. Só a estrutura —
+nenhuma regra de negócio ainda.
+
+- [ ] Modelar User, Evento, Assento, Reserva, Ingresso e Pagamento
+- [ ] Declarar os relacionamentos entre eles
+- [ ] Adicionar a constraint de unicidade de assento por evento
+- [ ] Definir a convenção de datas em UTC
+- [ ] Rodar a primeira migration
+
+Pronto quando: a migration aplica sem erro e as seis entidades aparecem
+no Prisma Studio.
+
+Detalhamento em docs/TASKS.md (Bloco 1).
 ```
 
 ```
 Título: [back-end] Script de seed com dados de teste
 Labels: back-end
-Descrição: Criar script de seed que popula: 1 organizador, 2 clientes,
-1 usuário de portaria, 1 evento tipo CINEMA com assentos, 1 evento tipo
-SHOW com estoque, além de 1 reserva paga com ingresso VALIDO e 1 ingresso
-já UTILIZADO, conforme docs/PRD.md §5.
-Pronto quando: rodar o script de seed popula o banco corretamente,
-validado via Prisma Studio.
+
+Dados que permitem percorrer o sistema inteiro sem montar nada à mão,
+conforme docs/PRD.md §5.
+
+- [ ] Semear os quatro usuários: 1 organizador, 2 clientes e 1 portaria
+- [ ] Semear 1 evento CINEMA com o mapa de assentos gerado
+- [ ] Semear 1 evento SHOW com estoque de ingressos
+- [ ] Semear 1 reserva paga com ingresso VALIDO
+- [ ] Semear 1 ingresso já UTILIZADO
+- [ ] Registrar o comando de seed no package.json
+
+Pronto quando: rodar o seed popula o banco corretamente, verificado no
+Prisma Studio, e os eventos têm data futura o bastante para permitir
+testar o cancelamento na janela de 24h.
+
+Detalhamento em docs/TASKS.md (Bloco 1).
 ```
 
 **Tabela de Controle de Tarefas Atômicas**
@@ -326,25 +343,39 @@ no banco.
 ```
 Título: [back-end] Autenticação JWT (registro, login, middleware de papéis)
 Labels: back-end
-Descrição: Implementar hash de senha (bcrypt), geração/verificação de
-JWT, rotas POST /auth/registro (que força role=CLIENTE, conforme
-docs/PRD.md §3.12), POST /auth/login, GET /auth/me, e middlewares
-authenticate e requireRole(roles[]), conforme docs/SPEC.md §5.1.
-Configurar também o CORS da API, já que front e back rodam em origens
-distintas (Vite local / Vercel em produção).
-Pronto quando: os 3 papéis semeados conseguem logar, cada rota
-protegida bloqueia papéis não autorizados, e o front consegue chamar a
-API sem erro de CORS.
+
+Login por email e senha para os três papéis, com as rotas descritas em
+docs/SPEC.md §5.1.
+
+- [ ] Hash e comparação de senha com bcrypt
+- [ ] Geração e verificação do token JWT
+- [ ] POST /auth/registro, forçando role CLIENTE (docs/PRD.md §3.12)
+- [ ] POST /auth/login
+- [ ] GET /auth/me
+- [ ] Middleware authenticate, populando req.user a partir do token
+- [ ] Middleware requireRole, restringindo rotas por papel
+- [ ] Configurar CORS para a origem do front
+- [ ] Documentar os endpoints no Swagger
+
+Pronto quando: os três papéis semeados conseguem logar, cada rota
+protegida bloqueia papéis não autorizados, e o front chama a API sem
+erro de CORS.
 ```
 
 ```
 Título: [front-end] Tela de login e contexto de autenticação
 Labels: front-end
-Descrição: Criar client de API base, AuthContext (token, usuário
-logado, login, logout), tela de login integrada com POST /auth/login, e
-componente de rota protegida por papel (PrivateRoute).
-Pronto quando: login funciona na interface para os 3 papéis e rotas
-protegidas redirecionam usuários sem permissão.
+
+Primeira integração do front com a API: autenticar, guardar a sessão e
+proteger rotas por papel.
+
+- [ ] Client de API base, lendo a URL de VITE_API_URL
+- [ ] AuthContext com token, usuário logado, login e logout
+- [ ] Tela de login integrada ao POST /auth/login
+- [ ] Componente PrivateRoute, restringindo acesso por papel
+
+Pronto quando: o login funciona na interface para os três papéis e uma
+rota restrita redireciona quem não tem permissão.
 ```
 
 **Tabela de Controle de Tarefas Atômicas**
@@ -381,33 +412,55 @@ eventos reais.
 ```
 Título: [back-end] Integração com TMDb e Ticketmaster Discovery
 Labels: back-end
-Descrição: Criar clients de integração com as APIs do TMDb (filmes em
-cartaz) e Ticketmaster Discovery (eventos), expostos via GET
-/catalogo/filmes e GET /catalogo/shows, com cache em memória (TTL ~5min)
-e tratamento de rate limit, conforme docs/SPEC.md §5.8.
-Pronto quando: ambos os endpoints retornam dados reais das respectivas
-APIs externas, sem estourar a cota em uso normal.
+
+Os dois catálogos externos que alimentam a criação de eventos, expostos
+pela API para que as chaves não cheguem ao navegador. Estratégia de
+cache e rate limit em docs/SPEC.md §5.8.
+
+- [ ] Client de integração com o TMDb (filmes em cartaz)
+- [ ] Client de integração com o Ticketmaster Discovery (eventos)
+- [ ] GET /catalogo/filmes
+- [ ] GET /catalogo/shows
+- [ ] Cache em memória das respostas, com TTL curto
+- [ ] Tratar rate limit (HTTP 429) com mensagem clara
+- [ ] Documentar os endpoints no Swagger
+
+Pronto quando: os dois endpoints retornam dados reais das respectivas
+APIs, e uma sequência de buscas não esgota a cota.
 ```
 
 ```
 Título: [back-end] CRUD de eventos (organizador)
 Labels: back-end
-Descrição: Implementar POST /eventos, PUT /eventos/:id, DELETE
-/eventos/:id (cancelamento em cascata de reservas e ingressos, conforme
-docs/SPEC.md §4.1), GET /eventos e GET /eventos/:id (sem filtro ainda),
-permitindo que o organizador publique eventos a partir do catálogo
-externo.
-Pronto quando: organizador consegue criar, editar e cancelar um evento
-via API, e o cancelamento invalida todos os ingressos vendidos.
+
+Publicação e gestão de eventos a partir do catálogo externo. O
+cancelamento não apaga o evento: ele dispara a cascata descrita em
+docs/SPEC.md §4.1, que reembolsa e invalida o que já foi vendido.
+
+- [ ] POST /eventos
+- [ ] PUT /eventos/:id
+- [ ] DELETE /eventos/:id, com a cascata sobre reservas e ingressos
+- [ ] GET /eventos (listagem pública, ainda sem filtros)
+- [ ] GET /eventos/:id
+- [ ] Documentar os endpoints no Swagger
+
+Pronto quando: o organizador cria, edita e cancela um evento pela API, e
+o cancelamento faz os ingressos vendidos deixarem de ser aceitos.
 ```
 
 ```
 Título: [front-end] Painel do organizador
 Labels: front-end
-Descrição: Criar tela de busca no catálogo externo, formulário de
-criação/edição de evento e listagem de eventos do organizador.
-Pronto quando: organizador consegue, pela interface, buscar um
-filme/show real e publicar um evento de cada tipo.
+
+Onde o organizador encontra um filme ou show real e o transforma em
+evento publicado.
+
+- [ ] Tela de busca no catálogo, com debounce no campo de texto
+- [ ] Formulário de criação e edição de evento
+- [ ] Listagem dos eventos do organizador
+
+Pronto quando: é possível, pela interface, buscar um filme e um show
+reais e publicar um evento de cada tipo.
 ```
 
 **Tabela de Controle de Tarefas Atômicas**
@@ -849,7 +902,7 @@ Preenchido pelo desenvolvedor a cada checkpoint de bloco aprovado.
 
 | Bloco | Data | Aprovado por | Observações |
 |---|---|---|---|
-| 0 — Setup e Infraestrutura | | | |
+| 0 — Setup e Infraestrutura | 14/08/2026 | Vinicius | 36 tarefas concluídas. Desvios do plano original, todos registrados em `DECISIONS.md`: TypeScript adotado nos dois apps; Jest escolhido no lugar do Vitest; trabalho direto na `main`, sem pull requests, com o CI disparado por push; `.dockerignore` movido para a raiz (o contexto de build é o repositório inteiro). O TypeScript ficou na versão 6 porque o `typescript-eslint` ainda não suporta a 7. `AI_USAGE.md` adiado. |
 | 1 — Modelagem de Dados | | | |
 | 2 — Autenticação | | | |
 | 3 — Catálogo e Gestão de Eventos | | | |

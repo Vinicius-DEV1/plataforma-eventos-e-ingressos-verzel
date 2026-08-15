@@ -31,6 +31,13 @@ jobs:
         env:
           HUSKY: 0
 
+      # O client do Prisma é gerado a partir do schema e não vai para o
+      # repositório. Sem este passo o TypeScript não resolve os tipos do
+      # client, e as regras de lint apoiadas no compilador falham antes
+      # mesmo de o build rodar.
+      - name: Gerar Prisma Client
+        run: npm run db:generate --workspace @eventos/api
+
       - name: Lint
         run: npm run lint
 
