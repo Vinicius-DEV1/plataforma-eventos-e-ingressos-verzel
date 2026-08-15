@@ -11,7 +11,7 @@
 > parte dos casos contrariou a recomendação inicial da ferramenta. O runner de
 > testes é um exemplo: a sugestão era Vitest, optei por Jest pela maturidade em
 > testes de integração contra banco real. O registro de onde a IA foi
-> usada será registrado à parte.
+> usada está em `docs/AI_USAGE.md`.
 
 ## Stack Principal
 
@@ -20,20 +20,22 @@
 | Organização do repositório | Monorepo (`apps/web`, `apps/api`) | Um único clone para o avaliador rodar tudo; Docker Compose orquestra front + back + banco juntos; commits de ambos os lados ficam no mesmo histórico, mostrando o processo de forma unificada |
 | Linguagem (front e back) | TypeScript | O domínio é denso em enums e transições de status (`Reservation`, `Ticket`, `Seat`, `Payment`, `Event` — ver `SPEC.md` §4.2): tipar essas transições transforma em erro de compilação o que em JavaScript seria bug silencioso descoberto só em runtime. Também é o que torna real a type-safety do Prisma citada abaixo — em JS puro os tipos gerados pelo client existem, mas nada impede passar um campo ou enum errado. Aplicado nos dois apps para manter uma linguagem só no monorepo |
 | Variáveis de ambiente | `--env-file-if-exists` nativo do Node, sem `dotenv` | O Node 24 carrega arquivos `.env` por conta própria, o que elimina uma dependência. A variante `if-exists` foi escolhida em vez de `--env-file` porque em produção não existe arquivo `.env` — Render e Docker injetam as variáveis pelo próprio ambiente — e a versão estrita abortaria o processo na ausência do arquivo. Cada app tem um `.env.example` versionado como modelo; o `.env` real nunca vai para o repositório |
+| Versão do TypeScript | 6.x, não a 7 | A 7 já está disponível, mas o `typescript-eslint` ainda não a suporta — a faixa que ele aceita para no 6.0. Sem ele não há lint com informação de tipo, que é justamente o que pega promise não aguardada dentro de uma transação. Ficar na 6 custa nada: o projeto não usa nenhum recurso exclusivo da versão nova |
+| Datas e fuso | Tudo em UTC, com `TZ=UTC` no processo e um utilitário único | O Prisma já grava em UTC, mas o processo Node roda no fuso da máquina — o que faria a mesma regra de prazo dar respostas diferentes aqui e no servidor. Fixar o fuso elimina isso. As duas regras sensíveis a tempo (expiração de 15 minutos, janela de 24 horas para cancelar) ficam num utilitário só, em vez de cada controller fazer sua própria conta de horas |
 | Formato de módulo (API) | CommonJS | Decisão tomada em função do Jest: rodar a suíte sobre ESM exige a flag `--experimental-vm-modules` no Node e configuração adicional no `ts-jest`, que é justamente a fricção apontada como ponto fraco do Jest quando ele foi escolhido no lugar do Vitest. Com CommonJS, o Jest roda sem nenhum desses ajustes. Na prática o `tsconfig.json` usa `module: nodenext`, que emite CommonJS porque o `package.json` da API não declara `"type": "module"` |
 | Front-end | Vite + React (sem framework tipo Next.js) | O back-end já é servido separadamente por Express — um framework full-stack como Next.js adicionaria complexidade (SSR, rotas de API, Server Components) sem nenhum benefício real, já que a aplicação é 100% logada e não depende de SEO |
 | Roteamento (front) | React Router | Padrão maduro do ecossistema React sem framework full-stack; cobre rotas protegidas por papel e rotas dinâmicas sem fricção |
 | Estilização | Tailwind CSS + shadcn/ui, customizado | Tailwind acelera estilização mantendo consistência; shadcn/ui (construído sobre Radix UI) resolve componentes complexos (modal, dropdown, select) com acessibilidade pronta — porém com paleta, tipografia e componentes customizados para fugir da aparência padrão reconhecível ("AI slop"). Tailwind 4: a configuração é feita em CSS via `@theme`, sem `tailwind.config.js` |
-| Identidade visual | Tema "ingresso impresso": papel off-white `#FAF8F4`, tinta `#141210`, acento vermelho `#D6403A`, raio de 2px, fonte Archivo | Escolhida entre três direções avaliadas — cinema noturno (fundo escuro, acento âmbar de marquise), ingresso impresso, e editorial de alto contraste. A referência ao bilhete físico dá identidade própria e coerente com o domínio (bilheteria), em vez do tema neutro que acompanha o shadcn. O preset do CLI serviu apenas como base técnica: paleta e tipografia foram inteiramente substituídas, e a fonte Geist que ele instala — fortemente associada ao visual padrão — deu lugar à Archivo, empacotada localmente via `@fontsource`, sem CDN. Cantos quase retos (2px) porque arredondamento generoso descaracterizaria a referência. Numerais tabulares em preços, assentos e horários: sem largura fixa, os dígitos se deslocam a cada atualização, o que ficaria visível no contador de 15 minutos da reserva (`PRD.md` §3.10). Há um modo escuro definido com a mesma lógica invertida, ainda sem alternador na interface |
+| Identidade visual | Tema "ingresso impresso": papel off-white, tinta quase preta, um acento vermelho, cantos retos, fonte Archivo | Escolhida entre três direções avaliadas. Detalhada mais adiante |
 | Back-end | Node.js + Express | Framework leve e direto, adequado ao escopo do desafio sem overhead de convenções de frameworks maiores (ex: NestJS) |
-| ORM | Prisma 7 | Migrations automáticas, schema declarativo fácil de versionar, type-safety, e suporte a `$transaction` com updates condicionais — necessário para não vender o mesmo lugar duas vezes (ver `SPEC.md` §2.1: a exclusividade vem do update condicional dentro da transação, não da constraint `@unique`, que só evita duplicidade de assento no cadastro). Três particularidades da versão 7 que explicam decisões visíveis no código: **(a)** o driver do banco não vem mais embutido — a conexão exige um *driver adapter* explícito, daí a dependência `@prisma/adapter-pg` e o `new PrismaClient({ adapter })` em `src/config/prisma.ts`; **(b)** o client gerado é ESM por padrão e usa `import.meta`, o que quebraria o CommonJS adotado na linha abaixo, por isso o gerador está fixado em `moduleFormat = "cjs"`; **(c)** o client é gerado dentro de `src/generated/`, e não em `node_modules` — por isso está no `.gitignore` e nas exclusões de ESLint e Prettier, e por isso `prisma generate` roda antes do `tsc` no script de build |
+| ORM | Prisma 7 | Migrations automáticas, schema versionável e transações com update condicional — o que impede vender o mesmo lugar duas vezes. Detalhes da versão 7 mais adiante |
 | Banco de dados | PostgreSQL | Relacional, com suporte forte a transactions e constraints — necessário para garantir integridade em reservas concorrentes |
 | Autenticação | JWT puro (sem Passport.js) | O sistema tem apenas uma estratégia de login (email/senha, 3 papéis fixos); Passport.js existe para orquestrar múltiplas estratégias (ex: OAuth), o que não se aplica aqui — JWT implementado diretamente é mais simples e mais fácil de justificar decisão por decisão |
 | Pagamento simulado | Asaas (sandbox) | Ambiente de testes de provedor real, já com familiaridade prévia |
 | Containerização | Docker + Docker Compose | Facilita reprodutibilidade do ambiente (API + Postgres) para o avaliador rodar localmente |
 | Deploy — Front | Vercel | Integração simples com Vite, free tier suficiente |
 | Deploy — Back + Banco | Render | Web Service + PostgreSQL gerenciado na mesma plataforma, reduzindo pontos de configuração externa |
-| Testes | Jest | Os testes mais críticos aqui (concorrência de reserva, transações) precisam rodar contra um Postgres real, não mocks — e Jest tem mais estrada rodada em testes de integração com banco em Node (setup/teardown global, controle de paralelismo entre workers para evitar conflito de dados). Ferramenta completa (runner + mocking + coverage) sem depender de outra peça do stack, e sem criar acoplamento com o Vite do `apps/web`, que não compartilha config de teste com a API. Roda sobre TypeScript via `ts-jest` — a configuração extra é o custo aceito em troca da maturidade acima. Cobertura focada na lógica crítica de negócio (concorrência de reserva, validação de QR), não no projeto inteiro |
+| Testes | Jest | Os testes que importam rodam contra um Postgres real, e ali pesa mais maturidade do que velocidade. Detalhado mais adiante |
 | QR Code (geração) | Lib `qrcode` | Gera a imagem a partir do payload assinado |
 | QR Code (anti-forjamento) | JWT assinado no payload | Reaproveita a mesma abordagem já usada na autenticação — o conteúdo do QR (ex: `ticketId`, `eventId`) é assinado com a chave secreta do servidor; sem essa chave, não é possível forjar um QR que passe na validação |
 | Leitura de QR (portaria) | `html5-qrcode` (client-side, via `getUserMedia`) | Permite leitura por câmera direto no navegador, sem necessidade de app nativo; complementado por digitação manual como alternativa |
@@ -44,6 +46,67 @@
 | Padronização de commits | Husky + lint-staged + Commitlint | `pre-commit` roda lint/format apenas nos arquivos staged; `commit-msg` valida o padrão Conventional Commits — garante histórico legível, que o desafio avalia explicitamente |
 | CI | GitHub Actions | Segunda camada de verificação: roda lint (e, a partir do Bloco 10, os testes) a cada `push`, independente da configuração local do desenvolvedor |
 | Fluxo de branches | Trabalho direto na `main`, sem branches nem pull requests | O projeto tem um único autor. Pull request existe para revisão por outra pessoa; abrir e aprovar o próprio PR seria cerimônia sem função, e um `PULL_REQUEST_TEMPLATE.md` que nunca fosse usado descreveria um processo inexistente. Por isso o CI é disparado por `push` e não por `pull_request` — do contrário nunca rodaria. A proteção contra código quebrado fica com os hooks locais (que bloqueiam antes do commit) e com o CI (que verifica depois do push) |
+
+## Decisões que Precisam de Mais Espaço
+
+Três escolhas da tabela acima têm consequências espalhadas pelo código, e
+resumi-las numa linha esconderia o que importa.
+
+### Prisma 7: três surpresas que aparecem no código
+
+A versão 7 mudou coisas que quem conhece as anteriores não espera:
+
+**O driver do banco não vem mais embutido.** A conexão exige um adapter
+explícito — daí a dependência `@prisma/adapter-pg` e o
+`new PrismaClient({ adapter })` em `src/config/prisma.ts`. Um
+`new PrismaClient()` sem argumento nem compila.
+
+**O client gerado é ESM por padrão** e usa `import.meta`, o que quebraria o
+CommonJS que a API adotou por causa do Jest. Por isso o gerador está fixado
+em `moduleFormat = "cjs"`.
+
+**O client é gerado dentro de `src/`**, e não mais em `node_modules`. Isso
+explica três coisas que de outra forma pareceriam arbitrárias: a pasta está
+no `.gitignore`, está excluída do ESLint e do Prettier, e o `prisma generate`
+roda antes do `tsc` no build. Quem clonar o projeto precisa gerar o client
+antes de compilar — o script de build já cuida disso.
+
+### Identidade visual: por que ingresso impresso
+
+A escolha foi entre três direções: cinema noturno (fundo escuro com acento
+âmbar de marquise), ingresso impresso, e editorial de alto contraste. A
+segunda venceu por ser coerente com o domínio — bilheteria — e por dar ao
+produto uma cara própria, em vez do tema neutro que acompanha o shadcn.
+
+O preset do gerador serviu só como base técnica. A paleta foi inteiramente
+substituída, e a fonte Geist que ele instala — muito associada ao visual
+padrão dessas ferramentas — deu lugar à Archivo, empacotada junto do projeto
+em vez de vir de CDN.
+
+Duas decisões pequenas que sustentam a referência: cantos de 2px, porque
+arredondamento generoso descaracterizaria um bilhete de papel; e numerais de
+largura fixa em preços, assentos e horários, para os dígitos não dançarem a
+cada atualização — o contador de 15 minutos da reserva torna isso visível.
+
+Existe um modo escuro definido com a mesma lógica invertida, ainda sem
+alternador na interface.
+
+### Jest: maturidade acima de velocidade
+
+O Vitest seria mais rápido e pediria menos configuração. Mas os testes
+decisivos deste projeto — dois clientes disputando o mesmo assento, reservas
+simultâneas estourando a capacidade — precisam rodar contra um Postgres de
+verdade, porque mock de ORM não reproduz o comportamento de uma transação.
+
+Nesse terreno pesa mais ter uma ferramenta com estrada rodada: preparação e
+limpeza do banco entre execuções, controle de quantos testes rodam em
+paralelo para não embaralharem os dados um do outro. O Jest também é completo
+sozinho, sem depender do Vite do front, que não compartilha configuração de
+teste com a API.
+
+O custo aceito foi precisar do `ts-jest` para rodar sobre TypeScript, e a
+API ter ficado em CommonJS para evitar a configuração experimental que o Jest
+exige com ESM.
 
 ## Convenções de Código
 

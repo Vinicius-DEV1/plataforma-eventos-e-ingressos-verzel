@@ -43,6 +43,8 @@ As decisões de produto e de arquitetura estão versionadas junto do código:
 - [`docs/DECISIONS.md`](docs/DECISIONS.md) — decisões de arquitetura, com as
   alternativas que foram descartadas e por quê
 - [`docs/TASKS.md`](docs/TASKS.md) — plano de execução e checklist de progresso
+- [`docs/AI_USAGE.md`](docs/AI_USAGE.md) — como a IA foi usada no processo, o
+  que foi feito sem ela e onde discordei das sugestões
 
 ## Pré-requisitos
 

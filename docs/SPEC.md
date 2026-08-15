@@ -87,7 +87,7 @@ um com QR e ciclo de validação independentes (PRD §3.7).
 | qrCode | string | JWT assinado (payload: `ticketId`, `eventId`) |
 | status | enum | `VALID` \| `USED` \| `CANCELLED` |
 | validatedAt | datetime \| null | |
-| validatedBy | string \| null | FK → User (usuário de portaria) |
+| validatedById | string \| null | FK → User (usuário de portaria). No schema Prisma existe também o campo de relação `validatedBy`, que navega até o `User` — a coluna e a navegação precisam de nomes distintos |
 | shareToken | string | token único para acesso via link |
 | createdAt | datetime | |
 
@@ -171,7 +171,7 @@ erDiagram
         string qrCode "JWT assinado"
         enum status "VALID|USED|CANCELLED"
         datetime validatedAt "nullable"
-        string validatedBy FK "nullable"
+        string validatedById FK "nullable"
         string shareToken UK
         datetime createdAt
     }
@@ -202,8 +202,27 @@ erDiagram
   informação.
 - `Payment` mantém relação 1:1 com `Reservation`: um pagamento recusado
   encerra a reserva, sem retentativa (ver §4.3).
-- `validatedBy` referencia o usuário de portaria que realizou a validação,
+- `validatedById` referencia o usuário de portaria que realizou a validação,
   servindo como trilha de auditoria.
+
+**Escolhas feitas na tradução para o schema:**
+
+- **Valores monetários** (`basePrice`, `totalAmount`, `amount`) usam
+  `Decimal(10, 2)`. A especificação dizia apenas "decimal"; duas casas
+  cobrem centavos e dez dígitos comportam qualquer preço plausível de
+  ingresso.
+- **Índices além dos automáticos**, escolhidos a partir das consultas que o
+  sistema vai fazer: `[status, startsAt]` em `Event` (a listagem pública
+  filtra pelos dois), `[eventId, status]` em `Seat` (o mapa de assentos),
+  `[eventId, status, expiresAt]` em `Reservation` (a expiração de reservas
+  vencidas varre exatamente esses três campos) e `[customerId]` para "minhas
+  reservas".
+- **`shareToken` nasce preenchido**, com valor gerado pelo próprio banco —
+  não precisa de código para criá-lo.
+- **Apagar um evento em cascata só alcança os assentos.** Nas demais
+  relações, apagar um registro que tenha reservas falha de propósito:
+  histórico de compra não deve sumir em silêncio. Na prática o sistema nunca
+  apaga eventos, apenas os cancela.
 
 ## 2. Regras de Concorrência
 
@@ -278,7 +297,7 @@ Procedimento (dentro da mesma transação da operação principal):
    - `CANCELLED` → retorna **inválido** (reserva cancelada ou evento
      cancelado pelo organizador)
    - `VALID` → marca como `USED`, registra `validatedAt` e
-     `validatedBy`, retorna **válido**
+     `validatedById`, retorna **válido**
 
 A marcação como `USED` ocorre dentro de uma transação com verificação
 condicional (`WHERE status = 'VALID'`), impedindo que duas leituras

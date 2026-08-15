@@ -311,14 +311,15 @@ Detalhamento em docs/TASKS.md (Bloco 1).
 
 | Código | ID | Descrição da Tarefa Atômica | Pasta | Referência | Verificado? |
 |---|---|---|---|---|---|
-| 1.1 | 1.1.01 | Definir model `User` no `schema.prisma` | apps/api | SPEC.md §1.1 | [ ] |
-| 1.1 | 1.1.02 | Definir model `Event` no `schema.prisma` | apps/api | SPEC.md §1.2 | [ ] |
-| 1.1 | 1.1.03 | Definir model `Seat` + constraint `@@unique([eventId, row, number])` | apps/api | SPEC.md §1.3 | [ ] |
-| 1.1 | 1.1.04 | Definir model `Reservation` (incl. `expiresAt` e status `EXPIRED`) | apps/api | SPEC.md §1.4 | [ ] |
-| 1.1 | 1.1.05 | Definir model `Ticket` (relação 1:N com `Reservation`) | apps/api | SPEC.md §1.5 | [ ] |
-| 1.1 | 1.1.06 | Definir model `Payment` | apps/api | SPEC.md §1.6 | [ ] |
-| 1.1 | 1.1.07 | Definir relacionamentos (FKs) entre os models | apps/api | SPEC.md §1.7 | [ ] |
-| 1.1 | 1.1.08 | Rodar primeira migration (`prisma migrate dev`) | apps/api | - | [ ] |
+| 1.1 | 1.1.01 | Definir model `User` no `schema.prisma` | apps/api | SPEC.md §1.1 | [x] |
+| 1.1 | 1.1.02 | Definir model `Event` no `schema.prisma` | apps/api | SPEC.md §1.2 | [x] |
+| 1.1 | 1.1.03 | Definir model `Seat` + constraint `@@unique([eventId, row, number])` | apps/api | SPEC.md §1.3 | [x] |
+| 1.1 | 1.1.04 | Definir model `Reservation` (incl. `expiresAt` e status `EXPIRED`) | apps/api | SPEC.md §1.4 | [x] |
+| 1.1 | 1.1.05 | Definir model `Ticket` (relação 1:N com `Reservation`) | apps/api | SPEC.md §1.5 | [x] |
+| 1.1 | 1.1.06 | Definir model `Payment` | apps/api | SPEC.md §1.6 | [x] |
+| 1.1 | 1.1.07 | Definir relacionamentos (FKs) entre os models | apps/api | SPEC.md §1.7 | [x] |
+| 1.1 | 1.1.08 | Rodar primeira migration (`prisma migrate dev`) | apps/api | - | [x] |
+| 1.1 | 1.1.09 | Definir convenção de datas em UTC (`TZ=UTC` no ambiente da API + util de data com as regras de prazo) | apps/api | PRD.md §3.13 | [x] |
 | 1.2 | 1.2.01 | Seed: 1 usuário organizador | apps/api/prisma | PRD.md §5 | [ ] |
 | 1.2 | 1.2.02 | Seed: 2 usuários clientes | apps/api/prisma | PRD.md §5 | [ ] |
 | 1.2 | 1.2.03 | Seed: 1 usuário portaria | apps/api/prisma | PRD.md §5 | [ ] |
@@ -326,8 +327,7 @@ Detalhamento em docs/TASKS.md (Bloco 1).
 | 1.2 | 1.2.05 | Seed: 1 evento tipo SHOW com estoque | apps/api/prisma | PRD.md §5 | [ ] |
 | 1.2 | 1.2.06 | Seed: 1 reserva paga com ingresso `VALID` (para testar portaria e link) | apps/api/prisma | PRD.md §5 | [ ] |
 | 1.2 | 1.2.07 | Seed: 1 ingresso já `USED` (para testar retorno "já utilizado") | apps/api/prisma | PRD.md §5 | [ ] |
-| 1.2 | 1.2.08 | Definir convenção de datas em UTC (util de data + config do Prisma) | apps/api | PRD.md §3.13 | [ ] |
-| 1.2 | 1.2.09 | Testar: validar dados semeados via Prisma Studio | apps/api | - | [ ] |
+| 1.2 | 1.2.08 | Testar: validar dados semeados via Prisma Studio | apps/api | - | [ ] |
 
 **Checkpoint de revisão:** dev roda o seed e confirma visualmente os dados
 no banco.

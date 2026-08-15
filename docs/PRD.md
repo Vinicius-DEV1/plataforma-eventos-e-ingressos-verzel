@@ -118,6 +118,8 @@ revenda entre usuários, explicitamente fora do escopo (seção 4).
 - Após esse prazo, o cancelamento **não é permitido**
 - Ao cancelar dentro do prazo, o assento (CINEMA) ou a quantidade (SHOW)
   correspondente volta a ficar disponível para outros clientes
+- **No limite exato de 24 horas, o cancelamento é permitido.** "Até 24 horas
+  antes" comporta as duas leituras; escolhemos a que favorece o cliente
 
 > Nota sobre a origem da regra: baseada em padrões comuns de mercado
 > (Ticketmaster, Eventim, Sympla costumam usar janelas de 24–48h). Optamos
@@ -215,7 +217,9 @@ Para permitir que o fluxo seja percorrido sem configuração manual:
 
 **Eventos**
 - 1 evento tipo `CINEMA` publicado, com mapa de assentos gerado e lugares
-  disponíveis
+  disponíveis. A sala tem **8 fileiras (A–H) por 12 assentos**, 96 lugares no
+  total — grande o bastante para o mapa parecer uma sala real, pequeno o
+  bastante para caber na tela sem rolagem
 - 1 evento tipo `SHOW` publicado, com estoque de ingressos disponível
 
 **Estado pré-existente** (permite testar cada tela isoladamente, sem
@@ -227,6 +231,18 @@ percorrer o fluxo inteiro antes)
 
 > Os dois eventos devem ter data futura o bastante para que o cancelamento
 > pelo cliente (janela de 24h, seção 3.8) seja testável.
+
+**Credenciais das contas semeadas**
+
+As quatro contas precisam estar documentadas no README: sem elas, quem clona
+o projeto não consegue entrar em nenhum papel. Como ficam publicadas de
+qualquer forma, a senha é simples e igual para todas — `senha123`. O hash
+gravado é bcrypt de verdade, pelo mesmo caminho do cadastro real; o que é
+fraco é o texto da senha, e só no banco de demonstração.
+
+Os e-mails seguem o papel, para dispensar consulta ao seed:
+`organizador@teste.com`, `cliente1@teste.com`, `cliente2@teste.com` e
+`portaria@teste.com`.
 
 ## 6. Métricas de Sucesso (critérios de aceite informais)
 
