@@ -161,12 +161,8 @@ comportamento do pagamento recusado, e cancelamento de evento em cascata.
 
 ## Decisões que Rejeitei ou Modifiquei em Relação à Sugestão Inicial da IA
 
-- **Jest no lugar de Vitest.** A recomendação era Vitest, por ser mais rápido
-  e exigir menos configuração. Escolhi Jest porque os testes que importam
-  neste projeto rodam contra um Postgres de verdade, e ali pesa mais a
-  maturidade da ferramenta do que a economia de setup. A consequência apareceu
-  depois: para o Jest funcionar sem contorno, a API precisou ficar em
-  CommonJS.
+- **Jest no lugar de Vitest.** Detalhe completo em `DECISIONS.md`, seção
+  "Decisões Descartadas".
 
 - **Ordem do Bloco 0.** O plano deixava lint, formatação e hooks de commit
   para depois do banco e do Docker. Questionei, e ficou claro que era melhor
@@ -234,3 +230,28 @@ Registro isso porque explica escolhas que, sem contexto, pareceriam
 arbitrárias — por exemplo, o TypeScript estar fixado na versão 6: a 7 está
 instalável, mas o `typescript-eslint` ainda não a suporta, e sem ele não há
 lint com informação de tipo.
+
+## Linha do Tempo
+
+Dias 1 e 2: análise do desafio, planejamento e escolha das tecnologias,
+estudo de como estruturar o processo. Foi quando nasceram PRD.md, SPEC.md,
+DECISIONS.md e TASKS.md, antes de qualquer linha de código.
+
+Dias 3 e 4 (em andamento): execução do plano, com a IA conduzindo o
+desenvolvimento enquanto reviso cada funcionalidade entregue, comparo com o
+planejado e corrijo pequenas lacunas que aparecem no caminho.
+
+(Seção em atualização conforme os próximos dias do projeto acontecem.)
+
+## Nota Final
+
+Agradeço a oportunidade de participar deste processo seletivo. Dediquei
+bastante tempo a este projeto, testando cada funcionalidade, revisando
+decisões e me certificando de entender o que foi construído, não só de que
+funciona.
+
+Sei que ainda tenho muito a aprender e me esforcei ao máximo em cada etapa
+deste projeto. Estou aberto a receber feedback e dicas sobre como conduzir
+melhor o desenvolvimento. Toda ferramenta ou tecnologia sugerida que eu não
+conhecia entrou no projeto só depois de eu estudar e pesquisar se realmente
+fazia sentido aplicá-la aqui, em vez de aceitar a sugestão por aceitar.

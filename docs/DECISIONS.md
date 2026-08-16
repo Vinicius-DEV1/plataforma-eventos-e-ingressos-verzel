@@ -8,10 +8,8 @@
 > **Método.** As decisões deste documento são minhas. Usei IA como ferramenta
 > de análise — levantar alternativas, expor trade-offs, checar fatos contra a
 > documentação oficial — mas a escolha final em cada linha foi minha, e em
-> parte dos casos contrariou a recomendação inicial da ferramenta. O runner de
-> testes é um exemplo: a sugestão era Vitest, optei por Jest pela maturidade em
-> testes de integração contra banco real. O registro de onde a IA foi
-> usada está em `docs/AI_USAGE.md`.
+> parte dos casos contrariou a recomendação inicial da ferramenta. O registro
+> de onde a IA foi usada está em `docs/AI_USAGE.md`.
 
 ## Stack Principal
 
@@ -22,7 +20,7 @@
 | Variáveis de ambiente | `--env-file-if-exists` nativo do Node, sem `dotenv` | O Node 24 carrega arquivos `.env` por conta própria, o que elimina uma dependência. A variante `if-exists` foi escolhida em vez de `--env-file` porque em produção não existe arquivo `.env` — Render e Docker injetam as variáveis pelo próprio ambiente — e a versão estrita abortaria o processo na ausência do arquivo. Cada app tem um `.env.example` versionado como modelo; o `.env` real nunca vai para o repositório |
 | Versão do TypeScript | 6.x, não a 7 | A 7 já está disponível, mas o `typescript-eslint` ainda não a suporta — a faixa que ele aceita para no 6.0. Sem ele não há lint com informação de tipo, que é justamente o que pega promise não aguardada dentro de uma transação. Ficar na 6 custa nada: o projeto não usa nenhum recurso exclusivo da versão nova |
 | Datas e fuso | Tudo em UTC, com `TZ=UTC` no processo e um utilitário único | O Prisma já grava em UTC, mas o processo Node roda no fuso da máquina — o que faria a mesma regra de prazo dar respostas diferentes aqui e no servidor. Fixar o fuso elimina isso. As duas regras sensíveis a tempo (expiração de 15 minutos, janela de 24 horas para cancelar) ficam num utilitário só, em vez de cada controller fazer sua própria conta de horas |
-| Formato de módulo (API) | CommonJS | Decisão tomada em função do Jest: rodar a suíte sobre ESM exige a flag `--experimental-vm-modules` no Node e configuração adicional no `ts-jest`, que é justamente a fricção apontada como ponto fraco do Jest quando ele foi escolhido no lugar do Vitest. Com CommonJS, o Jest roda sem nenhum desses ajustes. Na prática o `tsconfig.json` usa `module: nodenext`, que emite CommonJS porque o `package.json` da API não declara `"type": "module"` |
+| Formato de módulo (API) | CommonJS | Exigência do Jest — ver "Decisões Descartadas". Na prática o `tsconfig.json` usa `module: nodenext`, que emite CommonJS porque o `package.json` da API não declara `"type": "module"` |
 | Front-end | Vite + React (sem framework tipo Next.js) | O back-end já é servido separadamente por Express — um framework full-stack como Next.js adicionaria complexidade (SSR, rotas de API, Server Components) sem nenhum benefício real, já que a aplicação é 100% logada e não depende de SEO |
 | Roteamento (front) | React Router | Padrão maduro do ecossistema React sem framework full-stack; cobre rotas protegidas por papel e rotas dinâmicas sem fricção |
 | Estilização | Tailwind CSS + shadcn/ui, customizado | Tailwind acelera estilização mantendo consistência; shadcn/ui (construído sobre Radix UI) resolve componentes complexos (modal, dropdown, select) com acessibilidade pronta — porém com paleta, tipografia e componentes customizados para fugir da aparência padrão reconhecível ("AI slop"). Tailwind 4: a configuração é feita em CSS via `@theme`, sem `tailwind.config.js` |
@@ -36,7 +34,7 @@
 | Containerização | Docker + Docker Compose | Facilita reprodutibilidade do ambiente (API + Postgres) para o avaliador rodar localmente |
 | Deploy — Front | Vercel | Integração simples com Vite, free tier suficiente |
 | Deploy — Back + Banco | Render | Web Service + PostgreSQL gerenciado na mesma plataforma, reduzindo pontos de configuração externa |
-| Testes | Jest | Os testes que importam rodam contra um Postgres real, e ali pesa mais maturidade do que velocidade. Detalhado mais adiante |
+| Testes | Jest | Ver "Decisões Descartadas" — Vitest foi cogitado e perdeu para o Jest |
 | QR Code (geração) | Lib `qrcode` | Gera a imagem a partir do payload assinado |
 | QR Code (anti-forjamento) | JWT assinado no payload | Reaproveita a mesma abordagem já usada na autenticação — o conteúdo do QR (ex: `ticketId`, `eventId`) é assinado com a chave secreta do servidor; sem essa chave, não é possível forjar um QR que passe na validação |
 | Leitura de QR (portaria) | `html5-qrcode` (client-side, via `getUserMedia`) | Permite leitura por câmera direto no navegador, sem necessidade de app nativo; complementado por digitação manual como alternativa |
@@ -65,8 +63,8 @@ explícito — daí a dependência `@prisma/adapter-pg` e o
 `new PrismaClient()` sem argumento nem compila.
 
 **O client gerado é ESM por padrão** e usa `import.meta`, o que quebraria o
-CommonJS que a API adotou por causa do Jest. Por isso o gerador está fixado
-em `moduleFormat = "cjs"`.
+CommonJS que a API adotou. Por isso o gerador está fixado em
+`moduleFormat = "cjs"`.
 
 **O client é gerado dentro de `src/`**, e não mais em `node_modules`. Isso
 explica três coisas que de outra forma pareceriam arbitrárias: a pasta está
@@ -93,23 +91,6 @@ cada atualização — o contador de 15 minutos da reserva torna isso visível.
 
 Existe um modo escuro definido com a mesma lógica invertida, ainda sem
 alternador na interface.
-
-### Jest: maturidade acima de velocidade
-
-O Vitest seria mais rápido e pediria menos configuração. Mas os testes
-decisivos deste projeto — dois clientes disputando o mesmo assento, reservas
-simultâneas estourando a capacidade — precisam rodar contra um Postgres de
-verdade, porque mock de ORM não reproduz o comportamento de uma transação.
-
-Nesse terreno pesa mais ter uma ferramenta com estrada rodada: preparação e
-limpeza do banco entre execuções, controle de quantos testes rodam em
-paralelo para não embaralharem os dados um do outro. O Jest também é completo
-sozinho, sem depender do Vite do front, que não compartilha configuração de
-teste com a API.
-
-O custo aceito foi precisar do `ts-jest` para rodar sobre TypeScript, e a
-API ter ficado em CommonJS para evitar a configuração experimental que o Jest
-exige com ESM.
 
 ## Convenções de Código
 
@@ -166,13 +147,17 @@ Nomear bem é preferível a explicar depois.
   (`PAID` vs. `PAGO`) em bug de runtime, num domínio que tem cinco conjuntos
   de status distintos. O custo de TypeScript é concentrado no setup inicial; o
   benefício se acumula ao longo de todos os blocos seguintes.
-- **Vitest** — descartado em favor do Jest. Seria menos configuração (ESM e
-  TypeScript nativos, sem `ts-jest`) e mais rápido, mas a vantagem de
-  "compartilhar ferramenta com o Vite do `apps/web`" é ilusória: os dois apps
-  não compartilham config de teste nem de build. Como os testes decisivos aqui
-  são de integração contra um Postgres real (`SPEC.md` §6), pesou mais a
-  maturidade do Jest nesse cenário — setup/teardown de banco e controle de
-  paralelismo entre workers — do que a economia de configuração.
+- **Vitest** — descartado em favor do Jest. Seria mais rápido e exigiria
+  menos configuração (ESM e TypeScript nativos, sem `ts-jest`), mas os testes
+  decisivos deste projeto — dois clientes disputando o mesmo assento,
+  reservas simultâneas estourando a capacidade — precisam rodar contra um
+  Postgres de verdade (`SPEC.md` §6), porque mock de ORM não reproduz o
+  comportamento de uma transação. Nesse terreno pesa mais maturidade do que
+  velocidade: preparação/limpeza do banco entre execuções e controle de
+  paralelismo entre workers para os testes não embaralharem dados uns dos
+  outros. Custo aceito: `ts-jest` para rodar sobre TypeScript, e a API em
+  CommonJS — Jest sobre ESM exige `--experimental-vm-modules` no Node e
+  configuração extra no `ts-jest`.
 - **oxlint** — apareceu sem ser convidado: o template do Vite passou a
   instalá-lo como linter padrão do front. É bem mais rápido que o ESLint, por
   ser escrito em Rust. Removido mesmo assim, porque a API ia usar ESLint de
