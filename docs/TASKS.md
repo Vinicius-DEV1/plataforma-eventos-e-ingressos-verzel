@@ -479,10 +479,10 @@ reais e publicar um evento de cada tipo.
 | 3.2 | 3.2.04 | Rota `GET /eventos` (listagem pública, sem filtro ainda) | apps/api | SPEC.md §5.2 | [x] |
 | 3.2 | 3.2.05 | Rota `GET /eventos/:id` (detalhe público) | apps/api | SPEC.md §5.2 | [x] |
 | 3.2 | 3.2.06 | Documentar endpoints de catálogo e eventos no Swagger | apps/api | SPEC.md §5.2 | [x] |
-| 3.3 | 3.3.01 | Tela de busca no catálogo externo (painel organizador, com debounce ~400ms) | apps/web | SPEC.md §5.8 | [ ] |
-| 3.3 | 3.3.02 | Formulário de criação/edição de evento | apps/web | - | [ ] |
-| 3.3 | 3.3.03 | Listagem de eventos do organizador | apps/web | - | [ ] |
-| 3.3 | 3.3.04 | Testar: publicar 1 evento CINEMA e 1 evento SHOW reais | apps/web + apps/api | - | [ ] |
+| 3.3 | 3.3.01 | Tela de busca no catálogo externo (painel organizador, com debounce ~400ms) | apps/web | SPEC.md §5.8 | [x] |
+| 3.3 | 3.3.02 | Formulário de criação/edição de evento | apps/web | - | [x] |
+| 3.3 | 3.3.03 | Listagem de eventos do organizador | apps/web | - | [x] |
+| 3.3 | 3.3.04 | Testar: publicar 1 evento CINEMA e 1 evento SHOW reais | apps/web + apps/api | - | [x] |
 
 **Checkpoint de revisão:** dev, logado como organizador, busca um filme
 real e um show real e publica um evento de cada tipo.
@@ -1018,6 +1018,18 @@ do que está documentado no README.
 
 ---
 
+## Dívidas Técnicas
+
+Registro de lacunas conhecidas que não bloqueiam o bloco em que apareceram,
+mas precisam ficar visíveis em vez de esquecidas. Cada uma tem uma forma
+definida de ser resolvida, mesmo que ainda não tenha sido.
+
+| Item | Onde apareceu | Descrição | Como tratar | Status |
+|---|---|---|---|---|
+| Organizador não via eventos cancelados | Bloco 3.3 | `GET /eventos` só lista eventos `PUBLISHED` (é a listagem pública); o painel do organizador inicialmente reaproveitava essa rota e filtrava por `organizerId` no cliente, então um evento cancelado pelo próprio organizador desaparecia da lista dele | Criado `GET /eventos/meus` (organizador autenticado, retorna todos os status) e o front passou a consumir essa rota em vez de filtrar a listagem pública | **Resolvido** |
+| `apps/api/prisma/` fora da checagem de tipos do `tsc` | Bloco 1 | O ESLint foi corrigido para cobrir `prisma/` (regra type-aware com projeto sintético), mas o `tsc` do back-end ainda restringe a checagem a `src/` via `rootDir` — um erro de tipo em `prisma/seed.ts` não quebraria o build | Ajustar o `tsconfig.json` para incluir `prisma/` sem misturar esse código com o `rootDir` usado pelo build de produção (`dist/`), provavelmente com um `tsconfig` secundário só para checagem, sem `outDir` | Pendente |
+| `Payment` não é tocado no cancelamento de evento | Bloco 3.2 | A cascata de `DELETE /eventos/:id` cancela reservas e ingressos e libera assentos (SPEC.md §4.1), mas não existe integração de pagamento ainda (Bloco 5) — o registro de `Payment` de uma reserva que estava `PAID` fica com status desatualizado depois do cancelamento | Quando o Bloco 5 (Asaas) for implementado, incluir na mesma transação da cascata a atualização do `Payment` correspondente (ou o disparo do reembolso simulado) | Pendente — depende do Bloco 5 |
+
 ## Registro de Revisões
 
 Preenchido pelo desenvolvedor a cada checkpoint de bloco aprovado.
@@ -1027,7 +1039,7 @@ Preenchido pelo desenvolvedor a cada checkpoint de bloco aprovado.
 | 0 — Setup e Infraestrutura | 14/08/2026 | Vinicius | 36 tarefas concluídas. Desvios do plano original, todos registrados em `DECISIONS.md`: TypeScript adotado nos dois apps; Jest escolhido no lugar do Vitest; trabalho direto na `main`, sem pull requests, com o CI disparado por push; `.dockerignore` movido para a raiz (o contexto de build é o repositório inteiro). O TypeScript ficou na versão 6 porque o `typescript-eslint` ainda não suporta a 7. `AI_USAGE.md` adiado. |
 | 1 — Modelagem de Dados | 15/08/2026 | Vinicius | Schema completo com as 6 entidades, migration aplicada, convenção UTC. Seed com as 3 decisões do PRD.md §5 fixadas (sala 8×12, eventos a 30/45 dias, senha123) e expandido para 8 eventos no catálogo (além do mínimo de 2) para testar busca e filtro. Lacuna de configuração corrigida: `apps/api/prisma/` ficava fora do ESLint e do `tsc`. |
 | 2 — Autenticação | 15/08/2026 | Vinicius | Back-end (registro/login/me, middlewares `authenticate`/`requireRole`, CORS) e front-end (`AuthProvider`, tela de login, `PrivateRoute`, roteamento) testados manualmente com os 3 papéis semeados. Expiração do token de sessão (7 dias) definida durante a implementação, sem prazo prévio nos documentos — registrada em `DECISIONS.md`. |
-| 3 — Catálogo e Gestão de Eventos | | | |
+| 3 — Catálogo e Gestão de Eventos | 15/08/2026 | Vinicius | Catálogo (TMDb/Ticketmaster) com cache e tratamento de rate limit; CRUD de eventos do organizador com cancelamento em cascata; painel do organizador no front (busca com debounce, formulário de criação/edição, listagem). Dívida técnica identificada e corrigida no processo: `GET /eventos` pública só mostra `PUBLISHED`, então foi criada `GET /eventos/meus` para o organizador ver também os eventos que ele mesmo cancelou. Dívidas pendentes registradas na seção "Dívidas Técnicas". |
 | 4 — Reserva (Assento + Quantidade) | | | |
 | 5 — Pagamento Simulado | | | |
 | 6 — Ingresso, QR e Meus Ingressos | | | |

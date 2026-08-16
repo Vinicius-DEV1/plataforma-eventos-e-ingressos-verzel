@@ -3,7 +3,7 @@ import { PrivateRoute } from '@/components/PrivateRoute';
 import { AuthProvider } from '@/contexts/AuthProvider';
 import HomePage from '@/pages/HomePage';
 import LoginPage from '@/pages/LoginPage';
-import OrganizerPlaceholderPage from '@/pages/OrganizerPlaceholderPage';
+import OrganizerPage from '@/pages/OrganizerPage';
 
 export default function App() {
   return (
@@ -15,7 +15,7 @@ export default function App() {
           path="/organizador"
           element={
             <PrivateRoute roles={['ORGANIZER']}>
-              <OrganizerPlaceholderPage />
+              <OrganizerPage />
             </PrivateRoute>
           }
         />

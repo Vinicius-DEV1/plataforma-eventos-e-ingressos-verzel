@@ -4,6 +4,7 @@ import {
   createEvent,
   getEvent,
   listEvents,
+  listMyEvents,
   updateEvent,
 } from '../controllers/events.controller';
 import { authenticate } from '../middlewares/authenticate';
@@ -82,6 +83,33 @@ eventsRouter.post(
   authenticate,
   requireRole(Role.ORGANIZER),
   createEvent,
+);
+
+/**
+ * @openapi
+ * /eventos/meus:
+ *   get:
+ *     summary: Lista todos os eventos do organizador logado
+ *     description: >
+ *       Inclui eventos com qualquer status (PUBLISHED e CANCELLED) — a
+ *       listagem pública em `GET /eventos` só mostra os publicados, então
+ *       esta é a forma do organizador ver o que ele mesmo cancelou.
+ *     tags: [Eventos]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de eventos do organizador logado
+ *       401:
+ *         description: Não autenticado
+ *       403:
+ *         description: Papel diferente de ORGANIZER
+ */
+eventsRouter.get(
+  '/eventos/meus',
+  authenticate,
+  requireRole(Role.ORGANIZER),
+  listMyEvents,
 );
 
 /**

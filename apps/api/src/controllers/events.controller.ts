@@ -263,6 +263,18 @@ export async function cancelEvent(req: Request, res: Response) {
   res.status(204).send();
 }
 
+// Organizer-scoped listing, including CANCELLED events — the public
+// `listEvents` below only shows PUBLISHED ones, so an organizer needs this
+// to see what they cancelled.
+export async function listMyEvents(req: Request, res: Response) {
+  const events = await prisma.event.findMany({
+    where: { organizerId: req.user!.id },
+    orderBy: { startsAt: 'asc' },
+  });
+
+  res.json({ items: events.map(serializeEvent) });
+}
+
 export async function listEvents(_req: Request, res: Response) {
   const events = await prisma.event.findMany({
     where: { status: EventStatus.PUBLISHED },
