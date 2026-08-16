@@ -776,14 +776,14 @@ digitação, e os quatro estados são distinguíveis à primeira vista.
 
 | Código | ID | Descrição da Tarefa Atômica | Pasta | Referência | Verificado? |
 |---|---|---|---|---|---|
-| 7.1 | 7.1.01 | Service de validação de assinatura JWT do QR | apps/api | SPEC.md §3.2 | [~] |
-| 7.1 | 7.1.02 | Rota `POST /portaria/validar` — body `{ codigo, eventoId }` (assinatura + status + evento) | apps/api | SPEC.md §3.2, §5.7 | [~] |
-| 7.1 | 7.1.03 | Documentar endpoint de portaria no Swagger | apps/api | SPEC.md §5.7 | [~] |
-| 7.2 | 7.2.01 | Tela de seleção do evento a fiscalizar (início da sessão de portaria) | apps/web | PRD.md §3.9 | [~] |
-| 7.2 | 7.2.02 | Leitura via câmera (`html5-qrcode`) | apps/web | DECISIONS.md — Leitura de QR | [~] |
-| 7.2 | 7.2.03 | Campo de digitação manual como alternativa | apps/web | PRD.md §3.9 | [~] |
-| 7.2 | 7.2.04 | Feedback visual dos 4 estados (válido, inválido, já utilizado, evento errado) | apps/web | PRD.md §3.9 | [~] |
-| 7.2 | 7.2.05 | Testar: os 4 cenários de retorno usando dados semeados | apps/web + apps/api | - | [ ] |
+| 7.1 | 7.1.01 | Service de validação de assinatura JWT do QR | apps/api | SPEC.md §3.2 | [x] |
+| 7.1 | 7.1.02 | Rota `POST /portaria/validar` — body `{ codigo, eventoId }` (assinatura + status + evento) | apps/api | SPEC.md §3.2, §5.7 | [x] |
+| 7.1 | 7.1.03 | Documentar endpoint de portaria no Swagger | apps/api | SPEC.md §5.7 | [x] |
+| 7.2 | 7.2.01 | Tela de seleção do evento a fiscalizar (início da sessão de portaria) | apps/web | PRD.md §3.9 | [x] |
+| 7.2 | 7.2.02 | Leitura via câmera (`html5-qrcode`) | apps/web | DECISIONS.md — Leitura de QR | [x] |
+| 7.2 | 7.2.03 | Campo de digitação manual como alternativa | apps/web | PRD.md §3.9 | [x] |
+| 7.2 | 7.2.04 | Feedback visual dos 4 estados (válido, inválido, já utilizado, evento errado) | apps/web | PRD.md §3.9 | [x] |
+| 7.2 | 7.2.05 | Testar: os 4 cenários de retorno usando dados semeados | apps/web + apps/api | - | [x] |
 
 **Checkpoint de revisão:** dev testa os 4 cenários usando os dados
 semeados. Com este bloco aprovado, o fluxo ponta a ponta completo do
@@ -887,7 +887,21 @@ tanto pela API quanto pela interface.
 
 ---
 
-## Bloco 10 — Testes Automatizados
+## Bloco 10 — Refinamento de UX
+
+**Objetivo:** revisar a experiência visual e de interação em todas as telas
+já construídas (Blocos 2 a 9), agora que o catálogo completo de
+funcionalidades existe. Rodar depois das telas todas prontas, e não
+intercalado bloco a bloco, para refinar o app como um todo em vez de cada
+tela isolada — e porque um padrão criado aqui deve valer para as telas
+seguintes.
+
+Escopo, issues e tarefas atômicas ainda não definidos — a ser detalhado
+quando o bloco começar, depois do Bloco 9.
+
+---
+
+## Bloco 11 — Testes Automatizados
 
 **Objetivo:** cobrir a lógica crítica de negócio.
 
@@ -937,28 +951,28 @@ Pronto quando: a suíte inteira passa localmente e no CI.
 
 | Código | ID | Descrição da Tarefa Atômica | Pasta | Referência | Verificado? |
 |---|---|---|---|---|---|
-| 10.1 | 10.1.01 | Configurar Jest + `ts-jest` em `apps/api` | apps/api | DECISIONS.md — Testes | [ ] |
-| 10.1 | 10.1.02 | Configurar banco Postgres de teste (via Docker Compose) para testes transacionais | apps/api | SPEC.md §6 | [ ] |
-| 10.1 | 10.1.03 | Adicionar execução da suíte de testes ao workflow de CI | raiz | - | [ ] |
-| 10.2 | 10.2.01 | Teste: concorrência de reserva de assento | apps/api | SPEC.md §6 | [ ] |
-| 10.2 | 10.2.02 | Teste: concorrência de reserva por quantidade (overselling) | apps/api | SPEC.md §6 | [ ] |
-| 10.2 | 10.2.03 | Teste: validação de QR com assinatura válida | apps/api | SPEC.md §6 | [ ] |
-| 10.2 | 10.2.04 | Teste: validação de QR com assinatura forjada | apps/api | SPEC.md §6 | [ ] |
-| 10.2 | 10.2.05 | Teste: cancelamento dentro do prazo | apps/api | SPEC.md §6 | [ ] |
-| 10.2 | 10.2.06 | Teste: cancelamento fora do prazo | apps/api | SPEC.md §6 | [ ] |
-| 10.2 | 10.2.07 | Teste: expiração de reserva não paga após 15 min com devolução ao estoque | apps/api | SPEC.md §6, PRD.md §3.10 | [ ] |
-| 10.2 | 10.2.08 | Teste: reserva de quantidade N gera N ingressos | apps/api | SPEC.md §6, PRD.md §3.7 | [ ] |
-| 10.2 | 10.2.09 | Teste: cancelamento de evento em cascata (reservas + ingressos) | apps/api | SPEC.md §4.1, §6 | [ ] |
-| 10.2 | 10.2.10 | Teste: pagamento recusado encerra a reserva e devolve o estoque | apps/api | SPEC.md §4.3 | [ ] |
-| 10.2 | 10.2.11 | Teste de integração: criação de evento + reserva (fluxo feliz) | apps/api | SPEC.md §6 | [ ] |
-| 10.2 | 10.2.12 | Testar: rodar suíte completa e confirmar 100% passando | apps/api | - | [ ] |
+| 11.1 | 11.1.01 | Configurar Jest + `ts-jest` em `apps/api` | apps/api | DECISIONS.md — Testes | [ ] |
+| 11.1 | 11.1.02 | Configurar banco Postgres de teste (via Docker Compose) para testes transacionais | apps/api | SPEC.md §6 | [ ] |
+| 11.1 | 11.1.03 | Adicionar execução da suíte de testes ao workflow de CI | raiz | - | [ ] |
+| 11.2 | 11.2.01 | Teste: concorrência de reserva de assento | apps/api | SPEC.md §6 | [ ] |
+| 11.2 | 11.2.02 | Teste: concorrência de reserva por quantidade (overselling) | apps/api | SPEC.md §6 | [ ] |
+| 11.2 | 11.2.03 | Teste: validação de QR com assinatura válida | apps/api | SPEC.md §6 | [ ] |
+| 11.2 | 11.2.04 | Teste: validação de QR com assinatura forjada | apps/api | SPEC.md §6 | [ ] |
+| 11.2 | 11.2.05 | Teste: cancelamento dentro do prazo | apps/api | SPEC.md §6 | [ ] |
+| 11.2 | 11.2.06 | Teste: cancelamento fora do prazo | apps/api | SPEC.md §6 | [ ] |
+| 11.2 | 11.2.07 | Teste: expiração de reserva não paga após 15 min com devolução ao estoque | apps/api | SPEC.md §6, PRD.md §3.10 | [ ] |
+| 11.2 | 11.2.08 | Teste: reserva de quantidade N gera N ingressos | apps/api | SPEC.md §6, PRD.md §3.7 | [ ] |
+| 11.2 | 11.2.09 | Teste: cancelamento de evento em cascata (reservas + ingressos) | apps/api | SPEC.md §4.1, §6 | [ ] |
+| 11.2 | 11.2.10 | Teste: pagamento recusado encerra a reserva e devolve o estoque | apps/api | SPEC.md §4.3 | [ ] |
+| 11.2 | 11.2.11 | Teste de integração: criação de evento + reserva (fluxo feliz) | apps/api | SPEC.md §6 | [ ] |
+| 11.2 | 11.2.12 | Testar: rodar suíte completa e confirmar 100% passando | apps/api | - | [ ] |
 
 **Checkpoint de revisão:** dev roda a suíte de testes localmente e confirma
 que todos passam.
 
 ---
 
-## Bloco 11 — Docker Compose Final, Deploy e Documentação
+## Bloco 12 — Docker Compose Final, Deploy e Documentação
 
 **Objetivo:** projeto publicável e documentado, pronto para entrega.
 
@@ -1022,19 +1036,19 @@ apenas o README.
 
 | Código | ID | Descrição da Tarefa Atômica | Pasta | Referência | Verificado? |
 |---|---|---|---|---|---|
-| 11.1 | 11.1.01 | Finalizar `docker-compose.yml` (api + postgres, web opcional) | raiz | DECISIONS.md — Containerização | [ ] |
-| 11.1 | 11.1.02 | Deploy do back-end no Render (build command com `tsc`, start apontando para `dist/`) | apps/api | DECISIONS.md — Deploy Back, Linguagem | [ ] |
-| 11.1 | 11.1.03 | Configurar Postgres gerenciado no Render | infra | DECISIONS.md — Deploy Back | [ ] |
-| 11.1 | 11.1.04 | Deploy do front-end na Vercel | apps/web | DECISIONS.md — Deploy Front | [ ] |
-| 11.1 | 11.1.05 | Confirmar dados de teste semeados também em produção | infra | PRD.md §5 | [ ] |
-| 11.2 | 11.2.01 | README: pré-requisitos e setup local via Docker | raiz | - | [ ] |
-| 11.2 | 11.2.02 | README: variáveis de ambiente | raiz | - | [ ] |
-| 11.2 | 11.2.03 | README: como rodar o seed | raiz | - | [ ] |
-| 11.2 | 11.2.04 | README: links de deploy (produção) + link do Swagger (`/api-docs`) | raiz | - | [ ] |
-| 11.2 | 11.2.05 | README: aviso sobre cold start (~1 min) e sobre expiração do Postgres free do Render (30 dias + 14 de carência) | raiz | DECISIONS.md — Deploy Back | [ ] |
-| 11.2 | 11.2.06 | Revisar `docs/PRD.md`, `DECISIONS.md`, `SPEC.md` (ajustar se algo mudou na implementação) | docs | - | [ ] |
-| 11.2 | 11.2.07 | Preencher seções pendentes de `docs/AI_USAGE.md` | docs | - | [ ] |
-| 11.2 | 11.2.08 | Testar: percorrer fluxo completo em produção, do zero, como avaliador | raiz | - | [ ] |
+| 12.1 | 12.1.01 | Finalizar `docker-compose.yml` (api + postgres, web opcional) | raiz | DECISIONS.md — Containerização | [ ] |
+| 12.1 | 12.1.02 | Deploy do back-end no Render (build command com `tsc`, start apontando para `dist/`) | apps/api | DECISIONS.md — Deploy Back, Linguagem | [ ] |
+| 12.1 | 12.1.03 | Configurar Postgres gerenciado no Render | infra | DECISIONS.md — Deploy Back | [ ] |
+| 12.1 | 12.1.04 | Deploy do front-end na Vercel | apps/web | DECISIONS.md — Deploy Front | [ ] |
+| 12.1 | 12.1.05 | Confirmar dados de teste semeados também em produção | infra | PRD.md §5 | [ ] |
+| 12.2 | 12.2.01 | README: pré-requisitos e setup local via Docker | raiz | - | [ ] |
+| 12.2 | 12.2.02 | README: variáveis de ambiente | raiz | - | [ ] |
+| 12.2 | 12.2.03 | README: como rodar o seed | raiz | - | [ ] |
+| 12.2 | 12.2.04 | README: links de deploy (produção) + link do Swagger (`/api-docs`) | raiz | - | [ ] |
+| 12.2 | 12.2.05 | README: aviso sobre cold start (~1 min) e sobre expiração do Postgres free do Render (30 dias + 14 de carência) | raiz | DECISIONS.md — Deploy Back | [ ] |
+| 12.2 | 12.2.06 | Revisar `docs/PRD.md`, `DECISIONS.md`, `SPEC.md` (ajustar se algo mudou na implementação) | docs | - | [ ] |
+| 12.2 | 12.2.07 | Preencher seções pendentes de `docs/AI_USAGE.md` | docs | - | [ ] |
+| 12.2 | 12.2.08 | Testar: percorrer fluxo completo em produção, do zero, como avaliador | raiz | - | [ ] |
 
 **Checkpoint de revisão final:** dev percorre o fluxo completo em produção,
 do zero, como se fosse o avaliador — sem nenhuma configuração manual além
@@ -1067,8 +1081,9 @@ Preenchido pelo desenvolvedor a cada checkpoint de bloco aprovado.
 | 4 — Reserva (Assento + Quantidade) | 15/08/2026 | Vinicius | Back-end: `GET /eventos/:id/assentos`, expiração *lazy* de reservas vencidas, `POST /reservas/assento` e `POST /reservas/quantidade` com controle de concorrência (update condicional em transação nos dois fluxos), `GET /reservas/minhas`. Concorrência comprovada com dois scripts (`test:concurrency:seat`, `test:concurrency:quantity`) disputando o mesmo assento/estoque simultaneamente — só uma requisição vence em cada caso. Front-end: listagem de eventos, mapa de assentos, seletor de quantidade, tela de confirmação com contador dos 15 min. Correção no meio do bloco: `GET /eventos/:id` não rodava a expiração lazy que o `SPEC.md §2.3` exige — corrigido, pois a própria tela de detalhe dependia disso pra mostrar disponibilidade correta. |
 | 5 — Pagamento Simulado | 16/08/2026 | Vinicius | Integração real com o Asaas sandbox (não mockada): cliente com CPF de teste fixo e `notificationDisabled: true`, cobrança PIX com QR Code e copia-e-cola reais, pagamento com cartão de teste resolvido de forma síncrona pelo próprio Asaas (aprovação/recusa determinística pelo número usado), `POST /pagamentos/:reservaId/processar`, `GET /pagamentos/:id`, `POST /webhooks/asaas`, `POST /pagamentos/:id/simular-callback`, comprovante (`invoiceUrl`) exposto quando confirmado. Front-end: tela de checkout com escolha entre PIX e cartão, QR Code real, botão de confirmação manual (o webhook não alcança localhost), polling do status, comprovante. Escopo ampliado por decisão minha em relação ao plano original (só previa uma tela genérica) — detalhe em `AI_USAGE.md`. Testados os dois desfechos (confirmação e recusa) nas duas formas de pagamento, com devolução de assento/estoque na recusa confirmada. |
 | 6 — Ingresso, QR e Meus Ingressos | 16/08/2026 | Vinicius | Back-end: emissão de N ingressos (um por entrada) dentro da mesma transação de confirmação do pagamento, JWT assinado por ingresso sem expiração (validade controlada pelo `status` no banco, não pelo prazo do token), renderização do QR via lib `qrcode`, `GET /ingressos/meus`, `GET /ingressos/:id` e `GET /ingressos/compartilhar/:shareToken` (público, sem transferir titularidade). Front-end: tela "Meus Ingressos", detalhe com QR renderizado, botão de compartilhar que copia o link. Este é o marco de fluxo básico ponta a ponta (login → reservar → pagar → ver ingresso) que o desafio pede como prioridade, testado e confirmado, incluindo reserva SHOW gerando N QRs distintos. |
-| 7 — Portaria | | | |
+| 7 — Portaria | 16/08/2026 | Vinicius | Back-end: `verifyTicketToken` reaproveitado do Bloco 6, `POST /portaria/validar` seguindo a ordem exata do `SPEC.md §3.2` (assinatura → evento → status), marcação como `USED` por update condicional dentro de transação (mesmo idioma de concorrência dos Blocos 4/5). Front-end: seleção do evento no início da sessão, dois botões explícitos (escanear câmera via `html5-qrcode` ou digitar manualmente) em vez de ligar a câmera sozinha — decisão revisada depois de um primeiro rascunho ser rejeitado, ver `AI_USAGE.md` e `DECISIONS.md`. Papel GATEKEEPER redireciona direto para `/portaria`, sem passar pela home do cliente. Testados os 4 retornos (válido, inválido, já utilizado, evento errado) pela interface. Fecha o loop emissão → validação. |
 | 8 — Cancelamento e Devolução | | | |
 | 9 — Busca e Filtro | | | |
-| 10 — Testes Automatizados | | | |
-| 11 — Deploy e Documentação Final | | | |
+| 10 — Refinamento de UX | | | |
+| 11 — Testes Automatizados | | | |
+| 12 — Deploy e Documentação Final | | | |

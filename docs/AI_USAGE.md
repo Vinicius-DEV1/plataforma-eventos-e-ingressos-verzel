@@ -146,7 +146,7 @@ comportamento do pagamento recusado, e cancelamento de evento em cascata.
   Em ambos os casos, o script confirma que uma recebe `201` e a outra
   `409`. Escritos pela IA, mas rodados e conferidos por mim — é a forma de
   validar manualmente as garantias dos §2.1 e §2.2 do `SPEC.md` antes da
-  suíte automatizada do Bloco 10 existir.
+  suíte automatizada do Bloco 11 existir.
 - Integração com o Asaas sandbox (Bloco 5.1). O `User` do projeto não tem
   CPF/CNPJ, mas a API real do Asaas exige esse campo para criar um cliente
   antes da cobrança. Fui consultado sobre isso antes de qualquer código: ou
@@ -274,6 +274,16 @@ foi percebido e corrigido por mim, não deixado passar.
   GATEKEEPER direto para `/portaria` ao logar, sem passar pela home; o
   botão de sair, que só existia lá, foi movido para dentro da própria tela
   de portaria.
+
+- **Bloco de Refinamento de UX adicionado ao plano, por mim.** `TASKS.md`
+  não previa nenhuma etapa dedicada a revisar a experiência visual do
+  front-end — cada bloco entregava só a tela mínima pra fechar o fluxo
+  funcional daquele momento, e o resultado acumulado ficou raso demais.
+  Pedi a criação de um Bloco 10 (Refinamento de UX), posicionado depois do
+  Bloco 9 (Busca e Filtro) e antes dos Testes Automatizados — só depois que
+  todas as telas já existirem, pra revisar o app inteiro de uma vez em vez
+  de retocar tela por tela no meio de cada bloco funcional. Ainda sem
+  tarefas atômicas definidas, escopo a detalhar quando o bloco começar.
 
 ## Artefatos de Processo Versionados
 
