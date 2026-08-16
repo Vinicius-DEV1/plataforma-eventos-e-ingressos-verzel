@@ -8,6 +8,7 @@ import {
   SeatStatus,
 } from '../generated/prisma/enums';
 import * as asaas from '../integrations/asaas.client';
+import { issueTickets } from '../services/ticket.service';
 import { hasExpired } from '../utils/datetime';
 
 // Same pattern as ReservationError in reservations.controller.ts: carries
@@ -62,6 +63,18 @@ async function resolvePayment(
         data: { status: SeatStatus.SOLD },
       });
     }
+
+    // One ticket per entry (SPEC.md §3.1, PRD.md §3.7): 1 for a CINEMA seat,
+    // `quantity` for a SHOW reservation.
+    const entries = payment.reservation.seatId
+      ? 1
+      : (payment.reservation.quantity ?? 1);
+    await issueTickets(
+      tx,
+      payment.reservationId,
+      payment.reservation.eventId,
+      entries,
+    );
     return;
   }
 

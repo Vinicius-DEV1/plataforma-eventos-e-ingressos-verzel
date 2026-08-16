@@ -9,6 +9,7 @@ import { eventsRouter } from './routes/events.routes';
 import { healthRouter } from './routes/health.routes';
 import { paymentsRouter } from './routes/payments.routes';
 import { reservationsRouter } from './routes/reservations.routes';
+import { ticketsRouter } from './routes/tickets.routes';
 
 // Building the app is kept apart from starting it so integration tests can
 // instantiate it without binding a port.
@@ -36,6 +37,7 @@ export function createApp(): Express {
   app.use(eventsRouter);
   app.use(reservationsRouter);
   app.use(paymentsRouter);
+  app.use(ticketsRouter);
 
   return app;
 }

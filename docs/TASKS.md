@@ -587,9 +587,10 @@ sandbox.
 Título: [back-end] Integração com Asaas sandbox e endpoints de pagamento
 Labels: back-end
 
-Cobrança simulada no ambiente de testes do Asaas. A confirmação chega
-por três caminhos — polling, webhook e um endpoint de simulação —
-porque o webhook não alcança um servidor local; ver docs/SPEC.md §5.5.
+Cobrança simulada no ambiente de testes do Asaas, com PIX e cartão de
+crédito de teste. A confirmação chega por três caminhos — polling,
+webhook e um endpoint de simulação — porque o webhook não alcança um
+servidor local; ver docs/SPEC.md §5.5.
 
 - [ ] Client de integração com o Asaas sandbox
 - [ ] POST /pagamentos/:reservaId/processar
@@ -599,44 +600,66 @@ porque o webhook não alcança um servidor local; ver docs/SPEC.md §5.5.
 - [ ] Pagamento confirmado: reserva vira PAID e o assento vira SOLD
 - [ ] Pagamento recusado: reserva vira DECLINED e o estoque volta
 - [ ] Documentar os endpoints no Swagger
+- [ ] Client: buscar o QR Code PIX real da cobrança (GET /payments/:id/pixQrCode)
+- [ ] Client: pagamento com cartão de crédito de teste (POST /payments/:id/payWithCreditCard)
+- [ ] Cliente criado no Asaas com notificationDisabled: true (sem e-mails)
+- [ ] Expor invoiceUrl da cobrança (comprovante)
 
-Pronto quando: os dois desfechos funcionam, e a recusa devolve o
-assento ou a quantidade ao estoque.
+Pronto quando: os dois desfechos funcionam nas duas formas de
+pagamento, a recusa devolve o assento ou a quantidade ao estoque, e
+nenhum e-mail do Asaas é disparado.
 ```
 
 ```
 Título: [front-end] Tela de checkout
 Labels: front-end
 
-Pagamento simulado na interface, com o resultado visível para o cliente.
+Pagamento simulado na interface, com PIX ou cartão de crédito de
+teste, e o resultado visível para o cliente e para quem for avaliar o
+projeto.
 
-- [ ] Tela de checkout
+- [ ] Tela de checkout com escolha entre PIX e cartão de crédito
+- [ ] PIX: exibir o QR Code e o copia-e-cola reais devolvidos pelo Asaas
+- [ ] Cartão: usar um número de cartão de teste do Asaas sandbox
+- [ ] Botão "confirmar pagamento" (aciona /simular-callback), visível
+      porque o webhook do Asaas não alcança localhost — é assim que o
+      avaliador consegue ver o desfecho sem precisar de um túnel público
 - [ ] Polling do status do pagamento enquanto ele estiver pendente
 - [ ] Retorno visual distinto para confirmação e para recusa
+- [ ] Link "ver comprovante" (invoiceUrl) quando o pagamento é confirmado
 
-Pronto quando: o cliente conclui o pagamento pela interface e vê o
-desfecho, sem precisar recarregar a página.
+Pronto quando: o cliente conclui o pagamento pela interface, nas duas
+formas, e vê o desfecho e o comprovante sem precisar recarregar a página.
 ```
 
 **Tabela de Controle de Tarefas Atômicas**
 
 | Código | ID | Descrição da Tarefa Atômica | Pasta | Referência | Verificado? |
 |---|---|---|---|---|---|
-| 5.1 | 5.1.01 | Client de integração com Asaas sandbox | apps/api | DECISIONS.md — Pagamento simulado | [ ] |
-| 5.1 | 5.1.02 | Rota `POST /pagamentos/:reservaId/processar` | apps/api | SPEC.md §5.5 | [ ] |
-| 5.1 | 5.1.03 | Rota `GET /pagamentos/:id` (consumida via polling) | apps/api | SPEC.md §5.5 | [ ] |
-| 5.1 | 5.1.04 | Rota `POST /webhooks/asaas` (ativa em produção) | apps/api | SPEC.md §5.5 | [ ] |
-| 5.1 | 5.1.05 | Rota `POST /pagamentos/:id/simular-callback` (dev/testes) | apps/api | SPEC.md §5.5 | [ ] |
-| 5.1 | 5.1.06 | Lógica: pagamento confirmado → `Reserva.status = PAGA` e `Assento.status = VENDIDO` (CINEMA) | apps/api | SPEC.md §4.2 | [ ] |
-| 5.1 | 5.1.07 | Lógica: pagamento recusado → `Reserva.status = RECUSADA`, libera assento/estoque, sem retentativa | apps/api | PRD.md §3.6, SPEC.md §4.3 | [ ] |
-| 5.1 | 5.1.08 | Documentar endpoints de pagamento no Swagger | apps/api | SPEC.md §5.5 | [ ] |
-| 5.2 | 5.2.01 | Tela de checkout/pagamento simulado | apps/web | - | [ ] |
-| 5.2 | 5.2.02 | Polling do status do pagamento no front | apps/web | SPEC.md §5.5 | [ ] |
-| 5.2 | 5.2.03 | Feedback visual de confirmação/recusa | apps/web | - | [ ] |
-| 5.2 | 5.2.04 | Testar: os dois desfechos + liberação de assento/estoque na recusa | apps/web + apps/api | - | [ ] |
+| 5.1 | 5.1.01 | Client de integração com Asaas sandbox | apps/api | DECISIONS.md — Pagamento simulado | [x] |
+| 5.1 | 5.1.02 | Rota `POST /pagamentos/:reservaId/processar` | apps/api | SPEC.md §5.5 | [x] |
+| 5.1 | 5.1.03 | Rota `GET /pagamentos/:id` (consumida via polling) | apps/api | SPEC.md §5.5 | [x] |
+| 5.1 | 5.1.04 | Rota `POST /webhooks/asaas` (ativa em produção) | apps/api | SPEC.md §5.5 | [x] |
+| 5.1 | 5.1.05 | Rota `POST /pagamentos/:id/simular-callback` (dev/testes) | apps/api | SPEC.md §5.5 | [x] |
+| 5.1 | 5.1.06 | Lógica: pagamento confirmado → `Reserva.status = PAGA` e `Assento.status = VENDIDO` (CINEMA) | apps/api | SPEC.md §4.2 | [x] |
+| 5.1 | 5.1.07 | Lógica: pagamento recusado → `Reserva.status = RECUSADA`, libera assento/estoque, sem retentativa | apps/api | PRD.md §3.6, SPEC.md §4.3 | [x] |
+| 5.1 | 5.1.08 | Documentar endpoints de pagamento no Swagger | apps/api | SPEC.md §5.5 | [x] |
+| 5.1 | 5.1.09 | Client: QR Code PIX real da cobrança | apps/api | DECISIONS.md — Pagamento simulado | [x] |
+| 5.1 | 5.1.10 | Client: pagamento com cartão de crédito de teste | apps/api | DECISIONS.md — Pagamento simulado | [x] |
+| 5.1 | 5.1.11 | Cliente Asaas criado com `notificationDisabled: true` | apps/api | DECISIONS.md — Pagamento simulado | [x] |
+| 5.1 | 5.1.12 | Expor `invoiceUrl` da cobrança (comprovante) | apps/api | DECISIONS.md — Pagamento simulado | [x] |
+| 5.2 | 5.2.01 | Tela de checkout com escolha PIX/cartão | apps/web | - | [x] |
+| 5.2 | 5.2.02 | PIX: exibir QR Code + copia-e-cola reais | apps/web | - | [x] |
+| 5.2 | 5.2.03 | Cartão: formulário com número de teste do Asaas | apps/web | - | [x] |
+| 5.2 | 5.2.04 | Botão "confirmar pagamento" (aciona /simular-callback) | apps/web | SPEC.md §5.5 | [x] |
+| 5.2 | 5.2.05 | Polling do status do pagamento no front | apps/web | SPEC.md §5.5 | [x] |
+| 5.2 | 5.2.06 | Feedback visual de confirmação/recusa | apps/web | - | [x] |
+| 5.2 | 5.2.07 | Link "ver comprovante" (invoiceUrl) | apps/web | - | [x] |
+| 5.2 | 5.2.08 | Testar: os dois desfechos, nas duas formas de pagamento + liberação de assento/estoque na recusa | apps/web + apps/api | - | [x] |
 
 **Checkpoint de revisão:** dev testa os dois desfechos (confirmação e
-recusa) e confirma que a recusa libera o assento/estoque corretamente.
+recusa), nas duas formas de pagamento (PIX e cartão), e confirma que a
+recusa libera o assento/estoque corretamente.
 
 ---
 
@@ -687,14 +710,14 @@ visualização do QR inteiramente pela interface.
 
 | Código | ID | Descrição da Tarefa Atômica | Pasta | Referência | Verificado? |
 |---|---|---|---|---|---|
-| 6.1 | 6.1.01 | Service de geração de JWT assinado do ingresso (payload `ticketId`, `eventId`) | apps/api | SPEC.md §3.1 | [ ] |
-| 6.1 | 6.1.02 | Integração: gerar **N ingressos** ao confirmar pagamento (1 por entrada) | apps/api | SPEC.md §3.1, PRD.md §3.7 | [ ] |
-| 6.1 | 6.1.03 | Service de geração de imagem QR a partir do JWT (lib `qrcode`) | apps/api | DECISIONS.md — QR Code | [ ] |
-| 6.1 | 6.1.04 | Geração de `shareToken` (token único) | apps/api | SPEC.md §1.5 | [ ] |
-| 6.1 | 6.1.05 | Rota `GET /ingressos/meus` | apps/api | SPEC.md §5.6 | [ ] |
-| 6.1 | 6.1.06 | Rota `GET /ingressos/:id` | apps/api | SPEC.md §5.6 | [ ] |
-| 6.1 | 6.1.07 | Rota `GET /ingressos/compartilhar/:linkToken` (exibe ingresso completo com QR, sem transferir titularidade) | apps/api | SPEC.md §5.6, PRD.md §3.7 | [ ] |
-| 6.1 | 6.1.08 | Documentar endpoints de ingresso no Swagger | apps/api | SPEC.md §5.6 | [ ] |
+| 6.1 | 6.1.01 | Service de geração de JWT assinado do ingresso (payload `ticketId`, `eventId`) | apps/api | SPEC.md §3.1 | [~] |
+| 6.1 | 6.1.02 | Integração: gerar **N ingressos** ao confirmar pagamento (1 por entrada) | apps/api | SPEC.md §3.1, PRD.md §3.7 | [~] |
+| 6.1 | 6.1.03 | Service de geração de imagem QR a partir do JWT (lib `qrcode`) | apps/api | DECISIONS.md — QR Code | [~] |
+| 6.1 | 6.1.04 | Geração de `shareToken` (token único) | apps/api | SPEC.md §1.5 | [~] |
+| 6.1 | 6.1.05 | Rota `GET /ingressos/meus` | apps/api | SPEC.md §5.6 | [~] |
+| 6.1 | 6.1.06 | Rota `GET /ingressos/:id` | apps/api | SPEC.md §5.6 | [~] |
+| 6.1 | 6.1.07 | Rota `GET /ingressos/compartilhar/:linkToken` (exibe ingresso completo com QR, sem transferir titularidade) | apps/api | SPEC.md §5.6, PRD.md §3.7 | [~] |
+| 6.1 | 6.1.08 | Documentar endpoints de ingresso no Swagger | apps/api | SPEC.md §5.6 | [~] |
 | 6.2 | 6.2.01 | Tela "Meus Ingressos" (lista) | apps/web | - | [ ] |
 | 6.2 | 6.2.02 | Tela de detalhe do ingresso com QR renderizado | apps/web | - | [ ] |
 | 6.2 | 6.2.03 | Botão de compartilhar link | apps/web | - | [ ] |
@@ -1042,7 +1065,7 @@ Preenchido pelo desenvolvedor a cada checkpoint de bloco aprovado.
 | 2 — Autenticação | 15/08/2026 | Vinicius | Back-end (registro/login/me, middlewares `authenticate`/`requireRole`, CORS) e front-end (`AuthProvider`, tela de login, `PrivateRoute`, roteamento) testados manualmente com os 3 papéis semeados. Expiração do token de sessão (7 dias) definida durante a implementação, sem prazo prévio nos documentos — registrada em `DECISIONS.md`. |
 | 3 — Catálogo e Gestão de Eventos | 15/08/2026 | Vinicius | Catálogo (TMDb/Ticketmaster) com cache e tratamento de rate limit; CRUD de eventos do organizador com cancelamento em cascata; painel do organizador no front (busca com debounce, formulário de criação/edição, listagem). Dívida técnica identificada e corrigida no processo: `GET /eventos` pública só mostra `PUBLISHED`, então foi criada `GET /eventos/meus` para o organizador ver também os eventos que ele mesmo cancelou. Dívidas pendentes registradas na seção "Dívidas Técnicas". |
 | 4 — Reserva (Assento + Quantidade) | 15/08/2026 | Vinicius | Back-end: `GET /eventos/:id/assentos`, expiração *lazy* de reservas vencidas, `POST /reservas/assento` e `POST /reservas/quantidade` com controle de concorrência (update condicional em transação nos dois fluxos), `GET /reservas/minhas`. Concorrência comprovada com dois scripts (`test:concurrency:seat`, `test:concurrency:quantity`) disputando o mesmo assento/estoque simultaneamente — só uma requisição vence em cada caso. Front-end: listagem de eventos, mapa de assentos, seletor de quantidade, tela de confirmação com contador dos 15 min. Correção no meio do bloco: `GET /eventos/:id` não rodava a expiração lazy que o `SPEC.md §2.3` exige — corrigido, pois a própria tela de detalhe dependia disso pra mostrar disponibilidade correta. |
-| 5 — Pagamento Simulado | | | |
+| 5 — Pagamento Simulado | 16/08/2026 | Vinicius | Integração real com o Asaas sandbox (não mockada): cliente com CPF de teste fixo e `notificationDisabled: true`, cobrança PIX com QR Code e copia-e-cola reais, pagamento com cartão de teste resolvido de forma síncrona pelo próprio Asaas (aprovação/recusa determinística pelo número usado), `POST /pagamentos/:reservaId/processar`, `GET /pagamentos/:id`, `POST /webhooks/asaas`, `POST /pagamentos/:id/simular-callback`, comprovante (`invoiceUrl`) exposto quando confirmado. Front-end: tela de checkout com escolha entre PIX e cartão, QR Code real, botão de confirmação manual (o webhook não alcança localhost), polling do status, comprovante. Escopo ampliado por decisão minha em relação ao plano original (só previa uma tela genérica) — detalhe em `AI_USAGE.md`. Testados os dois desfechos (confirmação e recusa) nas duas formas de pagamento, com devolução de assento/estoque na recusa confirmada. |
 | 6 — Ingresso, QR e Meus Ingressos | | | |
 | 7 — Portaria | | | |
 | 8 — Cancelamento e Devolução | | | |
