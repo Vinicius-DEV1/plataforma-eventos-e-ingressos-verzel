@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../src/config/prisma';
 import { addDays, addMinutes, now } from '../src/utils/datetime';
+import { buildSeatMap, ROOM_CAPACITY } from '../src/utils/seatMap';
 import {
   Role,
   EventType,
@@ -12,8 +13,6 @@ import {
 } from '../src/generated/prisma/enums';
 
 const SEED_PASSWORD = 'senha123';
-const SEAT_ROWS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
-const SEATS_PER_ROW = 12;
 
 type CinemaEventInput = {
   title: string;
@@ -188,7 +187,7 @@ async function seedCinemaEvent(organizerId: string, input: CinemaEventInput) {
       venue: input.venue,
       startsAt: addDays(now(), input.daysFromNow),
       basePrice: input.basePrice,
-      totalCapacity: SEAT_ROWS.length * SEATS_PER_ROW,
+      totalCapacity: ROOM_CAPACITY,
       imageUrl: 'https://placehold.co/400x600?text=Cinema',
       externalSource: ExternalSource.TMDB,
       externalId: input.externalId,
@@ -196,14 +195,7 @@ async function seedCinemaEvent(organizerId: string, input: CinemaEventInput) {
     },
   });
 
-  const seatsData = SEAT_ROWS.flatMap((row) =>
-    Array.from({ length: SEATS_PER_ROW }, (_, index) => ({
-      eventId: event.id,
-      row,
-      number: index + 1,
-    })),
-  );
-  await prisma.seat.createMany({ data: seatsData });
+  await prisma.seat.createMany({ data: buildSeatMap(event.id) });
 
   const seats = await prisma.seat.findMany({
     where: { eventId: event.id },

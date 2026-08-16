@@ -473,12 +473,12 @@ reais e publicar um evento de cada tipo.
 | 3.1 | 3.1.04 | Rota `GET /catalogo/shows` | apps/api | SPEC.md §5.2 | [x] |
 | 3.1 | 3.1.05 | Cache em memória (TTL ~5 min) das respostas de catálogo | apps/api | SPEC.md §5.8 | [x] |
 | 3.1 | 3.1.06 | Tratamento de rate limit (HTTP 429) das APIs externas | apps/api | SPEC.md §5.8 | [x] |
-| 3.2 | 3.2.01 | Rota `POST /eventos` | apps/api | SPEC.md §5.2 | [ ] |
-| 3.2 | 3.2.02 | Rota `PUT /eventos/:id` | apps/api | SPEC.md §5.2 | [ ] |
-| 3.2 | 3.2.03 | Rota `DELETE /eventos/:id` — cancelamento em cascata (reservas + ingressos + reembolso) | apps/api | SPEC.md §4.1, PRD.md §3.11 | [ ] |
-| 3.2 | 3.2.04 | Rota `GET /eventos` (listagem pública, sem filtro ainda) | apps/api | SPEC.md §5.2 | [ ] |
-| 3.2 | 3.2.05 | Rota `GET /eventos/:id` (detalhe público) | apps/api | SPEC.md §5.2 | [ ] |
-| 3.2 | 3.2.06 | Documentar endpoints de catálogo e eventos no Swagger | apps/api | SPEC.md §5.2 | [ ] |
+| 3.2 | 3.2.01 | Rota `POST /eventos` | apps/api | SPEC.md §5.2 | [~] |
+| 3.2 | 3.2.02 | Rota `PUT /eventos/:id` | apps/api | SPEC.md §5.2 | [~] |
+| 3.2 | 3.2.03 | Rota `DELETE /eventos/:id` — cancelamento em cascata (reservas + ingressos + reembolso) | apps/api | SPEC.md §4.1, PRD.md §3.11 | [~] |
+| 3.2 | 3.2.04 | Rota `GET /eventos` (listagem pública, sem filtro ainda) | apps/api | SPEC.md §5.2 | [~] |
+| 3.2 | 3.2.05 | Rota `GET /eventos/:id` (detalhe público) | apps/api | SPEC.md §5.2 | [~] |
+| 3.2 | 3.2.06 | Documentar endpoints de catálogo e eventos no Swagger | apps/api | SPEC.md §5.2 | [~] |
 | 3.3 | 3.3.01 | Tela de busca no catálogo externo (painel organizador, com debounce ~400ms) | apps/web | SPEC.md §5.8 | [ ] |
 | 3.3 | 3.3.02 | Formulário de criação/edição de evento | apps/web | - | [ ] |
 | 3.3 | 3.3.03 | Listagem de eventos do organizador | apps/web | - | [ ] |
