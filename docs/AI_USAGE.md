@@ -40,10 +40,28 @@ controle sobre o que entra no repositório, preciso saber rodar cada comando
 sozinho, porque posso ser questionado sobre o projeto numa entrevista técnica
 — e isso não se aprende vendo a IA rodar por mim.
 
+Essa restrição é sobre comandos de terminal, não sobre editar arquivo. As
+chaves gratuitas do TMDb e do Ticketmaster, por exemplo, eu colei no chat e
+pedi para a IA salvar direto no `apps/api/.env` — um arquivo local, fora do
+Git (`.gitignore` cobre `.env`), então não há risco de ir para o
+repositório. A IA nunca reexibiu essas chaves depois de salvas.
+
 **Comentários no código só quando necessários.** O código vinha com blocos
 longos explicando o óbvio; pedi para enxugar, deixando comentário apenas onde
 há decisão não-óbvia ou armadilha conhecida. A justificativa longa foi para
 `DECISIONS.md`, que é o lugar dela.
+
+**Toda edição precisa ser explicada no chat, não só feita.** No Bloco 2,
+percebi que a ferramenta escrevia bastante código (contexto de autenticação,
+rotas protegidas) e só listava os arquivos, sem explicar o que cada peça
+fazia ou por quê. Pedi para parar: preciso entender o projeto inteiro para
+poder defendê-lo numa entrevista técnica, não só ter certeza de que ele
+funciona. A primeira tentativa de explicação veio densa demais — um resumo
+arquivo por arquivo, tudo de uma vez, difícil de acompanhar. Funcionou melhor
+quando a explicação seguiu a ordem em que as coisas realmente acontecem
+(ex: "o usuário manda a senha, aqui ela vira hash, aqui é comparada, aqui
+nasce o token..."), com o trecho de código de cada passo, e parando em
+pontos digestíveis para eu confirmar que entendi antes de continuar.
 
 ## Como Conduzi o Processo
 
@@ -95,6 +113,11 @@ comportamento do pagamento recusado, e cancelamento de evento em cascata.
 - Antecipação de problemas que eu não teria previsto. Antes de eu testar o
   Docker, apareceu que o `npm ci` falharia porque o arquivo de lock descreve
   os dois apps e o `.dockerignore` estava excluindo um deles.
+- Transparência quando uma ferramenta de busca na web falhou (erro interno,
+  não relacionado à pergunta): em vez de insistir ou inventar uma resposta,
+  a IA respondeu com o que já sabia (como gerar chaves gratuitas do TMDb e
+  do Ticketmaster), avisando explicitamente que não conseguiu confirmar ao
+  vivo, para eu checar direto na fonte se quisesse.
 - Identificação de uma lacuna de configuração no Bloco 1: `prisma/` ficava
   fora tanto do ESLint quanto do `tsc` do back-end — os dois cobrem só
   `src/`. Um script real como o de seed nunca seria checado no CI. Corrigi o
@@ -106,6 +129,12 @@ comportamento do pagamento recusado, e cancelamento de evento em cascata.
   portaria vai usar quando esse endpoint existir — e a senha das quatro
   contas é hash bcrypt real. Nenhum placeholder: o seed já serve de teste do
   fluxo real assim que o Bloco correspondente for implementado.
+- Depuração de um bug de ambiente que não tinha nada a ver com o código: o
+  login retornava 404 mesmo com o servidor local rodando e sem erro nenhum.
+  A causa era um container Docker antigo da API, de 17 horas atrás, ainda
+  segurando a porta 3333 — o `curl` estava batendo nesse container, não no
+  `npm run dev` novo. A ferramenta isolou a hipótese (`docker compose ps`)
+  antes de eu precisar adivinhar.
 
 ## O Que Fiz Sem IA / Com Maior Intervenção Manual
 

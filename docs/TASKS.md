@@ -467,12 +467,12 @@ reais e publicar um evento de cada tipo.
 
 | Código | ID | Descrição da Tarefa Atômica | Pasta | Referência | Verificado? |
 |---|---|---|---|---|---|
-| 3.1 | 3.1.01 | Client de integração com TMDb (busca filmes em cartaz) | apps/api | DECISIONS.md — API externa Cinema | [ ] |
-| 3.1 | 3.1.02 | Client de integração com Ticketmaster Discovery (busca eventos) | apps/api | DECISIONS.md — API externa Show | [ ] |
-| 3.1 | 3.1.03 | Rota `GET /catalogo/filmes` | apps/api | SPEC.md §5.2 | [ ] |
-| 3.1 | 3.1.04 | Rota `GET /catalogo/shows` | apps/api | SPEC.md §5.2 | [ ] |
-| 3.1 | 3.1.05 | Cache em memória (TTL ~5 min) das respostas de catálogo | apps/api | SPEC.md §5.8 | [ ] |
-| 3.1 | 3.1.06 | Tratamento de rate limit (HTTP 429) das APIs externas | apps/api | SPEC.md §5.8 | [ ] |
+| 3.1 | 3.1.01 | Client de integração com TMDb (busca filmes em cartaz) | apps/api | DECISIONS.md — API externa Cinema | [x] |
+| 3.1 | 3.1.02 | Client de integração com Ticketmaster Discovery (busca eventos) | apps/api | DECISIONS.md — API externa Show | [x] |
+| 3.1 | 3.1.03 | Rota `GET /catalogo/filmes` | apps/api | SPEC.md §5.2 | [x] |
+| 3.1 | 3.1.04 | Rota `GET /catalogo/shows` | apps/api | SPEC.md §5.2 | [x] |
+| 3.1 | 3.1.05 | Cache em memória (TTL ~5 min) das respostas de catálogo | apps/api | SPEC.md §5.8 | [x] |
+| 3.1 | 3.1.06 | Tratamento de rate limit (HTTP 429) das APIs externas | apps/api | SPEC.md §5.8 | [x] |
 | 3.2 | 3.2.01 | Rota `POST /eventos` | apps/api | SPEC.md §5.2 | [ ] |
 | 3.2 | 3.2.02 | Rota `PUT /eventos/:id` | apps/api | SPEC.md §5.2 | [ ] |
 | 3.2 | 3.2.03 | Rota `DELETE /eventos/:id` — cancelamento em cascata (reservas + ingressos + reembolso) | apps/api | SPEC.md §4.1, PRD.md §3.11 | [ ] |
@@ -1025,8 +1025,8 @@ Preenchido pelo desenvolvedor a cada checkpoint de bloco aprovado.
 | Bloco | Data | Aprovado por | Observações |
 |---|---|---|---|
 | 0 — Setup e Infraestrutura | 14/08/2026 | Vinicius | 36 tarefas concluídas. Desvios do plano original, todos registrados em `DECISIONS.md`: TypeScript adotado nos dois apps; Jest escolhido no lugar do Vitest; trabalho direto na `main`, sem pull requests, com o CI disparado por push; `.dockerignore` movido para a raiz (o contexto de build é o repositório inteiro). O TypeScript ficou na versão 6 porque o `typescript-eslint` ainda não suporta a 7. `AI_USAGE.md` adiado. |
-| 1 — Modelagem de Dados | | | |
-| 2 — Autenticação | | | |
+| 1 — Modelagem de Dados | 15/08/2026 | Vinicius | Schema completo com as 6 entidades, migration aplicada, convenção UTC. Seed com as 3 decisões do PRD.md §5 fixadas (sala 8×12, eventos a 30/45 dias, senha123) e expandido para 8 eventos no catálogo (além do mínimo de 2) para testar busca e filtro. Lacuna de configuração corrigida: `apps/api/prisma/` ficava fora do ESLint e do `tsc`. |
+| 2 — Autenticação | 15/08/2026 | Vinicius | Back-end (registro/login/me, middlewares `authenticate`/`requireRole`, CORS) e front-end (`AuthProvider`, tela de login, `PrivateRoute`, roteamento) testados manualmente com os 3 papéis semeados. Expiração do token de sessão (7 dias) definida durante a implementação, sem prazo prévio nos documentos — registrada em `DECISIONS.md`. |
 | 3 — Catálogo e Gestão de Eventos | | | |
 | 4 — Reserva (Assento + Quantidade) | | | |
 | 5 — Pagamento Simulado | | | |

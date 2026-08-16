@@ -31,6 +31,7 @@
 | ORM | Prisma 7 | Migrations automáticas, schema versionável e transações com update condicional — o que impede vender o mesmo lugar duas vezes. Detalhes da versão 7 mais adiante |
 | Banco de dados | PostgreSQL | Relacional, com suporte forte a transactions e constraints — necessário para garantir integridade em reservas concorrentes |
 | Autenticação | JWT puro (sem Passport.js) | O sistema tem apenas uma estratégia de login (email/senha, 3 papéis fixos); Passport.js existe para orquestrar múltiplas estratégias (ex: OAuth), o que não se aplica aqui — JWT implementado diretamente é mais simples e mais fácil de justificar decisão por decisão |
+| Expiração do token de sessão | 7 dias | Nenhum documento definia um prazo; escolhido como padrão razoável para um app de demonstração, sem fluxo de refresh token — expira, o usuário loga de novo |
 | Pagamento simulado | Asaas (sandbox) | Ambiente de testes de provedor real, já com familiaridade prévia |
 | Containerização | Docker + Docker Compose | Facilita reprodutibilidade do ambiente (API + Postgres) para o avaliador rodar localmente |
 | Deploy — Front | Vercel | Integração simples com Vite, free tier suficiente |
@@ -41,6 +42,8 @@
 | Leitura de QR (portaria) | `html5-qrcode` (client-side, via `getUserMedia`) | Permite leitura por câmera direto no navegador, sem necessidade de app nativo; complementado por digitação manual como alternativa |
 | API externa — Cinema | TMDb | Catálogo de filmes (nome, sinopse, poster) — sessões, sala e preço são definidos pela própria plataforma |
 | API externa — Show | Ticketmaster Discovery | Catálogo de eventos ao vivo reais (nome, data, local) — mapa de assentos, quando aplicável, ainda é definido pela própria plataforma, já que a API não expõe isso |
+| Autenticação com o TMDb | API Key v3 (query string), não o Read Access Token v4 (Bearer) | O TMDb aceita as duas formas para o mesmo resultado; a v3 é mais simples (um parâmetro na URL, sem header extra) e já era a que o `.env.example` previa |
+| Cache do catálogo externo | Mapa em memória por processo, TTL de 5 minutos, sem Redis | Evita estourar a cota diária do TMDb/Ticketmaster em buscas repetidas. Redis seria infraestrutura extra desnecessária para esse volume — o cache não precisa sobreviver a um restart do processo |
 | Documentação de API | OpenAPI via `swagger-ui-express` | Documentação interativa servida em `/api-docs` pela própria aplicação — o avaliador testa a API direto pela URL do deploy, sem instalar nada. Preferido a uma coleção Postman/Insomnia, que exigiria download + importação manual e ficaria facilmente dessincronizada do código |
 | Qualidade de código | ESLint (com `typescript-eslint`) + Prettier + `.editorconfig` | Padronização automática de estilo e detecção de problemas, consistente entre editores e entre os dois apps do monorepo; o parser do `typescript-eslint` é o que permite ao ESLint entender a sintaxe de TypeScript |
 | Padronização de commits | Husky + lint-staged + Commitlint | `pre-commit` roda lint/format apenas nos arquivos staged; `commit-msg` valida o padrão Conventional Commits — garante histórico legível, que o desafio avalia explicitamente |
