@@ -58,3 +58,31 @@ export type ReservationItem = {
   expiresAt: string;
   createdAt: string;
 };
+
+export type PaymentMethod = 'PIX' | 'CREDIT_CARD';
+export type PaymentStatus = 'PENDING' | 'CONFIRMED' | 'DECLINED';
+
+export type PixInfo = {
+  encodedImage: string;
+  payload: string;
+  expirationDate: string;
+};
+
+export type CreditCard = {
+  holderName: string;
+  number: string;
+  expiryMonth: string;
+  expiryYear: string;
+  ccv: string;
+};
+
+export type PaymentItem = {
+  id: string;
+  reservationId: string;
+  asaasPaymentId: string;
+  status: PaymentStatus;
+  amount: number;
+  createdAt: string;
+  invoiceUrl?: string | null;
+  pix?: PixInfo;
+};

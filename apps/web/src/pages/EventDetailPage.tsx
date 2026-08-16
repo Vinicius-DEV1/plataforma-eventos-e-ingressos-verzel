@@ -73,7 +73,7 @@ export default function EventDetailPage() {
         body: JSON.stringify(body),
       });
 
-      void navigate('/reservas/confirmacao', {
+      void navigate('/reservas/checkout', {
         state: { reservation, eventTitle: event.title },
       });
     } catch (err) {
