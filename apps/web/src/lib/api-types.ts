@@ -31,3 +31,30 @@ export type EventItem = {
   status: EventStatus;
   createdAt: string;
 };
+
+export type SeatStatus = 'AVAILABLE' | 'RESERVED' | 'SOLD';
+
+export type Seat = {
+  id: string;
+  eventId: string;
+  row: string;
+  number: number;
+  status: SeatStatus;
+};
+
+export type EventDetail = EventItem & { seats?: Seat[] };
+
+export type ReservationStatus =
+  'PENDING' | 'PAID' | 'DECLINED' | 'CANCELLED' | 'EXPIRED';
+
+export type ReservationItem = {
+  id: string;
+  eventId: string;
+  customerId: string;
+  seatId: string | null;
+  quantity: number | null;
+  status: ReservationStatus;
+  totalAmount: number;
+  expiresAt: string;
+  createdAt: string;
+};

@@ -559,16 +559,16 @@ tentar um assento já ocupado mostra erro em vez de falhar em silêncio.
 | 4.1 | 4.1.02 | Service de expiração *lazy* de reservas vencidas (usado antes de consultas/reservas) | apps/api | SPEC.md §2.3, PRD.md §3.10 | [x] |
 | 4.1 | 4.1.03 | Lógica de reserva de assento: `updateMany` condicional (`status = DISPONIVEL`) + checagem de `count`, dentro de transação; define `expiresAt` = +15 min | apps/api | SPEC.md §2.1, §2.3 | [x] |
 | 4.1 | 4.1.04 | Rota `POST /reservas/assento` | apps/api | SPEC.md §5.4 | [x] |
-| 4.1 | 4.1.05 | Lógica de reserva por quantidade com `prisma.$transaction` (define `expiresAt` = +15 min) | apps/api | SPEC.md §2.2, §2.3 | [~] |
-| 4.1 | 4.1.06 | Rota `POST /reservas/quantidade` | apps/api | SPEC.md §5.4 | [~] |
-| 4.1 | 4.1.07 | Rota `GET /reservas/minhas` | apps/api | SPEC.md §5.4 | [~] |
-| 4.1 | 4.1.08 | Documentar endpoints de reserva no Swagger | apps/api | SPEC.md §5.3, §5.4 | [~] |
-| 4.2 | 4.2.01 | Listagem de eventos (cards, sem filtro ainda) | apps/web | - | [ ] |
-| 4.2 | 4.2.02 | Tela de mapa de assentos (evento CINEMA) | apps/web | - | [ ] |
-| 4.2 | 4.2.03 | Tela de seleção de quantidade (evento SHOW) | apps/web | - | [ ] |
-| 4.2 | 4.2.04 | Tela de confirmação de reserva (com contador dos 15 min restantes) | apps/web | PRD.md §3.10 | [ ] |
-| 4.2 | 4.2.05 | Testar: reserva nos dois fluxos + reservar mesmo assento 2x deve falhar na 2ª | apps/web + apps/api | - | [ ] |
-| 4.2 | 4.2.06 | Testar: reserva não paga expira após 15 min e devolve o estoque | apps/web + apps/api | PRD.md §3.10 | [ ] |
+| 4.1 | 4.1.05 | Lógica de reserva por quantidade com `prisma.$transaction` (define `expiresAt` = +15 min) | apps/api | SPEC.md §2.2, §2.3 | [x] |
+| 4.1 | 4.1.06 | Rota `POST /reservas/quantidade` | apps/api | SPEC.md §5.4 | [x] |
+| 4.1 | 4.1.07 | Rota `GET /reservas/minhas` | apps/api | SPEC.md §5.4 | [x] |
+| 4.1 | 4.1.08 | Documentar endpoints de reserva no Swagger | apps/api | SPEC.md §5.3, §5.4 | [x] |
+| 4.2 | 4.2.01 | Listagem de eventos (cards, sem filtro ainda) | apps/web | - | [x] |
+| 4.2 | 4.2.02 | Tela de mapa de assentos (evento CINEMA) | apps/web | - | [x] |
+| 4.2 | 4.2.03 | Tela de seleção de quantidade (evento SHOW) | apps/web | - | [x] |
+| 4.2 | 4.2.04 | Tela de confirmação de reserva (com contador dos 15 min restantes) | apps/web | PRD.md §3.10 | [x] |
+| 4.2 | 4.2.05 | Testar: reserva nos dois fluxos + reservar mesmo assento 2x deve falhar na 2ª | apps/web + apps/api | - | [x] |
+| 4.2 | 4.2.06 | Testar: reserva não paga expira após 15 min e devolve o estoque | apps/web + apps/api | PRD.md §3.10 | [x] |
 
 **Checkpoint de revisão:** dev testa reserva nos dois fluxos, incluindo
 tentar reservar o mesmo assento duas vezes (a segunda tentativa deve
@@ -1041,7 +1041,7 @@ Preenchido pelo desenvolvedor a cada checkpoint de bloco aprovado.
 | 1 — Modelagem de Dados | 15/08/2026 | Vinicius | Schema completo com as 6 entidades, migration aplicada, convenção UTC. Seed com as 3 decisões do PRD.md §5 fixadas (sala 8×12, eventos a 30/45 dias, senha123) e expandido para 8 eventos no catálogo (além do mínimo de 2) para testar busca e filtro. Lacuna de configuração corrigida: `apps/api/prisma/` ficava fora do ESLint e do `tsc`. |
 | 2 — Autenticação | 15/08/2026 | Vinicius | Back-end (registro/login/me, middlewares `authenticate`/`requireRole`, CORS) e front-end (`AuthProvider`, tela de login, `PrivateRoute`, roteamento) testados manualmente com os 3 papéis semeados. Expiração do token de sessão (7 dias) definida durante a implementação, sem prazo prévio nos documentos — registrada em `DECISIONS.md`. |
 | 3 — Catálogo e Gestão de Eventos | 15/08/2026 | Vinicius | Catálogo (TMDb/Ticketmaster) com cache e tratamento de rate limit; CRUD de eventos do organizador com cancelamento em cascata; painel do organizador no front (busca com debounce, formulário de criação/edição, listagem). Dívida técnica identificada e corrigida no processo: `GET /eventos` pública só mostra `PUBLISHED`, então foi criada `GET /eventos/meus` para o organizador ver também os eventos que ele mesmo cancelou. Dívidas pendentes registradas na seção "Dívidas Técnicas". |
-| 4 — Reserva (Assento + Quantidade) | | | |
+| 4 — Reserva (Assento + Quantidade) | 15/08/2026 | Vinicius | Back-end: `GET /eventos/:id/assentos`, expiração *lazy* de reservas vencidas, `POST /reservas/assento` e `POST /reservas/quantidade` com controle de concorrência (update condicional em transação nos dois fluxos), `GET /reservas/minhas`. Concorrência comprovada com dois scripts (`test:concurrency:seat`, `test:concurrency:quantity`) disputando o mesmo assento/estoque simultaneamente — só uma requisição vence em cada caso. Front-end: listagem de eventos, mapa de assentos, seletor de quantidade, tela de confirmação com contador dos 15 min. Correção no meio do bloco: `GET /eventos/:id` não rodava a expiração lazy que o `SPEC.md §2.3` exige — corrigido, pois a própria tela de detalhe dependia disso pra mostrar disponibilidade correta. |
 | 5 — Pagamento Simulado | | | |
 | 6 — Ingresso, QR e Meus Ingressos | | | |
 | 7 — Portaria | | | |

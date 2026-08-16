@@ -24,9 +24,14 @@ export default function HomePage() {
               <span className="text-muted-foreground">{user.role}</span>
             </p>
             <div className="flex flex-wrap gap-3">
-              <Button asChild variant="outline">
-                <Link to="/organizador">Testar rota do organizador</Link>
+              <Button asChild>
+                <Link to="/eventos">Ver eventos</Link>
               </Button>
+              {user.role === 'ORGANIZER' && (
+                <Button asChild variant="outline">
+                  <Link to="/organizador">Painel do organizador</Link>
+                </Button>
+              )}
               <Button variant="secondary" onClick={logout}>
                 Sair
               </Button>
@@ -37,9 +42,14 @@ export default function HomePage() {
             <p className="text-muted-foreground text-sm">
               Você não está logado.
             </p>
-            <Button asChild>
-              <Link to="/login">Entrar</Link>
-            </Button>
+            <div className="flex flex-wrap gap-3">
+              <Button asChild>
+                <Link to="/eventos">Ver eventos</Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link to="/login">Entrar</Link>
+              </Button>
+            </div>
           </>
         )}
       </div>

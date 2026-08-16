@@ -289,9 +289,31 @@ export async function getEvent(req: Request, res: Response) {
   // Express types `req.params` values as `string | string[]` to account for
   // wildcard routes; `:id` never matches more than one segment.
   const id = req.params.id as string;
-  const event = await prisma.event.findUnique({
-    where: { id },
-    include: { seats: { orderBy: [{ row: 'asc' }, { number: 'asc' }] } },
+
+  const event = await prisma.$transaction(async (tx) => {
+    const exists = await tx.event.findUnique({
+      where: { id },
+      select: { type: true },
+    });
+    if (!exists) return null;
+
+    // Lazy expiration (SPEC.md §2.3): this endpoint is one of the four
+    // listed as needing it, since it's how the reservation screens read
+    // seat/stock availability before disputing it. Runs before the real
+    // read below so a SHOW's `availableTickets` reflects any stock just
+    // returned by an expired reservation.
+    await expireStaleReservations(tx, id);
+
+    const found = await tx.event.findUnique({ where: { id } });
+    if (!found) return null;
+
+    if (found.type !== EventType.CINEMA) return { ...found, seats: [] };
+
+    const seats = await tx.seat.findMany({
+      where: { eventId: id },
+      orderBy: [{ row: 'asc' }, { number: 'asc' }],
+    });
+    return { ...found, seats };
   });
 
   if (!event) {
