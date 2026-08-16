@@ -53,6 +53,7 @@ enum PaymentStatus {
   PENDING
   CONFIRMED
   DECLINED
+  REFUNDED
 }
 
 model User {

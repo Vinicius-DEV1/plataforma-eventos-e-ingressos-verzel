@@ -60,7 +60,7 @@ export type ReservationItem = {
 };
 
 export type PaymentMethod = 'PIX' | 'CREDIT_CARD';
-export type PaymentStatus = 'PENDING' | 'CONFIRMED' | 'DECLINED';
+export type PaymentStatus = 'PENDING' | 'CONFIRMED' | 'DECLINED' | 'REFUNDED';
 
 export type PixInfo = {
   encodedImage: string;

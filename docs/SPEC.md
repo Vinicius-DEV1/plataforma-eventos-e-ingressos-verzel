@@ -100,7 +100,7 @@ Registro da transação simulada via Asaas sandbox.
 | id | string | |
 | reservationId | string | FK → Reservation (1:1) |
 | asaasPaymentId | string | referência no sandbox Asaas |
-| status | enum | `PENDING` \| `CONFIRMED` \| `DECLINED` |
+| status | enum | `PENDING` \| `CONFIRMED` \| `DECLINED` \| `REFUNDED` |
 | amount | decimal | |
 | createdAt | datetime | |
 
@@ -180,7 +180,7 @@ erDiagram
         string id PK
         string reservationId FK
         string asaasPaymentId
-        enum status "PENDING|CONFIRMED|DECLINED"
+        enum status "PENDING|CONFIRMED|DECLINED|REFUNDED"
         decimal amount
         datetime createdAt
     }
@@ -315,6 +315,8 @@ simultâneas do mesmo QR sejam ambas aceitas.
    - Se `CINEMA`: devolver o `Seat` para `AVAILABLE`
    - Se `SHOW`: incrementar `availableTickets` de volta
    - Atualizar **todos** os `Ticket` vinculados à reserva para `CANCELLED`
+   - Chamar o estorno na Asaas sandbox (`POST /payments/:id/refund`) e
+     atualizar `Payment.status` para `REFUNDED`
 
 ### 4.1 Cancelamento de Evento pelo Organizador
 
@@ -325,8 +327,10 @@ simultâneas do mesmo QR sejam ambas aceitas.
 2. `Event.status → CANCELLED`
 3. Todas as `Reservation` com status `PENDING` ou `PAID` → `CANCELLED`
 4. Todos os `Ticket` com status `VALID` → `CANCELLED`
-5. Reservas que estavam `PAID` geram reembolso total simulado — **a janela
-   de 24h não se aplica**, pois o cancelamento partiu do organizador
+5. Reservas que estavam `PAID` geram reembolso total simulado — mesma
+   chamada de estorno do §4.0 (`POST /payments/:id/refund` na Asaas
+   sandbox, `Payment.status → REFUNDED`) — **a janela de 24h não se
+   aplica**, pois o cancelamento partiu do organizador
 6. Ingressos `USED` permanecem inalterados (trilha de auditoria)
 7. Assentos do evento voltam a `AVAILABLE`
 
@@ -361,6 +365,15 @@ implementação.
 | — | `VALID` | Criado na confirmação do pagamento (1 por entrada) |
 | `VALID` | `USED` | Validado na portaria (§3.2) |
 | `VALID` | `CANCELLED` | Cancelamento pelo cliente (§4) ou do evento (§4.1) |
+
+**`Payment`**
+
+| De | Para | Quando |
+|---|---|---|
+| — | `PENDING` | Cobrança criada na Asaas sandbox |
+| `PENDING` | `CONFIRMED` | Pagamento confirmado (webhook, polling ou simulação) |
+| `PENDING` | `DECLINED` | Pagamento recusado (§4.3) |
+| `CONFIRMED` | `REFUNDED` | Cancelamento pelo cliente (§4.0) ou do evento (§4.1) — estorno na Asaas sandbox |
 
 ### 4.3 Pagamento Recusado
 

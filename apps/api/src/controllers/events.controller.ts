@@ -4,10 +4,12 @@ import {
   EventStatus,
   EventType,
   ExternalSource,
+  PaymentStatus,
   ReservationStatus,
   SeatStatus,
   TicketStatus,
 } from '../generated/prisma/enums';
+import * as asaas from '../integrations/asaas.client';
 import { expireStaleReservations } from '../services/reservationExpiration.service';
 import { buildSeatMap, ROOM_CAPACITY } from '../utils/seatMap';
 
@@ -231,6 +233,13 @@ export async function cancelEvent(req: Request, res: Response) {
   }
 
   await prisma.$transaction(async (tx) => {
+    // Lido antes do updateMany abaixo apagar o status PAID que identifica
+    // quais reservas tinham pagamento a estornar.
+    const paidReservations = await tx.reservation.findMany({
+      where: { eventId: id, status: ReservationStatus.PAID },
+      include: { payment: true },
+    });
+
     await tx.event.update({
       where: { id },
       data: { status: EventStatus.CANCELLED },
@@ -259,6 +268,18 @@ export async function cancelEvent(req: Request, res: Response) {
       },
       data: { status: SeatStatus.AVAILABLE },
     });
+
+    // Reembolso total simulado (SPEC.md §4.1) — estornado na Asaas sandbox
+    // para cada reserva que já estava paga; a janela de 24h não se aplica
+    // aqui, o cancelamento partiu do organizador.
+    for (const reservation of paidReservations) {
+      if (!reservation.payment) continue;
+      await asaas.refundPayment(reservation.payment.asaasPaymentId);
+      await tx.payment.update({
+        where: { id: reservation.payment.id },
+        data: { status: PaymentStatus.REFUNDED },
+      });
+    }
   });
 
   res.status(204).send();

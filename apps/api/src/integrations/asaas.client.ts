@@ -142,3 +142,16 @@ export async function getInvoiceUrl(asaasPaymentId: string): Promise<string> {
   const payment = await asaasFetch<AsaasPayment>(`/payments/${asaasPaymentId}`);
   return payment.invoiceUrl;
 }
+
+// Reembolso total — não há reembolso parcial no escopo do desafio
+// (PRD.md §3.8), então o corpo da requisição fica vazio (default da Asaas
+// é devolver o valor inteiro da cobrança).
+export async function refundPayment(
+  asaasPaymentId: string,
+): Promise<{ status: string }> {
+  const payment = await asaasFetch<AsaasPayment>(
+    `/payments/${asaasPaymentId}/refund`,
+    { method: 'POST' },
+  );
+  return { status: payment.status };
+}

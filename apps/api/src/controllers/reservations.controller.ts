@@ -3,10 +3,12 @@ import { prisma } from '../config/prisma';
 import {
   EventStatus,
   EventType,
+  PaymentStatus,
   ReservationStatus,
   SeatStatus,
   TicketStatus,
 } from '../generated/prisma/enums';
+import * as asaas from '../integrations/asaas.client';
 import { expireStaleReservations } from '../services/reservationExpiration.service';
 import {
   isWithinCancellationWindow,
@@ -191,7 +193,7 @@ export async function cancelReservation(req: Request, res: Response) {
     const reservation = await prisma.$transaction(async (tx) => {
       const existing = await tx.reservation.findUnique({
         where: { id },
-        include: { event: true },
+        include: { event: true, payment: true },
       });
       if (!existing) {
         throw new ReservationError(404, 'Reserva não encontrada.');
@@ -247,6 +249,17 @@ export async function cancelReservation(req: Request, res: Response) {
         where: { reservationId: id },
         data: { status: TicketStatus.CANCELLED },
       });
+
+      // Reembolso total simulado (PRD.md §3.8), estornado de verdade na
+      // Asaas sandbox — mesma cobrança criada no Bloco 5, não uma segunda
+      // simulação isolada.
+      if (existing.payment) {
+        await asaas.refundPayment(existing.payment.asaasPaymentId);
+        await tx.payment.update({
+          where: { id: existing.payment.id },
+          data: { status: PaymentStatus.REFUNDED },
+        });
+      }
 
       return tx.reservation.findUniqueOrThrow({ where: { id } });
     });
