@@ -6,6 +6,7 @@ import { swaggerSpec } from './config/swagger';
 import { authRouter } from './routes/auth.routes';
 import { catalogRouter } from './routes/catalog.routes';
 import { eventsRouter } from './routes/events.routes';
+import { gatekeeperRouter } from './routes/gatekeeper.routes';
 import { healthRouter } from './routes/health.routes';
 import { paymentsRouter } from './routes/payments.routes';
 import { reservationsRouter } from './routes/reservations.routes';
@@ -38,6 +39,7 @@ export function createApp(): Express {
   app.use(reservationsRouter);
   app.use(paymentsRouter);
   app.use(ticketsRouter);
+  app.use(gatekeeperRouter);
 
   return app;
 }

@@ -710,19 +710,19 @@ visualização do QR inteiramente pela interface.
 
 | Código | ID | Descrição da Tarefa Atômica | Pasta | Referência | Verificado? |
 |---|---|---|---|---|---|
-| 6.1 | 6.1.01 | Service de geração de JWT assinado do ingresso (payload `ticketId`, `eventId`) | apps/api | SPEC.md §3.1 | [~] |
-| 6.1 | 6.1.02 | Integração: gerar **N ingressos** ao confirmar pagamento (1 por entrada) | apps/api | SPEC.md §3.1, PRD.md §3.7 | [~] |
-| 6.1 | 6.1.03 | Service de geração de imagem QR a partir do JWT (lib `qrcode`) | apps/api | DECISIONS.md — QR Code | [~] |
-| 6.1 | 6.1.04 | Geração de `shareToken` (token único) | apps/api | SPEC.md §1.5 | [~] |
-| 6.1 | 6.1.05 | Rota `GET /ingressos/meus` | apps/api | SPEC.md §5.6 | [~] |
-| 6.1 | 6.1.06 | Rota `GET /ingressos/:id` | apps/api | SPEC.md §5.6 | [~] |
-| 6.1 | 6.1.07 | Rota `GET /ingressos/compartilhar/:linkToken` (exibe ingresso completo com QR, sem transferir titularidade) | apps/api | SPEC.md §5.6, PRD.md §3.7 | [~] |
-| 6.1 | 6.1.08 | Documentar endpoints de ingresso no Swagger | apps/api | SPEC.md §5.6 | [~] |
-| 6.2 | 6.2.01 | Tela "Meus Ingressos" (lista) | apps/web | - | [~] |
-| 6.2 | 6.2.02 | Tela de detalhe do ingresso com QR renderizado | apps/web | - | [~] |
-| 6.2 | 6.2.03 | Botão de compartilhar link | apps/web | - | [~] |
-| 6.2 | 6.2.04 | Testar: reserva de N ingressos (SHOW) gera N QRs distintos | apps/web + apps/api | PRD.md §3.7 | [ ] |
-| 6.2 | 6.2.05 | Testar: fluxo ponta a ponta completo (login cliente → reservar → pagar → ver QR) | apps/web + apps/api | - | [ ] |
+| 6.1 | 6.1.01 | Service de geração de JWT assinado do ingresso (payload `ticketId`, `eventId`) | apps/api | SPEC.md §3.1 | [x] |
+| 6.1 | 6.1.02 | Integração: gerar **N ingressos** ao confirmar pagamento (1 por entrada) | apps/api | SPEC.md §3.1, PRD.md §3.7 | [x] |
+| 6.1 | 6.1.03 | Service de geração de imagem QR a partir do JWT (lib `qrcode`) | apps/api | DECISIONS.md — QR Code | [x] |
+| 6.1 | 6.1.04 | Geração de `shareToken` (token único) | apps/api | SPEC.md §1.5 | [x] |
+| 6.1 | 6.1.05 | Rota `GET /ingressos/meus` | apps/api | SPEC.md §5.6 | [x] |
+| 6.1 | 6.1.06 | Rota `GET /ingressos/:id` | apps/api | SPEC.md §5.6 | [x] |
+| 6.1 | 6.1.07 | Rota `GET /ingressos/compartilhar/:linkToken` (exibe ingresso completo com QR, sem transferir titularidade) | apps/api | SPEC.md §5.6, PRD.md §3.7 | [x] |
+| 6.1 | 6.1.08 | Documentar endpoints de ingresso no Swagger | apps/api | SPEC.md §5.6 | [x] |
+| 6.2 | 6.2.01 | Tela "Meus Ingressos" (lista) | apps/web | - | [x] |
+| 6.2 | 6.2.02 | Tela de detalhe do ingresso com QR renderizado | apps/web | - | [x] |
+| 6.2 | 6.2.03 | Botão de compartilhar link | apps/web | - | [x] |
+| 6.2 | 6.2.04 | Testar: reserva de N ingressos (SHOW) gera N QRs distintos | apps/web + apps/api | PRD.md §3.7 | [x] |
+| 6.2 | 6.2.05 | Testar: fluxo ponta a ponta completo (login cliente → reservar → pagar → ver QR) | apps/web + apps/api | - | [x] |
 
 **Checkpoint de revisão:** dev percorre o fluxo completo pela primeira vez.
 Este é o marco de "fluxo básico rodando de ponta a ponta" que o desafio
@@ -776,13 +776,13 @@ digitação, e os quatro estados são distinguíveis à primeira vista.
 
 | Código | ID | Descrição da Tarefa Atômica | Pasta | Referência | Verificado? |
 |---|---|---|---|---|---|
-| 7.1 | 7.1.01 | Service de validação de assinatura JWT do QR | apps/api | SPEC.md §3.2 | [ ] |
-| 7.1 | 7.1.02 | Rota `POST /portaria/validar` — body `{ codigo, eventoId }` (assinatura + status + evento) | apps/api | SPEC.md §3.2, §5.7 | [ ] |
-| 7.1 | 7.1.03 | Documentar endpoint de portaria no Swagger | apps/api | SPEC.md §5.7 | [ ] |
-| 7.2 | 7.2.01 | Tela de seleção do evento a fiscalizar (início da sessão de portaria) | apps/web | PRD.md §3.9 | [ ] |
-| 7.2 | 7.2.02 | Leitura via câmera (`html5-qrcode`) | apps/web | DECISIONS.md — Leitura de QR | [ ] |
-| 7.2 | 7.2.03 | Campo de digitação manual como alternativa | apps/web | PRD.md §3.9 | [ ] |
-| 7.2 | 7.2.04 | Feedback visual dos 4 estados (válido, inválido, já utilizado, evento errado) | apps/web | PRD.md §3.9 | [ ] |
+| 7.1 | 7.1.01 | Service de validação de assinatura JWT do QR | apps/api | SPEC.md §3.2 | [~] |
+| 7.1 | 7.1.02 | Rota `POST /portaria/validar` — body `{ codigo, eventoId }` (assinatura + status + evento) | apps/api | SPEC.md §3.2, §5.7 | [~] |
+| 7.1 | 7.1.03 | Documentar endpoint de portaria no Swagger | apps/api | SPEC.md §5.7 | [~] |
+| 7.2 | 7.2.01 | Tela de seleção do evento a fiscalizar (início da sessão de portaria) | apps/web | PRD.md §3.9 | [~] |
+| 7.2 | 7.2.02 | Leitura via câmera (`html5-qrcode`) | apps/web | DECISIONS.md — Leitura de QR | [~] |
+| 7.2 | 7.2.03 | Campo de digitação manual como alternativa | apps/web | PRD.md §3.9 | [~] |
+| 7.2 | 7.2.04 | Feedback visual dos 4 estados (válido, inválido, já utilizado, evento errado) | apps/web | PRD.md §3.9 | [~] |
 | 7.2 | 7.2.05 | Testar: os 4 cenários de retorno usando dados semeados | apps/web + apps/api | - | [ ] |
 
 **Checkpoint de revisão:** dev testa os 4 cenários usando os dados
@@ -1066,7 +1066,7 @@ Preenchido pelo desenvolvedor a cada checkpoint de bloco aprovado.
 | 3 — Catálogo e Gestão de Eventos | 15/08/2026 | Vinicius | Catálogo (TMDb/Ticketmaster) com cache e tratamento de rate limit; CRUD de eventos do organizador com cancelamento em cascata; painel do organizador no front (busca com debounce, formulário de criação/edição, listagem). Dívida técnica identificada e corrigida no processo: `GET /eventos` pública só mostra `PUBLISHED`, então foi criada `GET /eventos/meus` para o organizador ver também os eventos que ele mesmo cancelou. Dívidas pendentes registradas na seção "Dívidas Técnicas". |
 | 4 — Reserva (Assento + Quantidade) | 15/08/2026 | Vinicius | Back-end: `GET /eventos/:id/assentos`, expiração *lazy* de reservas vencidas, `POST /reservas/assento` e `POST /reservas/quantidade` com controle de concorrência (update condicional em transação nos dois fluxos), `GET /reservas/minhas`. Concorrência comprovada com dois scripts (`test:concurrency:seat`, `test:concurrency:quantity`) disputando o mesmo assento/estoque simultaneamente — só uma requisição vence em cada caso. Front-end: listagem de eventos, mapa de assentos, seletor de quantidade, tela de confirmação com contador dos 15 min. Correção no meio do bloco: `GET /eventos/:id` não rodava a expiração lazy que o `SPEC.md §2.3` exige — corrigido, pois a própria tela de detalhe dependia disso pra mostrar disponibilidade correta. |
 | 5 — Pagamento Simulado | 16/08/2026 | Vinicius | Integração real com o Asaas sandbox (não mockada): cliente com CPF de teste fixo e `notificationDisabled: true`, cobrança PIX com QR Code e copia-e-cola reais, pagamento com cartão de teste resolvido de forma síncrona pelo próprio Asaas (aprovação/recusa determinística pelo número usado), `POST /pagamentos/:reservaId/processar`, `GET /pagamentos/:id`, `POST /webhooks/asaas`, `POST /pagamentos/:id/simular-callback`, comprovante (`invoiceUrl`) exposto quando confirmado. Front-end: tela de checkout com escolha entre PIX e cartão, QR Code real, botão de confirmação manual (o webhook não alcança localhost), polling do status, comprovante. Escopo ampliado por decisão minha em relação ao plano original (só previa uma tela genérica) — detalhe em `AI_USAGE.md`. Testados os dois desfechos (confirmação e recusa) nas duas formas de pagamento, com devolução de assento/estoque na recusa confirmada. |
-| 6 — Ingresso, QR e Meus Ingressos | | | |
+| 6 — Ingresso, QR e Meus Ingressos | 16/08/2026 | Vinicius | Back-end: emissão de N ingressos (um por entrada) dentro da mesma transação de confirmação do pagamento, JWT assinado por ingresso sem expiração (validade controlada pelo `status` no banco, não pelo prazo do token), renderização do QR via lib `qrcode`, `GET /ingressos/meus`, `GET /ingressos/:id` e `GET /ingressos/compartilhar/:shareToken` (público, sem transferir titularidade). Front-end: tela "Meus Ingressos", detalhe com QR renderizado, botão de compartilhar que copia o link. Este é o marco de fluxo básico ponta a ponta (login → reservar → pagar → ver ingresso) que o desafio pede como prioridade, testado e confirmado, incluindo reserva SHOW gerando N QRs distintos. |
 | 7 — Portaria | | | |
 | 8 — Cancelamento e Devolução | | | |
 | 9 — Busca e Filtro | | | |
