@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import type { TicketDetail } from '@/lib/api-types';
 
@@ -16,9 +16,11 @@ const statusLabel: Record<TicketDetail['status'], string> = {
 export function TicketDetailView({
   ticket,
   canShare,
+  children,
 }: {
   ticket: TicketDetail;
   canShare: boolean;
+  children?: ReactNode;
 }) {
   const [copied, setCopied] = useState(false);
 
@@ -66,6 +68,8 @@ export function TicketDetailView({
           {copied ? 'Link copiado!' : 'Compartilhar link'}
         </Button>
       )}
+
+      {children}
     </main>
   );
 }

@@ -837,14 +837,14 @@ fora do prazo exibe o motivo da recusa.
 
 | Código | ID | Descrição da Tarefa Atômica | Pasta | Referência | Verificado? |
 |---|---|---|---|---|---|
-| 8.1 | 8.1.01 | Validação da janela de 24h antes do cancelamento | apps/api | PRD.md §3.8 | [ ] |
-| 8.1 | 8.1.02 | Rota `POST /reservas/:id/cancelar` | apps/api | SPEC.md §5.4, §4.0 | [ ] |
-| 8.1 | 8.1.03 | Devolução de assento (`status → DISPONIVEL`) | apps/api | SPEC.md §4.0, §4.2 | [ ] |
-| 8.1 | 8.1.04 | Devolução de estoque (incrementa `availableTickets`) | apps/api | SPEC.md §4.0, §4.2 | [ ] |
-| 8.1 | 8.1.05 | Cancelar **todos** os ingressos vinculados à reserva (`VALIDO → CANCELADO`) | apps/api | SPEC.md §4.0, §4.2 | [ ] |
-| 8.1 | 8.1.06 | Documentar endpoint de cancelamento no Swagger | apps/api | SPEC.md §5.4 | [ ] |
-| 8.2 | 8.2.01 | Botão de cancelar em "Meus Ingressos"/"Minhas Reservas" | apps/web | - | [ ] |
-| 8.2 | 8.2.02 | Feedback de bloqueio quando fora do prazo | apps/web | - | [ ] |
+| 8.1 | 8.1.01 | Validação da janela de 24h antes do cancelamento | apps/api | PRD.md §3.8 | [~] |
+| 8.1 | 8.1.02 | Rota `POST /reservas/:id/cancelar` | apps/api | SPEC.md §5.4, §4.0 | [~] |
+| 8.1 | 8.1.03 | Devolução de assento (`status → DISPONIVEL`) | apps/api | SPEC.md §4.0, §4.2 | [~] |
+| 8.1 | 8.1.04 | Devolução de estoque (incrementa `availableTickets`) | apps/api | SPEC.md §4.0, §4.2 | [~] |
+| 8.1 | 8.1.05 | Cancelar **todos** os ingressos vinculados à reserva (`VALIDO → CANCELADO`) | apps/api | SPEC.md §4.0, §4.2 | [~] |
+| 8.1 | 8.1.06 | Documentar endpoint de cancelamento no Swagger | apps/api | SPEC.md §5.4 | [~] |
+| 8.2 | 8.2.01 | Botão de cancelar em "Meus Ingressos"/"Minhas Reservas" | apps/web | - | [~] |
+| 8.2 | 8.2.02 | Feedback de bloqueio quando fora do prazo | apps/web | - | [~] |
 | 8.2 | 8.2.03 | Testar: cancelamento dentro do prazo (sucesso) e fora do prazo (bloqueado) | apps/web + apps/api | - | [ ] |
 | 8.2 | 8.2.04 | Testar: ingresso cancelado é rejeitado na portaria | apps/web + apps/api | SPEC.md §3.2 | [ ] |
 

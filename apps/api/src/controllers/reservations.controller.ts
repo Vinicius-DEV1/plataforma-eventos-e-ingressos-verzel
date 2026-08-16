@@ -5,9 +5,13 @@ import {
   EventType,
   ReservationStatus,
   SeatStatus,
+  TicketStatus,
 } from '../generated/prisma/enums';
 import { expireStaleReservations } from '../services/reservationExpiration.service';
-import { reservationExpiresAt } from '../utils/datetime';
+import {
+  isWithinCancellationWindow,
+  reservationExpiresAt,
+} from '../utils/datetime';
 
 // Carries the HTTP status the failure should map to, so the transaction can
 // throw from wherever the problem is found and the controller maps it to a
@@ -178,4 +182,81 @@ export async function listMyReservations(req: Request, res: Response) {
   });
 
   res.json({ items: reservations.map(serializeReservation) });
+}
+
+export async function cancelReservation(req: Request, res: Response) {
+  const id = req.params.id as string;
+
+  try {
+    const reservation = await prisma.$transaction(async (tx) => {
+      const existing = await tx.reservation.findUnique({
+        where: { id },
+        include: { event: true },
+      });
+      if (!existing) {
+        throw new ReservationError(404, 'Reserva não encontrada.');
+      }
+      if (existing.customerId !== req.user!.id) {
+        throw new ReservationError(403, 'Esta reserva não pertence a você.');
+      }
+      // PRD.md §3.8: cancelamento com reembolso, então só se aplica a uma
+      // reserva já paga — uma reserva PENDING apenas expira sozinha em 15
+      // min (SPEC.md §2.3), sem cobrança para reembolsar.
+      if (existing.status !== ReservationStatus.PAID) {
+        throw new ReservationError(
+          409,
+          'Só é possível cancelar uma reserva paga.',
+        );
+      }
+      if (!isWithinCancellationWindow(existing.event.startsAt)) {
+        throw new ReservationError(
+          409,
+          'Cancelamento não é mais permitido: faltam menos de 24 horas para o evento.',
+        );
+      }
+
+      // Update condicional, mesmo idioma das duas rotas de criação acima:
+      // garante que uma segunda requisição para a mesma reserva (duplo
+      // clique) não repita a devolução de assento/estoque.
+      const { count } = await tx.reservation.updateMany({
+        where: { id, status: ReservationStatus.PAID },
+        data: { status: ReservationStatus.CANCELLED },
+      });
+      if (count === 0) {
+        throw new ReservationError(409, 'Esta reserva já foi cancelada.');
+      }
+
+      if (existing.seatId) {
+        await tx.seat.update({
+          where: { id: existing.seatId },
+          data: { status: SeatStatus.AVAILABLE },
+        });
+      } else if (existing.quantity) {
+        await tx.event.update({
+          where: { id: existing.eventId },
+          data: { availableTickets: { increment: existing.quantity } },
+        });
+      }
+
+      // SPEC.md §4.0: todos os ingressos da reserva viram CANCELLED — sem a
+      // ressalva de preservar ingressos USED que existe no cancelamento em
+      // cascata do organizador (§4.1). Na prática um ticket USED implica
+      // que o evento já está em curso, o que por si só já estaria fora da
+      // janela de 24h checada acima.
+      await tx.ticket.updateMany({
+        where: { reservationId: id },
+        data: { status: TicketStatus.CANCELLED },
+      });
+
+      return tx.reservation.findUniqueOrThrow({ where: { id } });
+    });
+
+    res.json(serializeReservation(reservation));
+  } catch (err) {
+    if (err instanceof ReservationError) {
+      res.status(err.status).json({ message: err.message });
+      return;
+    }
+    throw err;
+  }
 }

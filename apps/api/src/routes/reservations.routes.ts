@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import {
+  cancelReservation,
   createQuantityReservation,
   createSeatReservation,
   listMyReservations,
@@ -128,4 +129,40 @@ reservationsRouter.get(
   authenticate,
   requireRole(Role.CUSTOMER),
   listMyReservations,
+);
+
+/**
+ * @openapi
+ * /reservas/{id}/cancelar:
+ *   post:
+ *     summary: Cancela uma reserva paga, dentro do prazo de 24h antes do evento
+ *     description: >
+ *       Reembolso total simulado (PRD.md §3.8). Devolve o assento (CINEMA)
+ *       ou a quantidade (SHOW) ao estoque e cancela todos os ingressos
+ *       vinculados à reserva (SPEC.md §4.0). Só se aplica a reservas com
+ *       status PAID — uma reserva PENDING apenas expira sozinha.
+ *     tags: [Reservas]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Reserva cancelada, assento/estoque devolvido
+ *       403:
+ *         description: A reserva não pertence ao cliente autenticado
+ *       404:
+ *         description: Reserva não encontrada
+ *       409:
+ *         description: Reserva não está paga, já foi cancelada, ou faltam menos de 24h para o evento
+ */
+reservationsRouter.post(
+  '/reservas/:id/cancelar',
+  authenticate,
+  requireRole(Role.CUSTOMER),
+  cancelReservation,
 );
