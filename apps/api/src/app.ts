@@ -7,6 +7,7 @@ import { authRouter } from './routes/auth.routes';
 import { catalogRouter } from './routes/catalog.routes';
 import { eventsRouter } from './routes/events.routes';
 import { healthRouter } from './routes/health.routes';
+import { reservationsRouter } from './routes/reservations.routes';
 
 // Building the app is kept apart from starting it so integration tests can
 // instantiate it without binding a port.
@@ -32,6 +33,7 @@ export function createApp(): Express {
   app.use(authRouter);
   app.use(catalogRouter);
   app.use(eventsRouter);
+  app.use(reservationsRouter);
 
   return app;
 }

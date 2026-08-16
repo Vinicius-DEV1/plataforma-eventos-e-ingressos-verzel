@@ -8,6 +8,7 @@ import {
   SeatStatus,
   TicketStatus,
 } from '../generated/prisma/enums';
+import { expireStaleReservations } from '../services/reservationExpiration.service';
 import { buildSeatMap, ROOM_CAPACITY } from '../utils/seatMap';
 
 // Every TMDb result becomes a CINEMA event and every Ticketmaster result
@@ -303,4 +304,35 @@ export async function getEvent(req: Request, res: Response) {
     ...serializeEvent(rest),
     seats: rest.type === EventType.CINEMA ? seats : undefined,
   });
+}
+
+export async function getEventSeats(req: Request, res: Response) {
+  const id = req.params.id as string;
+
+  const result = await prisma.$transaction(async (tx) => {
+    const event = await tx.event.findUnique({ where: { id } });
+    if (!event) return { kind: 'not-found' as const };
+    if (event.type !== EventType.CINEMA) {
+      return { kind: 'wrong-type' as const };
+    }
+
+    await expireStaleReservations(tx, id);
+
+    const seats = await tx.seat.findMany({
+      where: { eventId: id },
+      orderBy: [{ row: 'asc' }, { number: 'asc' }],
+    });
+    return { kind: 'ok' as const, seats };
+  });
+
+  if (result.kind === 'not-found') {
+    res.status(404).json({ message: 'Evento não encontrado.' });
+    return;
+  }
+  if (result.kind === 'wrong-type') {
+    res.status(400).json({ message: 'Este evento não usa mapa de assentos.' });
+    return;
+  }
+
+  res.json({ items: result.seats });
 }

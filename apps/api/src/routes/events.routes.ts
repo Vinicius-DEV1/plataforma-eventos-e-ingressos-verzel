@@ -3,6 +3,7 @@ import {
   cancelEvent,
   createEvent,
   getEvent,
+  getEventSeats,
   listEvents,
   listMyEvents,
   updateEvent,
@@ -219,3 +220,29 @@ eventsRouter.delete(
   requireRole(Role.ORGANIZER),
   cancelEvent,
 );
+
+/**
+ * @openapi
+ * /eventos/{id}/assentos:
+ *   get:
+ *     summary: Mapa de assentos de um evento CINEMA
+ *     description: >
+ *       Rota pública. Antes de listar, expira (lazy, SPEC.md §2.3) as
+ *       reservas PENDING vencidas do evento, devolvendo os assentos delas a
+ *       AVAILABLE.
+ *     tags: [Eventos]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Lista de assentos com status atualizado
+ *       400:
+ *         description: Evento não é do tipo CINEMA
+ *       404:
+ *         description: Evento não encontrado
+ */
+eventsRouter.get('/eventos/:id/assentos', getEventSeats);
