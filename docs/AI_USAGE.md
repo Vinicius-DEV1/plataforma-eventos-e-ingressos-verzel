@@ -135,13 +135,18 @@ comportamento do pagamento recusado, e cancelamento de evento em cascata.
   segurando a porta 3333 — o `curl` estava batendo nesse container, não no
   `npm run dev` novo. A ferramenta isolou a hipótese (`docker compose ps`)
   antes de eu precisar adivinhar.
-- Script de verificação de concorrência (Bloco 4, `apps/api/scripts/test-seat-concurrency.ts`,
-  `npm run test:concurrency`): dispara duas reservas para o mesmo assento a
-  partir de dois clientes distintos, ao mesmo tempo (`Promise.all`), e
-  confirma que uma recebe `201` e a outra `409`. Escrito pela IA, mas rodado
-  e conferido por mim — é a forma de validar manualmente a garantia de
-  exclusividade do `SPEC.md §2.1` antes da suíte automatizada do Bloco 10
-  existir.
+- Scripts de verificação de concorrência (Bloco 4,
+  `apps/api/scripts/test-seat-concurrency.ts` e
+  `test-quantity-concurrency.ts`, `npm run test:concurrency:seat` /
+  `test:concurrency:quantity`): disparam duas reservas simultâneas
+  (`Promise.all`) a partir de dois clientes distintos — no assento, as duas
+  disputam o mesmo lugar; na quantidade, cada uma pede um pouco mais da
+  metade do estoque restante, de forma que juntas excedem o disponível, mas
+  nenhuma sozinha seria rejeitada por uma checagem ingênua (não atômica).
+  Em ambos os casos, o script confirma que uma recebe `201` e a outra
+  `409`. Escritos pela IA, mas rodados e conferidos por mim — é a forma de
+  validar manualmente as garantias dos §2.1 e §2.2 do `SPEC.md` antes da
+  suíte automatizada do Bloco 10 existir.
 
 ## O Que Fiz Sem IA / Com Maior Intervenção Manual
 

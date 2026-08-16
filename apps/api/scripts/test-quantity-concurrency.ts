@@ -1,10 +1,13 @@
-// Fires two POST /reservas/assento at the exact same seat, from two
-// different customers, at (as close as JS allows) the same instant, to
-// verify the conditional-update strategy in SPEC.md §2.1 actually resolves
-// the race: exactly one request should succeed (201), the other should be
-// rejected (409). Run against a running API + seeded database:
+// Fires two POST /reservas/quantidade at the same SHOW event, from two
+// different customers, at (as close as JS allows) the same instant, each
+// asking for slightly more than half the remaining stock — so the sum of
+// both requests exceeds what's available, but neither request alone would
+// be rejected by a naive (non-atomic) check. Verifies the conditional
+// decrement in SPEC.md §2.2 actually prevents overselling: exactly one
+// request should succeed (201), the other should be rejected (409). Run
+// against a running API + seeded database:
 //
-//   npm run test:concurrency:seat --workspace=apps/api
+//   npm run test:concurrency:quantity --workspace=apps/api
 //
 // Uses the two customer accounts from prisma/seed.ts by default.
 
@@ -19,8 +22,12 @@ const CUSTOMER_2 = {
 };
 
 type LoginResponse = { token: string };
-type EventItem = { id: string; type: 'CINEMA' | 'SHOW'; status: string };
-type Seat = { id: string; status: string };
+type EventItem = {
+  id: string;
+  type: 'CINEMA' | 'SHOW';
+  status: string;
+  availableTickets: number;
+};
 
 async function login(email: string, password: string): Promise<string> {
   const response = await fetch(`${API_URL}/auth/login`, {
@@ -35,43 +42,42 @@ async function login(email: string, password: string): Promise<string> {
   return data.token;
 }
 
-async function findCinemaEventWithAvailableSeat(): Promise<{
+async function findShowEventWithStock(): Promise<{
   eventId: string;
-  seatId: string;
+  quantityEach: number;
 }> {
   const eventsResponse = await fetch(`${API_URL}/eventos`);
   const { items: events } = (await eventsResponse.json()) as {
     items: EventItem[];
   };
 
-  for (const event of events.filter((e) => e.type === 'CINEMA')) {
-    const seatsResponse = await fetch(
-      `${API_URL}/eventos/${event.id}/assentos`,
+  const event = events.find(
+    (e) => e.type === 'SHOW' && e.availableTickets >= 2,
+  );
+  if (!event) {
+    throw new Error(
+      'Nenhum evento SHOW com pelo menos 2 ingressos disponíveis encontrado. Crie um evento SHOW antes de rodar o script.',
     );
-    const { items: seats } = (await seatsResponse.json()) as { items: Seat[] };
-    const availableSeat = seats.find((seat) => seat.status === 'AVAILABLE');
-    if (availableSeat) {
-      return { eventId: event.id, seatId: availableSeat.id };
-    }
   }
 
-  throw new Error(
-    'Nenhum evento CINEMA com assento disponível encontrado. Crie um evento CINEMA antes de rodar o script.',
-  );
+  // Each customer asks for slightly more than half: individually valid,
+  // but the two together exceed the stock.
+  const quantityEach = Math.floor(event.availableTickets / 2) + 1;
+  return { eventId: event.id, quantityEach };
 }
 
-async function reserveSeat(
+async function reserveQuantity(
   token: string,
   eventId: string,
-  seatId: string,
+  quantity: number,
 ): Promise<{ status: number; body: unknown }> {
-  const response = await fetch(`${API_URL}/reservas/assento`, {
+  const response = await fetch(`${API_URL}/reservas/quantidade`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ eventId, seatId }),
+    body: JSON.stringify({ eventId, quantity }),
   });
   const body: unknown = await response.json().catch(() => undefined);
   return { status: response.status, body };
@@ -84,13 +90,15 @@ async function main() {
     login(CUSTOMER_2.email, CUSTOMER_2.password),
   ]);
 
-  console.log('Procurando um evento CINEMA com assento disponível...');
-  const { eventId, seatId } = await findCinemaEventWithAvailableSeat();
-  console.log(`Disputando o assento ${seatId} do evento ${eventId}...\n`);
+  console.log('Procurando um evento SHOW com estoque suficiente...');
+  const { eventId, quantityEach } = await findShowEventWithStock();
+  console.log(
+    `Disputando o evento ${eventId}: os dois clientes pedem ${quantityEach} ingressos cada, ao mesmo tempo...\n`,
+  );
 
   const [result1, result2] = await Promise.all([
-    reserveSeat(token1, eventId, seatId),
-    reserveSeat(token2, eventId, seatId),
+    reserveQuantity(token1, eventId, quantityEach),
+    reserveQuantity(token2, eventId, quantityEach),
   ]);
 
   console.log('Cliente 1:', result1.status, result1.body);
@@ -101,10 +109,10 @@ async function main() {
 
   console.log(
     passed
-      ? '\nPASS: exatamente uma reserva foi aceita (201) e a outra rejeitada (409).'
+      ? '\nPASS: exatamente uma reserva foi aceita (201) e a outra rejeitada (409) por falta de estoque.'
       : '\nFAIL: os dois resultados deveriam ser [201, 409] e vieram ' +
           JSON.stringify(statuses) +
-          ' — indício de falha no controle de concorrência.',
+          ' — indício de overselling no controle de concorrência.',
   );
   process.exitCode = passed ? 0 : 1;
 }
