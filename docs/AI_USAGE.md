@@ -147,29 +147,57 @@ comportamento do pagamento recusado, e cancelamento de evento em cascata.
   `409`. Escritos pela IA, mas rodados e conferidos por mim — é a forma de
   validar manualmente as garantias dos §2.1 e §2.2 do `SPEC.md` antes da
   suíte automatizada do Bloco 10 existir.
+- Integração com o Asaas sandbox (Bloco 5.1). O `User` do projeto não tem
+  CPF/CNPJ, mas a API real do Asaas exige esse campo para criar um cliente
+  antes da cobrança. Fui consultado sobre isso antes de qualquer código: ou
+  o client chama a API de verdade com um CPF de teste fixo (satisfaz a
+  validação, não representa ninguém real), ou fica tudo mockado sem chamada
+  HTTP nenhuma. Escolhi a primeira, pra demonstrar integração real com um
+  provedor de pagamento.
 
 ## O Que Fiz Sem IA / Com Maior Intervenção Manual
 
-- **Todos os commits e operações de git.** Nenhum comando que tocasse o
-  repositório ou minha conta no GitHub foi executado pela ferramenta — ela
-  escrevia os comandos, eu conferia e rodava.
-- **Instalação e configuração do Docker** na máquina.
-- **Toda verificação funcional.** Os testes dos hooks de commit (tentar
-  commitar com mensagem errada e com lint quebrado, e confirmar que os dois
-  são bloqueados), a conferência da interface no navegador, a execução do CI,
-  a inspeção das tabelas no Prisma Studio. A ferramenta não tinha acesso ao
-  meu Docker nem à tela, então nada disso podia ser validado por ela.
-- **A direção visual do produto.** Recebi três propostas — cinema noturno,
-  ingresso impresso e editorial de alto contraste — e escolhi a segunda. A
-  paleta e a fonte saíram dessa escolha.
-- **Cadastro e fechamento das issues** no GitHub.
-- **Confirmação e execução do reset do banco (`prisma migrate reset`).** A
-  própria ferramenta do Prisma bloqueou a IA de rodar o comando sozinha, por
-  ser destrutivo — recebi a explicação do que o comando faz e por quê, e
-  rodei eu mesmo.
-- **Revisão do que ficou de fato pronto.** Numa das entregas a ferramenta
-  afirmou que a issue podia ser fechada; conferi os itens um a um e um deles
-  não tinha sido feito. Voltamos e completamos antes de fechar.
+**Controle total sobre git, GitHub e a infraestrutura da máquina.** Todo
+commit, todo push, todo comando que tocasse o repositório ou minha conta no
+GitHub, a ferramenta escrevia, eu lia e rodava, sem exceção. Instalei e
+configurei o Docker sozinho. Quando o `prisma migrate reset` precisou rodar
+(comando destrutivo, a própria ferramenta do Prisma bloqueou a IA de
+executá-lo), entendi o que ele fazia antes de rodar eu mesmo. Cadastrei e
+fechei cada issue no GitHub, uma de cada vez, por decisão minha de
+acompanhar o progresso em fatias pequenas.
+
+**Portão de qualidade em cada bloco entregue.** Nenhuma tarefa foi marcada
+como concluída sem eu testar de verdade, esse foi o critério do projeto
+inteiro, não uma formalidade. Autenticação testada com os três papéis
+semeados. CRUD de eventos e cancelamento em cascata testados manualmente.
+Os dois scripts de concorrência (assento e quantidade) rodados e conferidos
+por mim, disputando o mesmo lugar e o mesmo estoque simultaneamente,
+confirmando que só uma requisição vence em cada caso. O fluxo inteiro de
+reserva testado pela interface, mapa de assentos, seletor de quantidade,
+contador de 15 minutos. Foi exatamente esse teste, na tela de detalhe do
+evento, que expôs um bug real: `GET /eventos/:id` não rodava a expiração
+*lazy* que o `SPEC.md` exige, e a correção só aconteceu porque eu estava
+testando o app, não lendo o código. Também validei que os hooks de commit
+realmente bloqueiam mensagem fora do padrão e lint quebrado, tentando os
+dois de propósito.
+
+**Direção de produto, do escopo às decisões de design.** Recebi três
+propostas de identidade visual (cinema noturno, ingresso impresso,
+editorial de alto contraste) e escolhi a segunda, a paleta e a fonte
+saíram dessa escolha. Ampliei sozinho o escopo do checkout do Bloco 5, que
+no plano original previa só uma tela genérica, para incluir PIX e cartão de
+teste reais, botão de confirmação manual visível para quem for avaliar o
+projeto, link de comprovante e notificações do Asaas desativadas.
+
+**Auditoria do próprio processo, inclusive da IA.** Numa entrega, a
+ferramenta afirmou que uma issue podia ser fechada; conferi item por item e
+um deles não tinha sido feito, voltamos e completamos antes de fechar.
+Barrei a ferramenta de codificar sem autorização explícita mais de uma vez,
+de rodar comandos que deveriam ser meus, e de testar contra o Asaas sandbox
+sozinha quando esse era um passo que cabia a mim. Essas correções de rota
+estão registradas com mais detalhe na seção seguinte, mas o ponto aqui é
+que a supervisão não foi passiva, cada desvio do processo que combinamos
+foi percebido e corrigido por mim, não deixado passar.
 
 ## Decisões que Rejeitei ou Modifiquei em Relação à Sugestão Inicial da IA
 
@@ -209,6 +237,43 @@ comportamento do pagamento recusado, e cancelamento de evento em cascata.
   o envio, deixando o histórico limpo. Preferi manter: a sequência de quebra e
   correção, com a mensagem explicando o quê e por quê, é mais honesta do que um
   repositório onde nada nunca falhou.
+
+- **Escopo do checkout ampliado por mim, não pela IA.** O plano original do
+  Bloco 5 (`TASKS.md`) previa só "tela de checkout" com polling e retorno
+  visual — sem especificar forma de pagamento. Propus três coisas: suportar
+  PIX e cartão de crédito de teste (não só um mock genérico), deixar visível
+  na interface um botão de "confirmar pagamento" (aciona o
+  `/simular-callback`) para quem for avaliar o projeto conseguir ver o
+  desfecho sem precisar de um túnel público, e um link de comprovante
+  (`invoiceUrl`) após a confirmação. Também pedi para desativar as
+  notificações por e-mail do Asaas, já que os clientes criados no sandbox são
+  todos de teste. A IA apontou de volta, antes de codificar, um ponto que eu
+  não tinha considerado: a limitação do webhook não alcançar `localhost`
+  parecia valer para qualquer forma de pagamento — então o botão de
+  confirmação manual seria necessário de qualquer forma, PIX ou cartão.
+  `TASKS.md` foi reescrito com essa granularidade antes de eu cadastrar a
+  issue no GitHub.
+
+- **Câmera da portaria não liga sozinha.** A primeira versão da tela de
+  portaria (Bloco 7) ligava a câmera automaticamente assim que o evento era
+  selecionado, sem nenhum clique extra — a ideia era agilidade, já que a
+  tela é usada com fila esperando. Rejeitei ao testar: pedir permissão de
+  câmera sem uma ação explícita do usuário é um padrão ruim (o navegador
+  pode até ignorar o pedido por não vir de um gesto do usuário), e no uso
+  real ficou estranho a permissão aparecer antes de eu ter decidido que
+  ia escanear. Pedi o redesenho: dois botões explícitos depois de escolher
+  o evento — "Escanear QR Code" (só aí pede a câmera) e "Digitar código"
+  (abre o campo na mesma tela, sem navegar) — com o resultado da validação
+  em destaque e um botão "Nova leitura" fechando o ciclo.
+
+- **Portaria não usa a tela do cliente.** A home genérica (a mesma para
+  todos os papéis) mostrava "Ver eventos" — o catálogo de compra — também
+  para quem loga como portaria, com um botão extra "Portaria" ao lado.
+  Apontei que o usuário de portaria não tem por que navegar pelo catálogo:
+  o foco dele é só a fiscalização. A IA passou a redirecionar o papel
+  GATEKEEPER direto para `/portaria` ao logar, sem passar pela home; o
+  botão de sair, que só existia lá, foi movido para dentro da própria tela
+  de portaria.
 
 ## Artefatos de Processo Versionados
 

@@ -32,15 +32,21 @@ const resultConfig: Record<
   },
 };
 
+// A leitura tem 3 estados: escolher como ler ("choice"), câmera aberta
+// ("camera") ou campo de digitação aberto ("manual") — só um pedido de
+// permissão de câmera acontece, e só depois do clique em "Escanear QR
+// Code" (DECISIONS.md/AI_USAGE.md registram por quê).
+type ReadMode = 'choice' | 'camera' | 'manual';
+
 export default function GatekeeperPage() {
-  const { token } = useAuth();
+  const { token, logout } = useAuth();
 
   const [events, setEvents] = useState<EventItem[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<EventItem | null>(null);
 
-  const [scanning, setScanning] = useState(true);
+  const [readMode, setReadMode] = useState<ReadMode>('choice');
   const [manualCode, setManualCode] = useState('');
   const [validating, setValidating] = useState(false);
   const [result, setResult] = useState<GateValidationResult | null>(null);
@@ -70,7 +76,6 @@ export default function GatekeeperPage() {
     const trimmed = code.trim();
     if (!trimmed || !selectedEvent || validating) return;
 
-    setScanning(false);
     setValidating(true);
     setError(null);
     try {
@@ -89,7 +94,6 @@ export default function GatekeeperPage() {
           ? err.message
           : 'Não foi possível validar o ingresso.',
       );
-      setScanning(true);
     } finally {
       setValidating(false);
     }
@@ -99,19 +103,24 @@ export default function GatekeeperPage() {
     setResult(null);
     setError(null);
     setManualCode('');
-    setScanning(true);
+    setReadMode('choice');
   }
 
   if (!selectedEvent) {
     return (
       <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-6 px-6 py-12">
-        <div className="space-y-2">
-          <p className="text-muted-foreground text-xs font-medium tracking-[0.2em] uppercase">
-            Portaria
-          </p>
-          <h1 className="text-3xl font-bold tracking-tight">
-            Qual evento você vai fiscalizar?
-          </h1>
+        <div className="flex items-start justify-between gap-4">
+          <div className="space-y-2">
+            <p className="text-muted-foreground text-xs font-medium tracking-[0.2em] uppercase">
+              Portaria
+            </p>
+            <h1 className="text-3xl font-bold tracking-tight">
+              Qual evento você vai fiscalizar?
+            </h1>
+          </div>
+          <Button variant="secondary" onClick={logout}>
+            Sair
+          </Button>
         </div>
 
         {loadingEvents && (
@@ -159,31 +168,52 @@ export default function GatekeeperPage() {
         </button>
       </div>
 
-      {!result && (
-        <>
-          <QrScanner
-            active={scanning}
-            onScan={(code) => void handleValidate(code)}
-          />
-
-          <div className="flex gap-2">
-            <input
-              className={inputClass}
-              placeholder="Ou digite o código manualmente"
-              value={manualCode}
-              onChange={(e) => setManualCode(e.target.value)}
-            />
-            <Button
-              disabled={validating || !manualCode.trim()}
-              onClick={() => void handleValidate(manualCode)}
-            >
-              Validar
-            </Button>
-          </div>
-
-          {error && <p className="text-destructive text-sm">{error}</p>}
-        </>
+      {!result && readMode === 'choice' && (
+        <div className="flex gap-3">
+          <Button onClick={() => setReadMode('camera')}>
+            Escanear QR Code
+          </Button>
+          <Button variant="outline" onClick={() => setReadMode('manual')}>
+            Digitar código
+          </Button>
+        </div>
       )}
+
+      {!result && readMode === 'camera' && !validating && (
+        <div className="space-y-3">
+          <QrScanner onScan={(code) => void handleValidate(code)} />
+          <button
+            type="button"
+            className="text-muted-foreground block text-xs underline"
+            onClick={() => setReadMode('choice')}
+          >
+            Cancelar
+          </button>
+        </div>
+      )}
+
+      {!result && readMode === 'manual' && (
+        <form
+          className="flex gap-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void handleValidate(manualCode);
+          }}
+        >
+          <input
+            autoFocus
+            className={inputClass}
+            placeholder="Código do ingresso"
+            value={manualCode}
+            onChange={(e) => setManualCode(e.target.value)}
+          />
+          <Button type="submit" disabled={validating || !manualCode.trim()}>
+            Validar
+          </Button>
+        </form>
+      )}
+
+      {error && <p className="text-destructive text-sm">{error}</p>}
 
       {result && (
         <div
@@ -191,7 +221,7 @@ export default function GatekeeperPage() {
         >
           <p className="text-xl font-bold">{resultConfig[result].label}</p>
           <Button variant="outline" onClick={handleNext}>
-            Escanear próximo
+            Nova leitura
           </Button>
         </div>
       )}

@@ -1,9 +1,16 @@
-import { Link } from 'react-router';
+import { Link, Navigate } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/auth-context';
 
 export default function HomePage() {
   const { user, logout } = useAuth();
+
+  // Portaria não usa a tela de catálogo/compra do cliente — o foco dela é
+  // só a fiscalização, então nem passa por esta tela (apontamento do
+  // desenvolvedor, ver AI_USAGE.md).
+  if (user?.role === 'GATEKEEPER') {
+    return <Navigate to="/portaria" replace />;
+  }
 
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col justify-center gap-8 px-6">
@@ -35,11 +42,6 @@ export default function HomePage() {
               {user.role === 'ORGANIZER' && (
                 <Button asChild variant="outline">
                   <Link to="/organizador">Painel do organizador</Link>
-                </Button>
-              )}
-              {user.role === 'GATEKEEPER' && (
-                <Button asChild variant="outline">
-                  <Link to="/portaria">Portaria</Link>
                 </Button>
               )}
               <Button variant="secondary" onClick={logout}>

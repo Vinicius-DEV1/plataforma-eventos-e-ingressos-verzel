@@ -128,6 +128,8 @@ Nomear bem é preferível a explicar depois.
 | Confirmação de pagamento | Polling como caminho principal | O webhook do Asaas não alcança `localhost`. Polling em `GET /pagamentos/:id` funciona em qualquer ambiente; o webhook fica ativo apenas em produção, e um endpoint de simulação cobre desenvolvimento e testes. Ver `SPEC.md` §5.5 |
 | Fuso horário | UTC no armazenamento e transporte | Regras sensíveis a tempo (janela de 24h, expiração de 15 min) precisam de referência única para não divergir conforme o fuso do cliente ou do servidor. Conversão apenas na apresentação. Ver `PRD.md` §3.13 |
 | Rate limit de APIs externas | Debounce no front + cache curto no back | TMDb e Ticketmaster impõem limites diários; buscar a cada tecla digitada esgotaria a cota rapidamente. Ver `SPEC.md` §5.8 |
+| Ativação da câmera na portaria | Só após clique explícito em "Escanear QR Code" | Pedir permissão de câmera sem uma ação do usuário é um padrão ruim de UX (o navegador pode até ignorar o pedido por não vir de um gesto do usuário) — a leitura por câmera e a digitação manual aparecem como dois botões de escolha igual, não uma com prioridade escondida atrás da outra. Rejeitava um primeiro rascunho que ligava a câmera sozinha ao selecionar o evento; ver `AI_USAGE.md` — "Decisões que Rejeitei" |
+| Navegação do papel portaria | Redireciona direto para `/portaria` ao logar, não passa pela home genérica | Quem fiscaliza não precisa navegar pelo catálogo de compra do cliente; a home genérica é a tela certa para CUSTOMER/ORGANIZER, não para GATEKEEPER. Ver `AI_USAGE.md` — "Decisões que Rejeitei" |
 
 ## Decisões Descartadas (e por quê)
 
