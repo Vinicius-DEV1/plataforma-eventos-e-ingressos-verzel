@@ -108,3 +108,6 @@ export type TicketItem = {
 };
 
 export type TicketDetail = TicketItem & { qrImage: string };
+
+export type GateValidationResult =
+  'valid' | 'invalid' | 'already_used' | 'wrong_event';

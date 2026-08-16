@@ -4,6 +4,7 @@ import { AuthProvider } from '@/contexts/AuthProvider';
 import CheckoutPage from '@/pages/CheckoutPage';
 import EventDetailPage from '@/pages/EventDetailPage';
 import EventsPage from '@/pages/EventsPage';
+import GatekeeperPage from '@/pages/GatekeeperPage';
 import HomePage from '@/pages/HomePage';
 import LoginPage from '@/pages/LoginPage';
 import OrganizerPage from '@/pages/OrganizerPage';
@@ -45,6 +46,14 @@ export default function App() {
           element={
             <PrivateRoute roles={['ORGANIZER']}>
               <OrganizerPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/portaria"
+          element={
+            <PrivateRoute roles={['GATEKEEPER']}>
+              <GatekeeperPage />
             </PrivateRoute>
           }
         />

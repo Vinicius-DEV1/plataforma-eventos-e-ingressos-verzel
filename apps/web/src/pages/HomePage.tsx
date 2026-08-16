@@ -37,6 +37,11 @@ export default function HomePage() {
                   <Link to="/organizador">Painel do organizador</Link>
                 </Button>
               )}
+              {user.role === 'GATEKEEPER' && (
+                <Button asChild variant="outline">
+                  <Link to="/portaria">Portaria</Link>
+                </Button>
+              )}
               <Button variant="secondary" onClick={logout}>
                 Sair
               </Button>
