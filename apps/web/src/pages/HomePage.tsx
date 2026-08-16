@@ -27,6 +27,11 @@ export default function HomePage() {
               <Button asChild>
                 <Link to="/eventos">Ver eventos</Link>
               </Button>
+              {user.role === 'CUSTOMER' && (
+                <Button asChild variant="outline">
+                  <Link to="/ingressos">Meus ingressos</Link>
+                </Button>
+              )}
               {user.role === 'ORGANIZER' && (
                 <Button asChild variant="outline">
                   <Link to="/organizador">Painel do organizador</Link>

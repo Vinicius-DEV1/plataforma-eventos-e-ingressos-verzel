@@ -86,3 +86,25 @@ export type PaymentItem = {
   invoiceUrl?: string | null;
   pix?: PixInfo;
 };
+
+export type TicketStatus = 'VALID' | 'USED' | 'CANCELLED';
+
+export type TicketEventSummary = {
+  id: string;
+  title: string;
+  venue: string;
+  startsAt: string;
+  imageUrl: string;
+};
+
+export type TicketItem = {
+  id: string;
+  status: TicketStatus;
+  validatedAt: string | null;
+  createdAt: string;
+  shareToken: string;
+  reservation: { id: string; totalAmount: number };
+  event: TicketEventSummary;
+};
+
+export type TicketDetail = TicketItem & { qrImage: string };

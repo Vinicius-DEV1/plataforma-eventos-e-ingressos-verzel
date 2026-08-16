@@ -288,6 +288,9 @@ function CheckoutContent({
               Ver comprovante
             </a>
           )}
+          <Button asChild>
+            <Link to="/ingressos">Ver meus ingressos</Link>
+          </Button>
         </div>
       )}
 

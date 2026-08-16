@@ -718,9 +718,9 @@ visualização do QR inteiramente pela interface.
 | 6.1 | 6.1.06 | Rota `GET /ingressos/:id` | apps/api | SPEC.md §5.6 | [~] |
 | 6.1 | 6.1.07 | Rota `GET /ingressos/compartilhar/:linkToken` (exibe ingresso completo com QR, sem transferir titularidade) | apps/api | SPEC.md §5.6, PRD.md §3.7 | [~] |
 | 6.1 | 6.1.08 | Documentar endpoints de ingresso no Swagger | apps/api | SPEC.md §5.6 | [~] |
-| 6.2 | 6.2.01 | Tela "Meus Ingressos" (lista) | apps/web | - | [ ] |
-| 6.2 | 6.2.02 | Tela de detalhe do ingresso com QR renderizado | apps/web | - | [ ] |
-| 6.2 | 6.2.03 | Botão de compartilhar link | apps/web | - | [ ] |
+| 6.2 | 6.2.01 | Tela "Meus Ingressos" (lista) | apps/web | - | [~] |
+| 6.2 | 6.2.02 | Tela de detalhe do ingresso com QR renderizado | apps/web | - | [~] |
+| 6.2 | 6.2.03 | Botão de compartilhar link | apps/web | - | [~] |
 | 6.2 | 6.2.04 | Testar: reserva de N ingressos (SHOW) gera N QRs distintos | apps/web + apps/api | PRD.md §3.7 | [ ] |
 | 6.2 | 6.2.05 | Testar: fluxo ponta a ponta completo (login cliente → reservar → pagar → ver QR) | apps/web + apps/api | - | [ ] |
 

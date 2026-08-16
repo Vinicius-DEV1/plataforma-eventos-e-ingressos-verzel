@@ -7,6 +7,9 @@ import EventsPage from '@/pages/EventsPage';
 import HomePage from '@/pages/HomePage';
 import LoginPage from '@/pages/LoginPage';
 import OrganizerPage from '@/pages/OrganizerPage';
+import SharedTicketPage from '@/pages/SharedTicketPage';
+import TicketDetailPage from '@/pages/TicketDetailPage';
+import TicketsPage from '@/pages/TicketsPage';
 
 export default function App() {
   return (
@@ -17,6 +20,26 @@ export default function App() {
         <Route path="/eventos" element={<EventsPage />} />
         <Route path="/eventos/:id" element={<EventDetailPage />} />
         <Route path="/reservas/checkout" element={<CheckoutPage />} />
+        <Route
+          path="/ingressos"
+          element={
+            <PrivateRoute roles={['CUSTOMER']}>
+              <TicketsPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/ingressos/compartilhar/:shareToken"
+          element={<SharedTicketPage />}
+        />
+        <Route
+          path="/ingressos/:id"
+          element={
+            <PrivateRoute roles={['CUSTOMER']}>
+              <TicketDetailPage />
+            </PrivateRoute>
+          }
+        />
         <Route
           path="/organizador"
           element={

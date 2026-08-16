@@ -32,7 +32,13 @@ function serializeTicketSummary(ticket: TicketWithReservationEvent) {
       id: ticket.reservation.id,
       totalAmount: Number(ticket.reservation.totalAmount),
     },
-    event: ticket.reservation.event,
+    event: {
+      id: ticket.reservation.event.id,
+      title: ticket.reservation.event.title,
+      venue: ticket.reservation.event.venue,
+      startsAt: ticket.reservation.event.startsAt,
+      imageUrl: ticket.reservation.event.imageUrl,
+    },
   };
 }
 
