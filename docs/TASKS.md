@@ -837,16 +837,16 @@ fora do prazo exibe o motivo da recusa.
 
 | Código | ID | Descrição da Tarefa Atômica | Pasta | Referência | Verificado? |
 |---|---|---|---|---|---|
-| 8.1 | 8.1.01 | Validação da janela de 24h antes do cancelamento | apps/api | PRD.md §3.8 | [~] |
-| 8.1 | 8.1.02 | Rota `POST /reservas/:id/cancelar` | apps/api | SPEC.md §5.4, §4.0 | [~] |
-| 8.1 | 8.1.03 | Devolução de assento (`status → DISPONIVEL`) | apps/api | SPEC.md §4.0, §4.2 | [~] |
-| 8.1 | 8.1.04 | Devolução de estoque (incrementa `availableTickets`) | apps/api | SPEC.md §4.0, §4.2 | [~] |
-| 8.1 | 8.1.05 | Cancelar **todos** os ingressos vinculados à reserva (`VALIDO → CANCELADO`) | apps/api | SPEC.md §4.0, §4.2 | [~] |
-| 8.1 | 8.1.06 | Documentar endpoint de cancelamento no Swagger | apps/api | SPEC.md §5.4 | [~] |
-| 8.2 | 8.2.01 | Botão de cancelar em "Meus Ingressos"/"Minhas Reservas" | apps/web | - | [~] |
-| 8.2 | 8.2.02 | Feedback de bloqueio quando fora do prazo | apps/web | - | [~] |
-| 8.2 | 8.2.03 | Testar: cancelamento dentro do prazo (sucesso) e fora do prazo (bloqueado) | apps/web + apps/api | - | [ ] |
-| 8.2 | 8.2.04 | Testar: ingresso cancelado é rejeitado na portaria | apps/web + apps/api | SPEC.md §3.2 | [ ] |
+| 8.1 | 8.1.01 | Validação da janela de 24h antes do cancelamento | apps/api | PRD.md §3.8 | [x] |
+| 8.1 | 8.1.02 | Rota `POST /reservas/:id/cancelar` | apps/api | SPEC.md §5.4, §4.0 | [x] |
+| 8.1 | 8.1.03 | Devolução de assento (`status → DISPONIVEL`) | apps/api | SPEC.md §4.0, §4.2 | [x] |
+| 8.1 | 8.1.04 | Devolução de estoque (incrementa `availableTickets`) | apps/api | SPEC.md §4.0, §4.2 | [x] |
+| 8.1 | 8.1.05 | Cancelar **todos** os ingressos vinculados à reserva (`VALIDO → CANCELADO`) | apps/api | SPEC.md §4.0, §4.2 | [x] |
+| 8.1 | 8.1.06 | Documentar endpoint de cancelamento no Swagger | apps/api | SPEC.md §5.4 | [x] |
+| 8.2 | 8.2.01 | Botão de cancelar em "Meus Ingressos"/"Minhas Reservas" | apps/web | - | [x] |
+| 8.2 | 8.2.02 | Feedback de bloqueio quando fora do prazo | apps/web | - | [x] |
+| 8.2 | 8.2.03 | Testar: cancelamento dentro do prazo (sucesso) e fora do prazo (bloqueado) | apps/web + apps/api | - | [x] |
+| 8.2 | 8.2.04 | Testar: ingresso cancelado é rejeitado na portaria | apps/web + apps/api | SPEC.md §3.2 | [x] |
 
 **Checkpoint de revisão:** dev testa cancelamento dentro e fora do prazo,
 confirmando que o estoque volta corretamente.
@@ -878,10 +878,10 @@ tanto pela API quanto pela interface.
 
 | Código | ID | Descrição da Tarefa Atômica | Pasta | Referência | Verificado? |
 |---|---|---|---|---|---|
-| 9.1 | 9.1.01 | Query params em `GET /eventos` (`data`, `categoria`, `local`, `precoMin`, `precoMax`) | apps/api | SPEC.md §5.2, PRD.md §3.2 | [ ] |
-| 9.1 | 9.1.02 | Atualizar documentação Swagger de `GET /eventos` com os query params de filtro | apps/api | SPEC.md §5.2 | [ ] |
-| 9.1 | 9.1.03 | UI de filtros na listagem de eventos | apps/web | PRD.md §3.2 | [ ] |
-| 9.1 | 9.1.04 | Testar: cada filtro isolado e combinado | apps/web + apps/api | - | [ ] |
+| 9.1 | 9.1.01 | Query params em `GET /eventos` (`data`, `categoria`, `local`, `precoMin`, `precoMax`) | apps/api | SPEC.md §5.2, PRD.md §3.2 | [~] |
+| 9.1 | 9.1.02 | Atualizar documentação Swagger de `GET /eventos` com os query params de filtro | apps/api | SPEC.md §5.2 | [~] |
+| 9.1 | 9.1.03 | UI de filtros na listagem de eventos | apps/web | PRD.md §3.2 | [~] |
+| 9.1 | 9.1.04 | Testar: cada filtro isolado e combinado | apps/web + apps/api | - | [x] |
 
 **Checkpoint de revisão:** dev testa cada filtro isoladamente e combinado.
 
@@ -1082,7 +1082,7 @@ Preenchido pelo desenvolvedor a cada checkpoint de bloco aprovado.
 | 5 — Pagamento Simulado | 16/08/2026 | Vinicius | Integração real com o Asaas sandbox (não mockada): cliente com CPF de teste fixo e `notificationDisabled: true`, cobrança PIX com QR Code e copia-e-cola reais, pagamento com cartão de teste resolvido de forma síncrona pelo próprio Asaas (aprovação/recusa determinística pelo número usado), `POST /pagamentos/:reservaId/processar`, `GET /pagamentos/:id`, `POST /webhooks/asaas`, `POST /pagamentos/:id/simular-callback`, comprovante (`invoiceUrl`) exposto quando confirmado. Front-end: tela de checkout com escolha entre PIX e cartão, QR Code real, botão de confirmação manual (o webhook não alcança localhost), polling do status, comprovante. Escopo ampliado por decisão minha em relação ao plano original (só previa uma tela genérica) — detalhe em `AI_USAGE.md`. Testados os dois desfechos (confirmação e recusa) nas duas formas de pagamento, com devolução de assento/estoque na recusa confirmada. |
 | 6 — Ingresso, QR e Meus Ingressos | 16/08/2026 | Vinicius | Back-end: emissão de N ingressos (um por entrada) dentro da mesma transação de confirmação do pagamento, JWT assinado por ingresso sem expiração (validade controlada pelo `status` no banco, não pelo prazo do token), renderização do QR via lib `qrcode`, `GET /ingressos/meus`, `GET /ingressos/:id` e `GET /ingressos/compartilhar/:shareToken` (público, sem transferir titularidade). Front-end: tela "Meus Ingressos", detalhe com QR renderizado, botão de compartilhar que copia o link. Este é o marco de fluxo básico ponta a ponta (login → reservar → pagar → ver ingresso) que o desafio pede como prioridade, testado e confirmado, incluindo reserva SHOW gerando N QRs distintos. |
 | 7 — Portaria | 16/08/2026 | Vinicius | Back-end: `verifyTicketToken` reaproveitado do Bloco 6, `POST /portaria/validar` seguindo a ordem exata do `SPEC.md §3.2` (assinatura → evento → status), marcação como `USED` por update condicional dentro de transação (mesmo idioma de concorrência dos Blocos 4/5). Front-end: seleção do evento no início da sessão, dois botões explícitos (escanear câmera via `html5-qrcode` ou digitar manualmente) em vez de ligar a câmera sozinha — decisão revisada depois de um primeiro rascunho ser rejeitado, ver `AI_USAGE.md` e `DECISIONS.md`. Papel GATEKEEPER redireciona direto para `/portaria`, sem passar pela home do cliente. Testados os 4 retornos (válido, inválido, já utilizado, evento errado) pela interface. Fecha o loop emissão → validação. |
-| 8 — Cancelamento e Devolução | | | |
+| 8 — Cancelamento e Devolução | 16/08/2026 | Vinicius | `POST /reservas/:id/cancelar`: janela de 24h (`isWithinCancellationWindow`, já existia do Bloco 1), update condicional pra evitar duplo-clique, devolução de assento/estoque, cancelamento de todos os ingressos da reserva. Lacuna identificada por mim durante a revisão: a devolução não tocava no `Payment` nem estornava na Asaas — corrigido com `refundPayment` real na sandbox (`POST /payments/:id/refund`) e novo status `REFUNDED`, aplicado tanto aqui quanto no cancelamento em cascata do organizador (fecha dívida técnica aberta desde o Bloco 3). Front-end: botão "Cancelar reserva" no detalhe do ingresso, mensagem de bloqueio vinda direto do back (sem duplicar a regra de 24h no cliente). Testado: cancelamento dentro do prazo com estorno, fora do prazo bloqueado, e ingresso cancelado rejeitado na portaria. |
 | 9 — Busca e Filtro | | | |
 | 10 — Refinamento de UX | | | |
 | 11 — Testes Automatizados | | | |

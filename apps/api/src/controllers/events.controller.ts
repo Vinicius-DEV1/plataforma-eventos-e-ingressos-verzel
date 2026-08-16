@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
 import { prisma } from '../config/prisma';
+import type { Prisma } from '../generated/prisma/client';
 import {
   EventStatus,
   EventType,
@@ -210,9 +211,8 @@ export async function updateEvent(req: Request, res: Response) {
   res.json(serializeEvent(updated));
 }
 
-// Cancellation cascade per SPEC.md §4.1. Refunding a PAID reservation is
-// noted but not triggered here: there is no payment integration yet
-// (Bloco 5) for a real or simulated refund call to hook into.
+// Cancellation cascade per SPEC.md §4.1, including the refund of any PAID
+// reservation (Asaas sandbox, see the loop below).
 export async function cancelEvent(req: Request, res: Response) {
   // Express types `req.params` values as `string | string[]` to account for
   // wildcard routes; `:id` never matches more than one segment.
@@ -297,9 +297,64 @@ export async function listMyEvents(req: Request, res: Response) {
   res.json({ items: events.map(serializeEvent) });
 }
 
-export async function listEvents(_req: Request, res: Response) {
+type ListEventsQuery = {
+  date?: string;
+  category?: string;
+  venue?: string;
+  minPrice?: string;
+  maxPrice?: string;
+};
+
+// SPEC.md §5.2 — os cinco query params abaixo.
+export async function listEvents(req: Request, res: Response) {
+  const { date, category, venue, minPrice, maxPrice } =
+    req.query as ListEventsQuery;
+
+  const where: Prisma.EventWhereInput = { status: EventStatus.PUBLISHED };
+
+  if (date) {
+    const parsed = new Date(date);
+    if (Number.isNaN(parsed.getTime())) {
+      res.status(400).json({ message: 'date precisa ser uma data válida.' });
+      return;
+    }
+    // Normaliza pra um dia inteiro em UTC (PRD.md §3.13) — cobre o evento
+    // independente do horário exato, só do dia calendário.
+    const isoDay = parsed.toISOString().slice(0, 10);
+    where.startsAt = {
+      gte: new Date(`${isoDay}T00:00:00.000Z`),
+      lte: new Date(`${isoDay}T23:59:59.999Z`),
+    };
+  }
+
+  if (category) {
+    where.category = { contains: category, mode: 'insensitive' };
+  }
+
+  if (venue) {
+    where.venue = { contains: venue, mode: 'insensitive' };
+  }
+
+  if (minPrice !== undefined || maxPrice !== undefined) {
+    const min = minPrice !== undefined ? Number(minPrice) : undefined;
+    const max = maxPrice !== undefined ? Number(maxPrice) : undefined;
+    if (
+      (min !== undefined && Number.isNaN(min)) ||
+      (max !== undefined && Number.isNaN(max))
+    ) {
+      res
+        .status(400)
+        .json({ message: 'minPrice e maxPrice precisam ser números.' });
+      return;
+    }
+    where.basePrice = {
+      ...(min !== undefined ? { gte: min } : {}),
+      ...(max !== undefined ? { lte: max } : {}),
+    };
+  }
+
   const events = await prisma.event.findMany({
-    where: { status: EventStatus.PUBLISHED },
+    where,
     orderBy: { startsAt: 'asc' },
   });
 

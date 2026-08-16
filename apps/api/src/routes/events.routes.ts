@@ -19,11 +19,38 @@ export const eventsRouter = Router();
  * /eventos:
  *   get:
  *     summary: Lista eventos publicados
- *     description: Rota pública. Filtros por data, categoria, local e preço chegam no Bloco 9.
+ *     description: >
+ *       Rota pública. Todos os filtros são opcionais e combináveis
+ *       (SPEC.md §5.2).
  *     tags: [Eventos]
+ *     parameters:
+ *       - in: query
+ *         name: date
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Eventos que acontecem nesse dia (UTC)
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: venue
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: minPrice
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: maxPrice
+ *         schema:
+ *           type: number
  *     responses:
  *       200:
  *         description: Lista de eventos publicados
+ *       400:
+ *         description: date, minPrice ou maxPrice inválidos
  *   post:
  *     summary: Cria um evento a partir de um item do catálogo externo
  *     description: >
