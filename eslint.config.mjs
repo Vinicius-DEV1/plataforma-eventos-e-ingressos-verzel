@@ -16,10 +16,12 @@ export default tseslint.config(
     ],
   },
 
-  // Config files at each app root sit outside the tsconfig, which only
-  // covers src/ — so they get the rules that do not need type information.
+  // Config files at each app root, and one-off scripts run standalone via
+  // tsx against a live server (not part of the compiled app), sit outside
+  // the tsconfig, which only covers src/ — so they get the rules that do
+  // not need type information.
   {
-    files: ['apps/api/*.ts'],
+    files: ['apps/api/*.ts', 'apps/api/scripts/**/*.ts'],
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     languageOptions: {
       globals: globals.node,

@@ -555,14 +555,14 @@ tentar um assento já ocupado mostra erro em vez de falhar em silêncio.
 
 | Código | ID | Descrição da Tarefa Atômica | Pasta | Referência | Verificado? |
 |---|---|---|---|---|---|
-| 4.1 | 4.1.01 | Rota `GET /eventos/:id/assentos` | apps/api | SPEC.md §5.3 | [~] |
-| 4.1 | 4.1.02 | Service de expiração *lazy* de reservas vencidas (usado antes de consultas/reservas) | apps/api | SPEC.md §2.3, PRD.md §3.10 | [~] |
-| 4.1 | 4.1.03 | Lógica de reserva de assento: `updateMany` condicional (`status = DISPONIVEL`) + checagem de `count`, dentro de transação; define `expiresAt` = +15 min | apps/api | SPEC.md §2.1, §2.3 | [~] |
-| 4.1 | 4.1.04 | Rota `POST /reservas/assento` | apps/api | SPEC.md §5.4 | [~] |
-| 4.1 | 4.1.05 | Lógica de reserva por quantidade com `prisma.$transaction` (define `expiresAt` = +15 min) | apps/api | SPEC.md §2.2, §2.3 | [ ] |
-| 4.1 | 4.1.06 | Rota `POST /reservas/quantidade` | apps/api | SPEC.md §5.4 | [ ] |
-| 4.1 | 4.1.07 | Rota `GET /reservas/minhas` | apps/api | SPEC.md §5.4 | [ ] |
-| 4.1 | 4.1.08 | Documentar endpoints de reserva no Swagger | apps/api | SPEC.md §5.3, §5.4 | [ ] |
+| 4.1 | 4.1.01 | Rota `GET /eventos/:id/assentos` | apps/api | SPEC.md §5.3 | [x] |
+| 4.1 | 4.1.02 | Service de expiração *lazy* de reservas vencidas (usado antes de consultas/reservas) | apps/api | SPEC.md §2.3, PRD.md §3.10 | [x] |
+| 4.1 | 4.1.03 | Lógica de reserva de assento: `updateMany` condicional (`status = DISPONIVEL`) + checagem de `count`, dentro de transação; define `expiresAt` = +15 min | apps/api | SPEC.md §2.1, §2.3 | [x] |
+| 4.1 | 4.1.04 | Rota `POST /reservas/assento` | apps/api | SPEC.md §5.4 | [x] |
+| 4.1 | 4.1.05 | Lógica de reserva por quantidade com `prisma.$transaction` (define `expiresAt` = +15 min) | apps/api | SPEC.md §2.2, §2.3 | [~] |
+| 4.1 | 4.1.06 | Rota `POST /reservas/quantidade` | apps/api | SPEC.md §5.4 | [~] |
+| 4.1 | 4.1.07 | Rota `GET /reservas/minhas` | apps/api | SPEC.md §5.4 | [~] |
+| 4.1 | 4.1.08 | Documentar endpoints de reserva no Swagger | apps/api | SPEC.md §5.3, §5.4 | [~] |
 | 4.2 | 4.2.01 | Listagem de eventos (cards, sem filtro ainda) | apps/web | - | [ ] |
 | 4.2 | 4.2.02 | Tela de mapa de assentos (evento CINEMA) | apps/web | - | [ ] |
 | 4.2 | 4.2.03 | Tela de seleção de quantidade (evento SHOW) | apps/web | - | [ ] |
