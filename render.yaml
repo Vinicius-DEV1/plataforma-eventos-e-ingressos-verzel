@@ -1,6 +1,11 @@
 # Blueprint do ambiente publicado. Versionado para que recriar o deploy do
 # zero não dependa de lembrar o que foi clicado no painel.
 #
+# API e front na mesma plataforma, de propósito: um serviço a menos para
+# gerenciar. O custo é que a validade de 30 dias do Postgres gratuito do
+# Render passa a afetar a conta inteira, não só a API — ver o aviso no
+# README.
+#
 # A API sobe pela imagem de apps/api/Dockerfile, a mesma usada localmente:
 # o ambiente publicado é idêntico ao de desenvolvimento, e o build em dois
 # estágios já resolve `prisma generate` antes do `tsc`.
@@ -35,9 +40,9 @@ services:
       # Gerado pelo Render e nunca versionado.
       - key: JWT_SECRET
         generateValue: true
-      # `sync: false` significa: preencher no painel, não neste arquivo.
-      # Vale para a origem do front (só conhecida depois do deploy na Vercel)
-      # e para as três chaves de API externas.
+      # `sync: false`: preenchido no painel depois do primeiro deploy, com a
+      # URL pública do serviço `eventos-web` abaixo (só existe depois de ele
+      # subir pela primeira vez).
       - key: CORS_ORIGIN
         sync: false
       - key: ASAAS_API_KEY
@@ -45,6 +50,26 @@ services:
       - key: TMDB_API_KEY
         sync: false
       - key: TICKETMASTER_API_KEY
+        sync: false
+
+  - type: web
+    name: eventos-web
+    runtime: static
+    rootDir: apps/web
+    buildCommand: npm ci && npm run build --workspace @eventos/web
+    staticPublishPath: dist
+    # SPA: qualquer caminho sem arquivo correspondente cai no index.html, para
+    # o React Router assumir a navegação (ex.: abrir o link de ingresso
+    # compartilhado direto na barra de endereço).
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      # `sync: false`: preenchido no painel com a URL pública de `eventos-api`
+      # — o build do front embute essa variável no bundle estático, então ela
+      # precisa existir antes do primeiro build do front.
+      - key: VITE_API_URL
         sync: false
 
 databases:
