@@ -66,6 +66,12 @@ services:
         source: /*
         destination: /index.html
     envVars:
+      # O Render instala dependências antes do buildCommand rodar, e essa
+      # instalação dispara o `prepare` da raiz do monorepo (Husky) — que é
+      # devDependency, ausente nesse tipo de instalação. Mesmo tratamento já
+      # usado no Dockerfile da API e no CI (.github/workflows/ci.yml).
+      - key: HUSKY
+        value: '0'
       # `sync: false`: preenchido no painel com a URL pública de `eventos-api`
       # — o build do front embute essa variável no bundle estático, então ela
       # precisa existir antes do primeiro build do front.
