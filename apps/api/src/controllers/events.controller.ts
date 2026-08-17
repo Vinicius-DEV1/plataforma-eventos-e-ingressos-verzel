@@ -361,6 +361,26 @@ export async function listEvents(req: Request, res: Response) {
   res.json({ items: events.map(serializeEvent) });
 }
 
+// Opções reais de filtro, lidas do catálogo publicado. Existe como endpoint
+// próprio (e não derivado da listagem já filtrada) porque a lista precisa
+// continuar completa enquanto o cliente filtra — do contrário, escolher uma
+// categoria apagaria as outras opções da lista.
+export async function listEventFilterOptions(_req: Request, res: Response) {
+  const events = await prisma.event.findMany({
+    where: { status: EventStatus.PUBLISHED },
+    select: { category: true, venue: true },
+  });
+
+  const byLabel = (a: string, b: string) => a.localeCompare(b, 'pt-BR');
+  const unique = (values: string[]) =>
+    [...new Set(values.filter(Boolean))].sort(byLabel);
+
+  res.json({
+    categories: unique(events.map((event) => event.category)),
+    venues: unique(events.map((event) => event.venue)),
+  });
+}
+
 export async function getEvent(req: Request, res: Response) {
   // Express types `req.params` values as `string | string[]` to account for
   // wildcard routes; `:id` never matches more than one segment.

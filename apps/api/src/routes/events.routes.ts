@@ -4,6 +4,7 @@ import {
   createEvent,
   getEvent,
   getEventSeats,
+  listEventFilterOptions,
   listEvents,
   listMyEvents,
   updateEvent,
@@ -139,6 +140,37 @@ eventsRouter.get(
   requireRole(Role.ORGANIZER),
   listMyEvents,
 );
+
+/**
+ * @openapi
+ * /eventos/filtros:
+ *   get:
+ *     summary: Valores disponíveis para os filtros do catálogo
+ *     description: >
+ *       Rota pública. Devolve as categorias e os locais que existem entre os
+ *       eventos publicados, para a interface oferecer escolha em vez de
+ *       digitação às cegas. A lista é sempre a completa, independente dos
+ *       filtros ativos na tela.
+ *     tags: [Eventos]
+ *     responses:
+ *       200:
+ *         description: Categorias e locais existentes
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 categories:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 venues:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ */
+// Antes de `/eventos/:id`, senão "filtros" seria lido como um id.
+eventsRouter.get('/eventos/filtros', listEventFilterOptions);
 
 /**
  * @openapi

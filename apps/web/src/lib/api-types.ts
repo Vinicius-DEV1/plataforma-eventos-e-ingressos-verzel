@@ -44,6 +44,13 @@ export type Seat = {
 
 export type EventDetail = EventItem & { seats?: Seat[] };
 
+// Valores que existem hoje no catálogo publicado, para os filtros oferecerem
+// escolha em vez de digitação às cegas (GET /eventos/filtros).
+export type EventFilterOptions = {
+  categories: string[];
+  venues: string[];
+};
+
 export type ReservationStatus =
   'PENDING' | 'PAID' | 'DECLINED' | 'CANCELLED' | 'EXPIRED';
 
