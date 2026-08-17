@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router';
+import { Link, useParams } from 'react-router';
+import { AppShell } from '@/components/layout/AppShell';
 import { TicketDetailView } from '@/components/tickets/TicketDetailView';
+import { Alert } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { apiFetch, ApiError } from '@/lib/api-client';
 import type { TicketDetail } from '@/lib/api-types';
 
@@ -37,21 +41,29 @@ export default function SharedTicketPage() {
 
   if (loading) {
     return (
-      <main className="mx-auto flex min-h-screen max-w-md items-center justify-center px-6">
-        <p className="text-muted-foreground text-sm">Carregando…</p>
-      </main>
+      <AppShell width="narrow">
+        <Skeleton className="h-96 w-full" />
+      </AppShell>
     );
   }
 
   if (error || !ticket) {
     return (
-      <main className="mx-auto flex min-h-screen max-w-md items-center justify-center px-6">
-        <p className="text-destructive text-sm">
-          {error ?? 'Ingresso não encontrado.'}
-        </p>
-      </main>
+      <AppShell width="narrow">
+        <Alert>{error ?? 'Ingresso não encontrado.'}</Alert>
+        <Button asChild variant="outline">
+          <Link to="/eventos">Ver o catálogo</Link>
+        </Button>
+      </AppShell>
     );
   }
 
-  return <TicketDetailView ticket={ticket} canShare={false} />;
+  return (
+    <AppShell width="narrow">
+      {/* Quem chega por link compartilhado não é o dono: vê o ingresso, não
+          as ações sobre ele. */}
+      <p className="label-print">Ingresso compartilhado</p>
+      <TicketDetailView ticket={ticket} canShare={false} />
+    </AppShell>
+  );
 }

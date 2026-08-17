@@ -1,28 +1,25 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
-@import '@fontsource-variable/archivo';
+@import '@fontsource-variable/outfit';
 
 @custom-variant dark (&:is(.dark *));
 
-/* "Printed ticket" theme — see docs/DECISIONS.md, "Identidade visual". */
 @theme inline {
-  --font-heading: var(--font-sans);
-  --font-sans: 'Archivo Variable', system-ui, sans-serif;
+  --font-sans:
+    'Outfit Variable', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
+  --ease-sharp: cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-fade-in: fade-in 250ms var(--ease-sharp) both;
+  --animate-slide-up: slide-up 300ms var(--ease-sharp) both;
+
+  --color-label: var(--label);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -42,105 +39,113 @@
   --color-foreground: var(--foreground);
   --color-background: var(--background);
 
-  --radius-sm: calc(var(--radius) * 0.5);
-  --radius-md: var(--radius);
-  --radius-lg: calc(var(--radius) * 2);
-  --radius-xl: calc(var(--radius) * 3);
-  --radius-2xl: calc(var(--radius) * 4);
-  --radius-3xl: calc(var(--radius) * 6);
-  --radius-4xl: calc(var(--radius) * 8);
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 :root {
-  --radius: 2px;
+  --radius: 8px;
 
-  /* Paper and ink */
-  --background: #faf8f4;
-  --foreground: #141210;
+  /* Tema Claro: Quente, Luminoso, Alto Contraste (Sem Cinza Morto) */
+  --background: #fafaf9;
+  --foreground: #0c0d0e;
+
   --card: #ffffff;
-  --card-foreground: #141210;
+  --card-foreground: #0c0d0e;
   --popover: #ffffff;
-  --popover-foreground: #141210;
+  --popover-foreground: #0c0d0e;
 
-  /* Accent: ticket ink red */
-  --primary: #d6403a;
-  --primary-foreground: #fffdf9;
+  /* Laranja Tangerina Vibrante & Cheio de Vida */
+  --primary: #ff4d00;
+  --primary-foreground: #ffffff;
 
-  /* One shade down, for secondary surfaces */
-  --secondary: #f0ede6;
-  --secondary-foreground: #141210;
-  --muted: #f0ede6;
-  --muted-foreground: #6b655c;
+  --secondary: #f4f3f0;
+  --secondary-foreground: #0c0d0e;
 
-  /* Washed accent, for highlighted states */
-  --accent: #f7e9e7;
-  --accent-foreground: #8f2420;
+  --muted: #f4f3f0;
+  --muted-foreground: #525866;
 
-  --destructive: #b4241f;
-  --border: #e2ddd3;
-  --input: #e2ddd3;
-  --ring: #d6403a;
+  --accent: #fff1eb;
+  --accent-foreground: #c23a00;
 
-  --chart-1: #d6403a;
-  --chart-2: #c97b32;
-  --chart-3: #7d8a5c;
-  --chart-4: #4f6b7a;
-  --chart-5: #6b655c;
+  /* O laranja da marca tem 3,3 de contraste sobre branco: serve para
+     superfície e texto grande, não para rótulo de 11px. Esta é a versão
+     queimada dele, usada só onde o texto é pequeno. */
+  --label: #c23a00;
 
-  --sidebar: #f4f1ea;
-  --sidebar-foreground: #141210;
-  --sidebar-primary: #d6403a;
-  --sidebar-primary-foreground: #fffdf9;
-  --sidebar-accent: #f7e9e7;
-  --sidebar-accent-foreground: #8f2420;
-  --sidebar-border: #e2ddd3;
-  --sidebar-ring: #d6403a;
+  --destructive: #e11d48;
+  --success: #15803d;
+  --success-foreground: #ffffff;
+  --warning: #d97706;
+  --warning-foreground: #ffffff;
+
+  --border: #e8e7e3;
+  --input: #dcdad5;
+  --ring: #ff4d00;
 }
 
-/* Dark mode: ink becomes background, paper becomes text. */
+/* Modo Dark: Obsidian Profundo & Laranja Elétrico de Alto Impacto */
 .dark {
-  --background: #141210;
-  --foreground: #f5f1ea;
-  --card: #1c1917;
-  --card-foreground: #f5f1ea;
-  --popover: #1c1917;
-  --popover-foreground: #f5f1ea;
+  --background: #090a0d;
+  --foreground: #f9fafb;
 
-  --primary: #e8615a;
-  --primary-foreground: #1a0d0c;
+  --card: #131418;
+  --card-foreground: #f9fafb;
+  --popover: #131418;
+  --popover-foreground: #f9fafb;
 
-  --secondary: #26221f;
-  --secondary-foreground: #f5f1ea;
-  --muted: #26221f;
-  --muted-foreground: #a8a096;
+  --primary: #ff5500;
+  --primary-foreground: #ffffff;
 
-  --accent: #3a2320;
-  --accent-foreground: #f0b3ae;
+  --secondary: #1c1e24;
+  --secondary-foreground: #f9fafb;
 
-  --destructive: #e05951;
-  --border: #ffffff1a;
-  --input: #ffffff26;
-  --ring: #e8615a;
+  --muted: #181a20;
+  --muted-foreground: #9ca3af;
 
-  --chart-1: #e8615a;
-  --chart-2: #d99a55;
-  --chart-3: #9aa87a;
-  --chart-4: #7392a3;
-  --chart-5: #a8a096;
+  --accent: #2a160e;
+  --accent-foreground: #ff7a33;
 
-  --sidebar: #1c1917;
-  --sidebar-foreground: #f5f1ea;
-  --sidebar-primary: #e8615a;
-  --sidebar-primary-foreground: #1a0d0c;
-  --sidebar-accent: #3a2320;
-  --sidebar-accent-foreground: #f0b3ae;
-  --sidebar-border: #ffffff1a;
-  --sidebar-ring: #e8615a;
+  /* No escuro o laranja já passa em AA sobre o cartão, e volta a ser o mesmo
+     da marca. */
+  --label: #ff5500;
+
+  --destructive: #f43f5e;
+  --success: #22c55e;
+  --success-foreground: #090a0d;
+  --warning: #fbbf24;
+  --warning-foreground: #090a0d;
+
+  --border: #22252e;
+  --input: #2b2e3a;
+  --ring: #ff5500;
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border outline-ring/40;
   }
 
   html {
@@ -148,14 +153,67 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    background-color: var(--background);
+    @apply text-foreground antialiased selection:bg-primary selection:text-primary-foreground min-h-screen;
   }
 
-  /* Tabular figures keep digits from shifting as values update. */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply tracking-tight font-extrabold;
+  }
+
   th,
   td,
   time,
   [data-numeric] {
     font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer components {
+  /* Etiqueta técnica: mono, caixa alta, entrelinha larga. Usa --label em vez
+     do laranja da marca por causa do contraste em corpo pequeno. */
+  .label-print {
+    @apply text-label font-mono text-[0.6875rem] font-bold tracking-[0.14em] uppercase;
+  }
+
+  .display-print {
+    @apply font-bold tracking-tight text-balance;
+  }
+
+  /* Picote do ingresso: linha tracejada e os dois entalhes vazados na borda
+     do cartão. É a única superfície do app que recebe. */
+  .ticket-perforation {
+    @apply border-border relative my-5 border-t border-dashed;
+  }
+
+  .ticket-perforation::before,
+  .ticket-perforation::after {
+    content: '';
+    background: var(--background);
+    @apply border-border absolute top-0 size-4 -translate-y-1/2 rounded-full border;
+  }
+
+  .ticket-perforation::before {
+    @apply -left-2;
+  }
+
+  .ticket-perforation::after {
+    @apply -right-2;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

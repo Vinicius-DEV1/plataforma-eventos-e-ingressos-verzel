@@ -878,9 +878,9 @@ tanto pela API quanto pela interface.
 
 | Código | ID | Descrição da Tarefa Atômica | Pasta | Referência | Verificado? |
 |---|---|---|---|---|---|
-| 9.1 | 9.1.01 | Query params em `GET /eventos` (`data`, `categoria`, `local`, `precoMin`, `precoMax`) | apps/api | SPEC.md §5.2, PRD.md §3.2 | [~] |
-| 9.1 | 9.1.02 | Atualizar documentação Swagger de `GET /eventos` com os query params de filtro | apps/api | SPEC.md §5.2 | [~] |
-| 9.1 | 9.1.03 | UI de filtros na listagem de eventos | apps/web | PRD.md §3.2 | [~] |
+| 9.1 | 9.1.01 | Query params em `GET /eventos` (`data`, `categoria`, `local`, `precoMin`, `precoMax`) | apps/api | SPEC.md §5.2, PRD.md §3.2 | [x] |
+| 9.1 | 9.1.02 | Atualizar documentação Swagger de `GET /eventos` com os query params de filtro | apps/api | SPEC.md §5.2 | [x] |
+| 9.1 | 9.1.03 | UI de filtros na listagem de eventos | apps/web | PRD.md §3.2 | [x] |
 | 9.1 | 9.1.04 | Testar: cada filtro isolado e combinado | apps/web + apps/api | - | [x] |
 
 **Checkpoint de revisão:** dev testa cada filtro isoladamente e combinado.
@@ -896,8 +896,123 @@ intercalado bloco a bloco, para refinar o app como um todo em vez de cada
 tela isolada — e porque um padrão criado aqui deve valer para as telas
 seguintes.
 
-Escopo, issues e tarefas atômicas ainda não definidos — a ser detalhado
-quando o bloco começar, depois do Bloco 9.
+**Direção escolhida:** "bilheteria de papel", em versão contida. Só o
+ingresso é um objeto físico (picote, canhoto, serial); o resto do app é
+tipografia impressa disciplinada. O detalhamento da paleta, da tipografia e
+das regras de movimento está em docs/DECISIONS.md, "Identidade visual".
+
+**Regra de veto:** nenhuma decisão estética pode custar clareza. Rótulo
+sempre visível, ícone sempre acompanhado de texto, estado comunicado por
+cor e por palavra, retorno sempre no mesmo lugar.
+
+**Uso do shadcn:** o gerador entra como base técnica, nunca como aparência.
+Todo componente adicionado tem variantes, tamanhos, raio, tipografia e
+estados reescritos até não restar nada reconhecível do preset — o mesmo
+tratamento que o `Button` do Bloco 2 já recebeu.
+
+**Organização do código:** cor e medida vivem só nos tokens do `index.css`,
+nunca literais nas telas; componentes de identidade em `components/ui`,
+composições de tela em `components/<domínio>`; nenhuma classe utilitária
+repetida entre arquivos.
+
+**Issues para cadastrar no GitHub**
+
+```
+Título: [front-end] Fundação visual: paleta, tipografia e tema claro/escuro
+Labels: front-end
+
+O tema existe só como token de cor, e o modo escuro do index.css é código
+morto: ninguém aplica a classe .dark.
+
+- [ ] Paleta nos dois temas, com ação e perigo em matizes distintos
+- [ ] Escala tipográfica e tokens de superfície e de movimento
+- [ ] Alternador de tema, com persistência e sem flash
+- [ ] Favicon próprio no lugar das sobras do scaffold
+
+Pronto quando: a alternância sobrevive a uma recarga sem piscar.
+```
+
+```
+Título: [front-end] Casca do app, retorno e kit de componentes
+Labels: front-end
+
+Nenhuma tela tem botão de voltar, as duas ações destrutivas usam
+window.confirm e a mesma classe de input está copiada em quatro arquivos.
+
+- [ ] Barra superior com navegação conforme o papel do usuário
+- [ ] Retorno contextual em toda tela interna
+- [ ] Card, campo, selo de estado, esqueleto e diálogo de confirmação
+- [ ] Fim dos diálogos nativos e da classe de input duplicada
+
+Pronto quando: dá para voltar de qualquer tela sem o botão do navegador.
+```
+
+```
+Título: [front-end] Aplicar a identidade nas telas
+Labels: front-end
+
+- [ ] Catálogo, card de evento e detalhe do evento
+- [ ] Mapa de assentos e checkout
+- [ ] Ingressos: lista, detalhe e link compartilhado
+- [ ] Login, painel do organizador e portaria
+
+Pronto quando: as três jornadas foram percorridas nos dois temas.
+```
+
+```
+Título: [front-end] Movimento, foco e contraste
+Labels: front-end
+
+- [ ] Transições de entrada e de troca de rota
+- [ ] prefers-reduced-motion respeitado
+- [ ] Foco visível e contraste AA nos dois temas
+- [ ] Varredura: nenhuma cor literal fora dos tokens
+
+Pronto quando: a navegação inteira funciona por teclado.
+```
+
+**Tabela de Controle de Tarefas Atômicas**
+
+| Código | ID | Descrição da Tarefa Atômica | Pasta | Referência | Verificado? |
+|---|---|---|---|---|---|
+| 10.1 | 10.1.01 | Nova paleta em `index.css` nos dois temas (papel, tinta, azul de carimbo para ação, carmim para perigo, estados) | apps/web | DECISIONS.md — Identidade visual | [ ] |
+| 10.1 | 10.1.02 | Instalar `@fontsource-variable/bitter` e definir a escala tipográfica (título, texto, rótulo) | apps/web | DECISIONS.md — Identidade visual | [ ] |
+| 10.1 | 10.1.03 | Tokens de superfície (papel, filete, ausência de sombra) e de movimento (duração e curva) | apps/web | DECISIONS.md — Identidade visual | [ ] |
+| 10.1 | 10.1.04 | `ThemeProvider` com persistência em `localStorage`, padrão claro | apps/web | - | [ ] |
+| 10.1 | 10.1.05 | Aplicar o tema antes da primeira pintura, para não piscar na recarga | apps/web | - | [ ] |
+| 10.1 | 10.1.06 | Alternador de tema na barra superior | apps/web | - | [ ] |
+| 10.1 | 10.1.07 | Favicon próprio e remoção de `icons.svg` (sobra do scaffold) | apps/web | - | [ ] |
+| 10.1 | 10.1.08 | Testar: alternância, persistência e recarga sem flash | apps/web | - | [ ] |
+| 10.2 | 10.2.01 | `AppShell` com barra superior: marca, navegação por papel, alternador e sair | apps/web | - | [ ] |
+| 10.2 | 10.2.02 | Retorno contextual em todas as telas internas | apps/web | - | [ ] |
+| 10.2 | 10.2.03 | Componentes `Card`, `Field`, `Badge` de estado e `Skeleton` | apps/web | - | [ ] |
+| 10.2 | 10.2.04 | Diálogo de confirmação substituindo `window.confirm` no cancelamento de reserva e de evento | apps/web | SPEC.md §4.0, §4.1 | [ ] |
+| 10.2 | 10.2.05 | Aviso não bloqueante substituindo `alert` no painel do organizador | apps/web | - | [ ] |
+| 10.2 | 10.2.06 | Remover a classe de input duplicada em quatro arquivos | apps/web | - | [ ] |
+| 10.2 | 10.2.07 | Corrigir o rótulo "Bloco 2 — autenticação" na home e revisar os títulos de página | apps/web | - | [ ] |
+| 10.2 | 10.2.08 | Testar: voltar a partir de cada tela interna e as duas confirmações destrutivas | apps/web | - | [ ] |
+| 10.3 | 10.3.01 | Catálogo: filtros com rótulo visível, esqueleto de carregamento e estado vazio | apps/web | PRD.md §3.2 | [ ] |
+| 10.3 | 10.3.02 | Card de evento: hierarquia e alternativa quando `imageUrl` é nulo | apps/web | - | [ ] |
+| 10.3 | 10.3.03 | Detalhe do evento: hierarquia, aviso de evento cancelado e bloco de reserva | apps/web | SPEC.md §5.2 | [ ] |
+| 10.3 | 10.3.04 | `SeatMap`: alvo maior, indicação da tela/palco e legenda integrada | apps/web | PRD.md §3.6 | [ ] |
+| 10.3 | 10.3.05 | Checkout: contador de expiração em primeiro plano e desfechos do pagamento | apps/web | SPEC.md §5.5, PRD.md §3.10 | [ ] |
+| 10.3 | 10.3.06 | Lista de ingressos: linha com canhoto e estado por cor e palavra | apps/web | - | [ ] |
+| 10.3 | 10.3.07 | Detalhe do ingresso: forma de ingresso (picote, canhoto, serial) | apps/web | SPEC.md §5.6 | [ ] |
+| 10.3 | 10.3.08 | Ingresso compartilhado: mesma forma, sem as ações do dono | apps/web | SPEC.md §5.6 | [ ] |
+| 10.3 | 10.3.09 | Login no novo kit | apps/web | - | [ ] |
+| 10.3 | 10.3.10 | Painel do organizador: abas, listagem e formulário no novo kit | apps/web | SPEC.md §5.3 | [ ] |
+| 10.3 | 10.3.11 | Portaria: resultado em tokens do tema, alvo grande e leitura à distância | apps/web | SPEC.md §5.7 | [ ] |
+| 10.3 | 10.3.12 | Testar: percorrer as jornadas dos três papéis nos dois temas | apps/web | - | [ ] |
+| 10.4 | 10.4.01 | Transições de entrada e de troca de rota | apps/web | - | [ ] |
+| 10.4 | 10.4.02 | Respeitar `prefers-reduced-motion` | apps/web | - | [ ] |
+| 10.4 | 10.4.03 | Foco visível consistente em toda superfície interativa | apps/web | - | [ ] |
+| 10.4 | 10.4.04 | Verificar contraste AA nos dois temas | apps/web | - | [ ] |
+| 10.4 | 10.4.05 | Varredura final: nenhuma cor literal fora dos tokens e nenhuma classe utilitária duplicada | apps/web | - | [ ] |
+| 10.4 | 10.4.06 | Testar: navegação completa por teclado e com movimento reduzido | apps/web | - | [ ] |
+
+**Checkpoint de revisão:** dev percorre as três jornadas nos dois temas, em
+telas de celular e de desktop, e confirma que consegue voltar de qualquer
+tela sem usar o botão do navegador.
 
 ---
 
@@ -1083,7 +1198,7 @@ Preenchido pelo desenvolvedor a cada checkpoint de bloco aprovado.
 | 6 — Ingresso, QR e Meus Ingressos | 16/08/2026 | Vinicius | Back-end: emissão de N ingressos (um por entrada) dentro da mesma transação de confirmação do pagamento, JWT assinado por ingresso sem expiração (validade controlada pelo `status` no banco, não pelo prazo do token), renderização do QR via lib `qrcode`, `GET /ingressos/meus`, `GET /ingressos/:id` e `GET /ingressos/compartilhar/:shareToken` (público, sem transferir titularidade). Front-end: tela "Meus Ingressos", detalhe com QR renderizado, botão de compartilhar que copia o link. Este é o marco de fluxo básico ponta a ponta (login → reservar → pagar → ver ingresso) que o desafio pede como prioridade, testado e confirmado, incluindo reserva SHOW gerando N QRs distintos. |
 | 7 — Portaria | 16/08/2026 | Vinicius | Back-end: `verifyTicketToken` reaproveitado do Bloco 6, `POST /portaria/validar` seguindo a ordem exata do `SPEC.md §3.2` (assinatura → evento → status), marcação como `USED` por update condicional dentro de transação (mesmo idioma de concorrência dos Blocos 4/5). Front-end: seleção do evento no início da sessão, dois botões explícitos (escanear câmera via `html5-qrcode` ou digitar manualmente) em vez de ligar a câmera sozinha — decisão revisada depois de um primeiro rascunho ser rejeitado, ver `AI_USAGE.md` e `DECISIONS.md`. Papel GATEKEEPER redireciona direto para `/portaria`, sem passar pela home do cliente. Testados os 4 retornos (válido, inválido, já utilizado, evento errado) pela interface. Fecha o loop emissão → validação. |
 | 8 — Cancelamento e Devolução | 16/08/2026 | Vinicius | `POST /reservas/:id/cancelar`: janela de 24h (`isWithinCancellationWindow`, já existia do Bloco 1), update condicional pra evitar duplo-clique, devolução de assento/estoque, cancelamento de todos os ingressos da reserva. Lacuna identificada por mim durante a revisão: a devolução não tocava no `Payment` nem estornava na Asaas — corrigido com `refundPayment` real na sandbox (`POST /payments/:id/refund`) e novo status `REFUNDED`, aplicado tanto aqui quanto no cancelamento em cascata do organizador (fecha dívida técnica aberta desde o Bloco 3). Front-end: botão "Cancelar reserva" no detalhe do ingresso, mensagem de bloqueio vinda direto do back (sem duplicar a regra de 24h no cliente). Testado: cancelamento dentro do prazo com estorno, fora do prazo bloqueado, e ingresso cancelado rejeitado na portaria. |
-| 9 — Busca e Filtro | | | |
+| 9 — Busca e Filtro | 16/08/2026 | Vinicius | `GET /eventos` com os 5 query params do SPEC.md §5.2 (`date`, `category`, `venue`, `minPrice`, `maxPrice`), todos opcionais e combináveis — data normalizada pro dia inteiro em UTC, categoria/local por `contains` case-insensitive, preço por faixa. Front-end: barra de filtros na listagem, com debounce de 400ms. Testado isolado e combinado. |
 | 10 — Refinamento de UX | | | |
 | 11 — Testes Automatizados | | | |
 | 12 — Deploy e Documentação Final | | | |

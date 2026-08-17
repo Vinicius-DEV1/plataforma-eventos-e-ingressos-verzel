@@ -1,17 +1,12 @@
 import { useState, type ReactNode } from 'react';
+import { Check, Share2, QrCode } from 'lucide-react';
+import { TICKET_STATUS } from '@/components/tickets/ticket-status';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { DataItem, DataList } from '@/components/ui/data-list';
 import type { TicketDetail } from '@/lib/api-types';
-
-const dateFormatter = new Intl.DateTimeFormat('pt-BR', {
-  dateStyle: 'full',
-  timeStyle: 'short',
-});
-
-const statusLabel: Record<TicketDetail['status'], string> = {
-  VALID: 'Válido',
-  USED: 'Utilizado',
-  CANCELLED: 'Cancelado',
-};
+import { formatFullDateTime, formatPrice, ticketSerial } from '@/lib/format';
 
 export function TicketDetailView({
   ticket,
@@ -23,6 +18,7 @@ export function TicketDetailView({
   children?: ReactNode;
 }) {
   const [copied, setCopied] = useState(false);
+  const status = TICKET_STATUS[ticket.status];
 
   async function handleShare() {
     const url = `${window.location.origin}/ingressos/compartilhar/${ticket.shareToken}`;
@@ -32,44 +28,93 @@ export function TicketDetailView({
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center gap-6 px-6 py-12">
-      <div className="space-y-2">
-        <p className="text-muted-foreground text-xs font-medium tracking-[0.2em] uppercase">
-          Ingresso
-        </p>
-        <h1 className="text-2xl font-bold tracking-tight">
-          {ticket.event.title}
-        </h1>
-        <p className="text-muted-foreground text-sm">
-          {ticket.event.venue} ·{' '}
-          {dateFormatter.format(new Date(ticket.event.startsAt))}
-        </p>
-      </div>
+    <>
+      <Card className="overflow-hidden">
+        {/* Cabeçalho Técnico de Emissão */}
+        <div className="bg-foreground text-background px-6 py-3.5 flex items-center justify-between gap-4 font-mono text-xs">
+          <span className="font-bold tracking-widest uppercase">
+            [ INGRESSO DIGITAL ]
+          </span>
+          <span data-numeric className="font-bold tracking-wider opacity-90">
+            Nº {ticketSerial(ticket.id)}
+          </span>
+        </div>
 
-      <div className="border-border bg-card flex flex-col items-center gap-4 border p-6">
-        <img
-          src={ticket.qrImage}
-          alt="QR Code do ingresso"
-          className="size-56"
-        />
-        <span className="text-muted-foreground text-xs font-medium tracking-[0.15em] uppercase">
-          {statusLabel[ticket.status]}
-        </span>
-      </div>
+        <div className="space-y-6 p-6 sm:p-7">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground text-balance">
+            {ticket.event.title}
+          </h1>
 
-      {ticket.status === 'USED' && ticket.validatedAt && (
-        <p className="text-muted-foreground text-sm">
-          Validado em {dateFormatter.format(new Date(ticket.validatedAt))}
-        </p>
+          <DataList>
+            <DataItem label="Local">{ticket.event.venue}</DataItem>
+            <DataItem label="Data & Horário">
+              {formatFullDateTime(ticket.event.startsAt)}
+            </DataItem>
+            <DataItem label="Valor Total">
+              <span
+                data-numeric
+                className="font-bold font-mono text-foreground"
+              >
+                {formatPrice(ticket.reservation.totalAmount)}
+              </span>
+            </DataItem>
+            <DataItem label="Status">
+              <Badge tone={status.tone}>{status.label}</Badge>
+            </DataItem>
+          </DataList>
+
+          {ticket.status === 'USED' && ticket.validatedAt && (
+            <div className="rounded border border-border bg-secondary p-3 font-mono text-xs text-muted-foreground">
+              Validado na portaria em {formatFullDateTime(ticket.validatedAt)}.
+            </div>
+          )}
+        </div>
+
+        <div className="ticket-perforation" />
+
+        <div className="bg-secondary/40 flex flex-col items-center gap-4 p-7">
+          <div className="rounded-lg bg-white p-3 shadow-xs border border-border">
+            <img
+              src={ticket.qrImage}
+              alt="QR Code do ingresso"
+              className={`size-48 sm:size-52 ${
+                ticket.status === 'VALID' ? '' : 'opacity-30 grayscale'
+              }`}
+            />
+          </div>
+          {ticket.status === 'VALID' ? (
+            <div className="flex items-center gap-1.5 font-mono text-xs text-foreground font-bold">
+              <QrCode className="size-3.5 text-primary" />
+              <span>Apresente este código na entrada para leitura.</span>
+            </div>
+          ) : (
+            <p className="font-mono text-muted-foreground text-center text-xs">
+              Este código não é mais válido.
+            </p>
+          )}
+        </div>
+      </Card>
+
+      {(canShare || children) && (
+        <div className="flex flex-wrap gap-3">
+          {canShare && (
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => void handleShare()}
+              className="gap-2"
+            >
+              {copied ? (
+                <Check className="size-4" aria-hidden />
+              ) : (
+                <Share2 className="size-4" aria-hidden />
+              )}
+              {copied ? 'Link copiado' : 'Compartilhar ingresso'}
+            </Button>
+          )}
+          {children}
+        </div>
       )}
-
-      {canShare && (
-        <Button variant="outline" onClick={() => void handleShare()}>
-          {copied ? 'Link copiado!' : 'Compartilhar link'}
-        </Button>
-      )}
-
-      {children}
-    </main>
+    </>
   );
 }
