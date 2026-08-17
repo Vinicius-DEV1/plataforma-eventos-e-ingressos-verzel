@@ -1,120 +1,169 @@
 # Plataforma de Eventos e Ingressos
 
 Plataforma de bilheteria ponta a ponta: organizadores publicam eventos a
-partir de catálogos externos reais, clientes reservam lugares e pagam de forma
-simulada, e a portaria valida os ingressos na entrada por leitura de QR Code.
+partir de catálogos externos reais, clientes reservam lugares e pagam em
+ambiente de sandbox, e a portaria valida os ingressos na entrada por leitura
+de QR Code.
 
-## Sobre
+## Ambiente publicado
 
-O sistema atende três papéis distintos:
+|                     | Endereço                              |
+| ------------------- | ------------------------------------- |
+| Front-end           | _preencher após o deploy_             |
+| API                 | _preencher após o deploy_             |
+| Documentação da API | _preencher após o deploy_ `/api-docs` |
 
-- **Organizador** — busca filmes no TMDb ou shows no Ticketmaster e publica
-  eventos definindo data, local, capacidade e preço.
-- **Cliente** — navega pelo catálogo, reserva um assento (eventos de cinema)
-  ou uma quantidade de ingressos (eventos de pista), paga, e recebe ingressos
-  com QR Code em "Meus Ingressos".
-- **Portaria** — seleciona o evento que está fiscalizando e valida ingressos
-  na entrada, pela câmera ou digitando o código.
+**Duas limitações do plano gratuito do Render, que afetam quem for testar:**
 
-Os dois fluxos de reserva existem porque correspondem aos dois formatos reais
-do mercado de bilheteria: lugar marcado e pista.
+- **Cold start.** Após 15 minutos sem tráfego, a API hiberna. A primeira
+  requisição depois disso leva cerca de um minuto para responder. Se a tela de
+  login parecer travada na primeira tentativa, é isso: aguarde e tente de novo.
+- **Validade do banco.** O PostgreSQL gratuito expira 30 dias após a criação,
+  com 14 dias de carência antes da remoção
+  ([documentação do Render](https://render.com/docs/free#free-postgres)).
+  Passado esse prazo, o ambiente publicado deixa de funcionar, e o caminho é
+  rodar localmente conforme a seção abaixo.
+
+## Contas de teste
+
+Criadas pelo seed, todas com a senha `senha123`:
+
+| Papel       | Email                   | O que faz                                               |
+| ----------- | ----------------------- | ------------------------------------------------------- |
+| Organizador | `organizador@teste.com` | Publica e cancela eventos                               |
+| Cliente     | `cliente1@teste.com`    | Reserva, paga e cancela                                 |
+| Cliente     | `cliente2@teste.com`    | Segundo cliente, para testar disputa pelo mesmo assento |
+| Portaria    | `portaria@teste.com`    | Valida ingressos na entrada                             |
+
+## O fluxo completo, para avaliar em cinco minutos
+
+1. Entre como **cliente1** e escolha um evento de cinema no catálogo.
+2. Reserve um assento. A partir daí você tem 15 minutos para pagar, com
+   contador na tela.
+3. No checkout, escolha cartão e use o botão "Aprova", que preenche o cartão
+   de teste do sandbox. Para ver a recusa, use o botão "Recusa".
+4. Com o pagamento confirmado, o ingresso aparece em "Meus ingressos", com o
+   QR Code.
+5. Em outra aba (ou janela anônima), entre como **portaria**, escolha a mesma
+   sessão e valide o código. Ler de novo devolve "já utilizado".
+6. Como **organizador**, publique um evento novo a partir do catálogo do TMDb
+   ou do Ticketmaster, ou cancele um existente e veja a cascata: reservas e
+   ingressos cancelados, assentos liberados e estorno na Asaas.
+
+Pagamento em PIX também funciona e gera QR Code real do sandbox. Como o
+webhook da Asaas não alcança um ambiente local, a tela oferece botões para
+simular o retorno da cobrança.
 
 ## Stack
 
-| Camada       | Tecnologia                                     |
-| ------------ | ---------------------------------------------- |
-| Front-end    | React + TypeScript, Vite, Tailwind, shadcn/ui  |
-| Back-end     | Node.js + Express, TypeScript                  |
-| Banco        | PostgreSQL via Prisma                          |
-| Autenticação | JWT                                            |
-| Documentação | OpenAPI (Swagger UI em `/api-docs`)            |
-| Qualidade    | ESLint, Prettier, Husky, Commitlint, GitHub CI |
-| Ambiente     | Docker Compose                                 |
+| Camada       | Tecnologia                                                                          |
+| ------------ | ----------------------------------------------------------------------------------- |
+| Front-end    | React + TypeScript, Vite, Tailwind, shadcn/ui                                       |
+| Back-end     | Node.js + Express, TypeScript                                                       |
+| Banco        | PostgreSQL via Prisma 7                                                             |
+| Autenticação | JWT, também usado na assinatura dos QR Codes                                        |
+| Pagamento    | Asaas (sandbox), com PIX e cartão reais                                             |
+| Catálogos    | TMDb (filmes) e Ticketmaster Discovery (shows)                                      |
+| Documentação | OpenAPI, com Swagger UI em `/api-docs`                                              |
+| Testes       | Jest contra PostgreSQL real, mais uma suíte de contrato com o provedor de pagamento |
+| Qualidade    | ESLint, Prettier, Husky, Commitlint, GitHub Actions                                 |
+| Ambiente     | Docker Compose                                                                      |
 
-O repositório é um monorepo com npm workspaces: `apps/api` (back-end) e
-`apps/web` (front-end).
-
-## Documentação
-
-As decisões de produto e de arquitetura estão versionadas junto do código:
-
-- [`docs/PRD.md`](docs/PRD.md) — requisitos de produto e regras de negócio
-- [`docs/SPEC.md`](docs/SPEC.md) — modelo de dados, rotas e regras técnicas
-- [`docs/DECISIONS.md`](docs/DECISIONS.md) — decisões de arquitetura, com as
-  alternativas que foram descartadas e por quê
-- [`docs/TASKS.md`](docs/TASKS.md) — plano de execução e checklist de progresso
-- [`docs/AI_USAGE.md`](docs/AI_USAGE.md) — como a IA foi usada no processo, o
-  que foi feito sem ela e onde discordei das sugestões
+Monorepo com npm workspaces: `apps/api` (back-end) e `apps/web` (front-end).
 
 ## Pré-requisitos
 
-- **Node.js 24** — a versão está fixada em [`.nvmrc`](.nvmrc); com o nvm
-  instalado, `nvm use` na raiz seleciona a correta
-- **Docker** e **Docker Compose** — para subir a API e o banco
+- **Node.js 24**, fixado em [`.nvmrc`](.nvmrc). Com nvm instalado, `nvm use`
+  na raiz seleciona a versão certa.
+- **Docker** e **Docker Compose**, para o banco.
+- **Chaves de API gratuitas** de [TMDb](https://www.themoviedb.org/settings/api),
+  [Ticketmaster](https://developer.ticketmaster.com/) e
+  [Asaas sandbox](https://sandbox.asaas.com/). Sem elas o app sobe, mas a
+  busca no catálogo e o pagamento não funcionam.
 
 ## Como rodar
 
-### Com Docker (recomendado)
+```bash
+npm install
+cp apps/api/.env.example apps/api/.env
+cp apps/web/.env.example apps/web/.env
+```
 
-Sobe a API e o PostgreSQL juntos, já compilando o TypeScript:
+Preencha o `apps/api/.env`: um valor aleatório longo em `JWT_SECRET` e as três
+chaves de API. Depois:
+
+```bash
+docker compose up postgres -d
+npm run db:migrate:deploy --workspace @eventos/api
+npm run db:seed --workspace @eventos/api
+```
+
+E, em dois terminais:
+
+```bash
+npm run dev --workspace @eventos/api
+npm run dev --workspace @eventos/web
+```
+
+O front sobe em `http://localhost:5173`, a API em `http://localhost:3333`, e a
+documentação interativa em `http://localhost:3333/api-docs`.
+
+### Só a API, em container
 
 ```bash
 docker compose up --build
 ```
 
-A API responde em `http://localhost:3333` e a documentação interativa fica em
-`http://localhost:3333/api-docs`.
+Sobe API e banco juntos. O front continua fora do Compose de propósito: em
+desenvolvimento ele ganha recarga instantânea pelo servidor do Vite, que um
+container só atrapalharia, e em produção ele é estático e vai para a Vercel.
 
-Para verificar que está tudo no ar:
+## Variáveis de ambiente
 
-```bash
-curl http://localhost:3333/health
-```
+**`apps/api/.env`**
 
-Para derrubar:
+| Variável                 | Para que serve                                       |
+| ------------------------ | ---------------------------------------------------- |
+| `DATABASE_URL`           | Conexão com o PostgreSQL                             |
+| `JWT_SECRET`             | Assina os tokens de sessão e o conteúdo dos QR Codes |
+| `CORS_ORIGIN`            | Origens do front autorizadas, separadas por vírgula  |
+| `ASAAS_API_KEY`          | Chave do sandbox de pagamento                        |
+| `TMDB_API_KEY`           | Catálogo de filmes                                   |
+| `TICKETMASTER_API_KEY`   | Catálogo de shows                                    |
+| `PORT`, `NODE_ENV`, `TZ` | Porta, ambiente e fuso (fixado em UTC)               |
 
-```bash
-docker compose down
-```
+**`apps/web/.env`**
 
-### Localmente
+| Variável       | Para que serve  |
+| -------------- | --------------- |
+| `VITE_API_URL` | URL base da API |
 
-Instale as dependências dos dois apps com um único comando na raiz:
+## Testes
 
-```bash
-npm install
-```
-
-Crie os arquivos de ambiente a partir dos modelos versionados:
-
-```bash
-cp apps/api/.env.example apps/api/.env && cp apps/web/.env.example apps/web/.env
-```
-
-Preencha o `JWT_SECRET` no `apps/api/.env` com um valor aleatório longo. As
-chaves de API externas (Asaas, TMDb, Ticketmaster) só serão necessárias
-quando as integrações entrarem.
-
-A API precisa de um PostgreSQL acessível. O caminho mais simples é subir só o
-banco pelo Compose e rodar a API fora do container:
+A suíte principal roda contra um PostgreSQL real, em banco separado e
+descartável: o que ela precisa provar é disputa por linha dentro de transação,
+e mock de ORM não reproduz isso.
 
 ```bash
-docker compose up postgres -d
+cp apps/api/.env.test.example apps/api/.env.test
+docker compose --profile test up -d postgres-test
+npm test --workspace @eventos/api
 ```
+
+Existe uma segunda suíte, que fala com o sandbox da Asaas de verdade e
+verifica que o provedor ainda aceita o que enviamos. Ela roda sob demanda,
+usando a `ASAAS_API_KEY` do `apps/api/.env`:
 
 ```bash
-npm run dev --workspace @eventos/api
+npm run test:integration --workspace @eventos/api
 ```
 
-```bash
-npm run dev --workspace @eventos/web
-```
-
-O front sobe em `http://localhost:5173`.
+As duas são separadas de propósito: vermelho na primeira significa erro no
+nosso código, vermelho na segunda significa mudança no provedor ou rede fora.
 
 ## Scripts
 
-Na raiz do repositório:
+Na raiz:
 
 | Comando                | O que faz                                  |
 | ---------------------- | ------------------------------------------ |
@@ -123,24 +172,38 @@ Na raiz do repositório:
 | `npm run format:check` | Verifica a formatação sem alterar arquivos |
 | `npm run build`        | Compila os dois apps                       |
 
+Em `apps/api` (com `--workspace @eventos/api`):
+
+| Comando             | O que faz                          |
+| ------------------- | ---------------------------------- |
+| `db:migrate:deploy` | Aplica as migrations               |
+| `db:seed`           | Semeia usuários e eventos de teste |
+| `db:generate`       | Gera o client do Prisma            |
+| `test`              | Suíte principal                    |
+| `test:integration`  | Suíte de contrato com a Asaas      |
+
+## Documentação do processo
+
+As decisões estão versionadas junto do código, e não em um documento
+separado da implementação:
+
+- [`docs/PRD.md`](docs/PRD.md) — requisitos de produto e regras de negócio
+- [`docs/SPEC.md`](docs/SPEC.md) — modelo de dados, rotas e regras técnicas
+- [`docs/DECISIONS.md`](docs/DECISIONS.md) — decisões de arquitetura, com as
+  alternativas descartadas e o motivo
+- [`docs/TASKS.md`](docs/TASKS.md) — plano de execução em blocos, dívidas
+  técnicas e registro de revisões
+- [`docs/AI_USAGE.md`](docs/AI_USAGE.md) — como a IA foi usada, o que foi
+  feito sem ela, e onde discordei das sugestões
+
 ## Estrutura
 
 ```
 .
 ├── apps/
-│   ├── api/          # Express + Prisma
+│   ├── api/          # Express + Prisma + Jest
 │   └── web/          # React + Vite
-├── docs/             # PRD, SPEC, decisões e plano de execução
-└── docker-compose.yml
+├── docs/             # PRD, SPEC, decisões, plano e uso de IA
+├── docker-compose.yml
+└── render.yaml       # Blueprint do ambiente publicado
 ```
-
-## Estado atual
-
-O projeto está em desenvolvimento. A infraestrutura está completa —
-monorepo, TypeScript nos dois apps, Docker Compose com PostgreSQL,
-documentação OpenAPI, lint e formatação automáticos, e CI a cada push.
-
-O único endpoint implementado até aqui é `GET /health`, que confirma a
-conexão com o banco. As funcionalidades de negócio descritas acima ainda não
-estão disponíveis; o progresso pode ser acompanhado em
-[`docs/TASKS.md`](docs/TASKS.md).

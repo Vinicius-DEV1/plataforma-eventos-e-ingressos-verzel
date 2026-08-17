@@ -1,0 +1,54 @@
+# Blueprint do ambiente publicado. Versionado para que recriar o deploy do
+# zero não dependa de lembrar o que foi clicado no painel.
+#
+# A API sobe pela imagem de apps/api/Dockerfile, a mesma usada localmente:
+# o ambiente publicado é idêntico ao de desenvolvimento, e o build em dois
+# estágios já resolve `prisma generate` antes do `tsc`.
+#
+# Migrations e seed não rodam aqui: `preDeployCommand` exige instância paga, e
+# a imagem de runtime não carrega o CLI do Prisma (é devDependency). Os dois
+# rodam da máquina do desenvolvedor contra a External Database URL, como o
+# README descreve.
+
+services:
+  - type: web
+    name: eventos-api
+    runtime: docker
+    dockerfilePath: ./apps/api/Dockerfile
+    # Contexto na raiz: o Dockerfile precisa do lockfile e dos manifestos do
+    # monorepo, que não estão dentro de apps/api.
+    dockerContext: .
+    plan: free
+    region: oregon
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: TZ
+        value: UTC
+      - key: PORT
+        value: 3333
+      - key: DATABASE_URL
+        fromDatabase:
+          name: eventos-db
+          property: connectionString
+      # Gerado pelo Render e nunca versionado.
+      - key: JWT_SECRET
+        generateValue: true
+      # `sync: false` significa: preencher no painel, não neste arquivo.
+      # Vale para a origem do front (só conhecida depois do deploy na Vercel)
+      # e para as três chaves de API externas.
+      - key: CORS_ORIGIN
+        sync: false
+      - key: ASAAS_API_KEY
+        sync: false
+      - key: TMDB_API_KEY
+        sync: false
+      - key: TICKETMASTER_API_KEY
+        sync: false
+
+databases:
+  - name: eventos-db
+    plan: free
+    databaseName: eventos
+    user: eventos
