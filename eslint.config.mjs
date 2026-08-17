@@ -21,7 +21,11 @@ export default tseslint.config(
   // the tsconfig, which only covers src/ — so they get the rules that do
   // not need type information.
   {
-    files: ['apps/api/*.ts', 'apps/api/scripts/**/*.ts'],
+    files: [
+      'apps/api/*.ts',
+      'apps/api/scripts/**/*.ts',
+      'apps/api/prisma/**/*.ts',
+    ],
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     languageOptions: {
       globals: globals.node,
@@ -30,7 +34,7 @@ export default tseslint.config(
 
   // API
   {
-    files: ['apps/api/src/**/*.ts', 'apps/api/prisma/**/*.ts'],
+    files: ['apps/api/src/**/*.ts'],
     extends: [
       js.configs.recommended,
       ...tseslint.configs.recommendedTypeChecked,
