@@ -188,7 +188,10 @@ async function seedCinemaEvent(organizerId: string, input: CinemaEventInput) {
       startsAt: addDays(now(), input.daysFromNow),
       basePrice: input.basePrice,
       totalCapacity: ROOM_CAPACITY,
-      imageUrl: 'https://placehold.co/400x600?text=Cinema',
+      imageUrl:
+        input.category === 'Comédia' || input.category === 'Drama'
+          ? '/images/poster_festival.jpg'
+          : '/images/poster_action.jpg',
       externalSource: ExternalSource.TMDB,
       externalId: input.externalId,
       organizerId,
@@ -217,7 +220,12 @@ async function seedShowEvent(organizerId: string, input: ShowEventInput) {
       basePrice: input.basePrice,
       totalCapacity: input.totalCapacity,
       availableTickets: input.availableTickets,
-      imageUrl: 'https://placehold.co/400x600?text=Show',
+      imageUrl:
+        input.category === 'Stand-up'
+          ? '/images/poster_standup.jpg'
+          : input.category === 'MPB'
+            ? '/images/poster_festival.jpg'
+            : '/images/poster_rock.jpg',
       externalSource: ExternalSource.TICKETMASTER,
       externalId: input.externalId,
       organizerId,
