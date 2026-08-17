@@ -4,7 +4,18 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Plataforma de Eventos e Ingressos</title>
+    <meta
+      name="description"
+      content="Bilheteria de cinema e shows: catálogo, reserva, pagamento e validação de ingresso na portaria."
+    />
+    <title>Bilheteria — Eventos e Ingressos</title>
+    <script>
+      // Aplica o tema antes da primeira pintura. Sem isto, quem escolheu o
+      // escuro vê um lampejo de papel claro a cada recarga.
+      if (localStorage.getItem('eventos:theme') === 'dark') {
+        document.documentElement.classList.add('dark');
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
