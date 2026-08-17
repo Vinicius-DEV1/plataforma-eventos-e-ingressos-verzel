@@ -1,7 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
+import { AppShell } from '@/components/layout/AppShell';
+import { BackLink } from '@/components/layout/BackLink';
 import { TicketDetailView } from '@/components/tickets/TicketDetailView';
+import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/auth-context';
 import { apiFetch, ApiError } from '@/lib/api-client';
 import type { ReservationItem, TicketDetail } from '@/lib/api-types';
@@ -13,6 +18,7 @@ export default function TicketDetailPage() {
   const [ticket, setTicket] = useState<TicketDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [cancelError, setCancelError] = useState<string | null>(null);
 
@@ -40,10 +46,6 @@ export default function TicketDetailPage() {
 
   async function handleCancel() {
     if (!ticket) return;
-    const confirmed = window.confirm(
-      'Cancelar esta reserva? O reembolso é total (simulado) e todos os ingressos dela deixam de valer.',
-    );
-    if (!confirmed) return;
 
     setCancelling(true);
     setCancelError(null);
@@ -55,12 +57,14 @@ export default function TicketDetailPage() {
       // O back-end cancela todos os ingressos da reserva (SPEC.md §4.0),
       // incluindo este — atualiza local em vez de recarregar.
       setTicket({ ...ticket, status: 'CANCELLED' });
+      setConfirming(false);
     } catch (err) {
       setCancelError(
         err instanceof ApiError
           ? err.message
           : 'Não foi possível cancelar a reserva.',
       );
+      setConfirming(false);
     } finally {
       setCancelling(false);
     }
@@ -68,34 +72,45 @@ export default function TicketDetailPage() {
 
   if (loading) {
     return (
-      <main className="mx-auto flex min-h-screen max-w-md items-center justify-center px-6">
-        <p className="text-muted-foreground text-sm">Carregando…</p>
-      </main>
+      <AppShell width="narrow">
+        <Skeleton className="h-3 w-24" />
+        <Skeleton className="h-96 w-full" />
+      </AppShell>
     );
   }
 
   if (error || !ticket) {
     return (
-      <main className="mx-auto flex min-h-screen max-w-md items-center justify-center px-6">
-        <p className="text-destructive text-sm">
-          {error ?? 'Ingresso não encontrado.'}
-        </p>
-      </main>
+      <AppShell width="narrow">
+        <BackLink to="/ingressos" label="Meus ingressos" />
+        <Alert>{error ?? 'Ingresso não encontrado.'}</Alert>
+      </AppShell>
     );
   }
 
   return (
-    <TicketDetailView ticket={ticket} canShare>
-      {ticket.status === 'VALID' && (
-        <Button
-          variant="destructive"
-          disabled={cancelling}
-          onClick={() => void handleCancel()}
-        >
-          {cancelling ? 'Cancelando…' : 'Cancelar reserva'}
-        </Button>
-      )}
-      {cancelError && <p className="text-destructive text-sm">{cancelError}</p>}
-    </TicketDetailView>
+    <AppShell width="narrow">
+      <BackLink to="/ingressos" label="Meus ingressos" />
+
+      <TicketDetailView ticket={ticket} canShare>
+        {ticket.status === 'VALID' && (
+          <Button variant="destructive" onClick={() => setConfirming(true)}>
+            Cancelar reserva
+          </Button>
+        )}
+      </TicketDetailView>
+
+      {cancelError && <Alert>{cancelError}</Alert>}
+
+      <ConfirmDialog
+        open={confirming}
+        onOpenChange={setConfirming}
+        title="Cancelar esta reserva?"
+        description="O reembolso é integral e todos os ingressos desta reserva deixam de valer. Não dá para desfazer."
+        confirmLabel="Cancelar reserva"
+        pending={cancelling}
+        onConfirm={() => void handleCancel()}
+      />
+    </AppShell>
   );
 }

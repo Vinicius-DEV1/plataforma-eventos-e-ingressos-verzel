@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
+import { AppShell } from '@/components/layout/AppShell';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { CatalogSearch } from '@/components/organizer/CatalogSearch';
 import { EventForm } from '@/components/organizer/EventForm';
 import { OrganizerEventsList } from '@/components/organizer/OrganizerEventsList';
+import { Alert } from '@/components/ui/alert';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { useAuth } from '@/contexts/auth-context';
 import { apiFetch, ApiError } from '@/lib/api-client';
 import type {
@@ -16,7 +20,12 @@ const SOURCE_BY_TYPE: Record<EventType, ExternalSource> = {
   SHOW: 'TICKETMASTER',
 };
 
-type Tab = 'buscar' | 'meus-eventos';
+const TABS = [
+  { id: 'buscar', label: 'Buscar no catálogo' },
+  { id: 'meus-eventos', label: 'Meus eventos' },
+] as const;
+
+type Tab = (typeof TABS)[number]['id'];
 
 type PendingCreate = { catalogItem: CatalogItem; eventType: EventType };
 
@@ -31,7 +40,9 @@ export default function OrganizerPage() {
   const [events, setEvents] = useState<EventItem[]>([]);
   const [eventsLoading, setEventsLoading] = useState(true);
   const [eventsError, setEventsError] = useState<string | null>(null);
+  const [cancelTarget, setCancelTarget] = useState<EventItem | null>(null);
   const [cancelingId, setCancelingId] = useState<string | null>(null);
+  const [cancelError, setCancelError] = useState<string | null>(null);
 
   const loadEvents = useCallback(() => {
     async function run() {
@@ -70,27 +81,24 @@ export default function OrganizerPage() {
     loadEvents();
   }
 
-  async function handleCancelEvent(event: EventItem) {
-    if (
-      !confirm(
-        `Cancelar o evento "${event.title}"? Essa ação não pode ser desfeita.`,
-      )
-    ) {
-      return;
-    }
-    setCancelingId(event.id);
+  async function handleCancelEvent() {
+    if (!cancelTarget) return;
+    setCancelingId(cancelTarget.id);
+    setCancelError(null);
     try {
-      await apiFetch(`/eventos/${event.id}`, {
+      await apiFetch(`/eventos/${cancelTarget.id}`, {
         method: 'DELETE',
         token: token!,
       });
+      setCancelTarget(null);
       loadEvents();
     } catch (err) {
-      alert(
+      setCancelError(
         err instanceof ApiError
           ? err.message
           : 'Não foi possível cancelar o evento.',
       );
+      setCancelTarget(null);
     } finally {
       setCancelingId(null);
     }
@@ -99,13 +107,12 @@ export default function OrganizerPage() {
   const showingForm = pendingCreate !== null || editingEvent !== null;
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-3xl flex-col gap-6 px-6 py-12">
-      <div className="space-y-2">
-        <p className="text-muted-foreground text-xs font-medium tracking-[0.2em] uppercase">
-          Painel do organizador
-        </p>
-        <h1 className="text-3xl font-bold tracking-tight">Olá, {user?.name}</h1>
-      </div>
+    <AppShell>
+      <PageHeader
+        label="Painel do organizador"
+        title={`Olá, ${user?.name ?? ''}`}
+        meta="Publique sessões de cinema e shows a partir dos catálogos externos, e acompanhe o que já está no ar."
+      />
 
       {showingForm ? (
         pendingCreate ? (
@@ -127,30 +134,25 @@ export default function OrganizerPage() {
         )
       ) : (
         <>
-          <div className="flex gap-2 border-b">
-            <button
-              type="button"
-              onClick={() => setTab('buscar')}
-              className={`border-b-2 px-3 py-2 text-sm font-medium ${
-                tab === 'buscar'
-                  ? 'border-primary text-foreground'
-                  : 'text-muted-foreground border-transparent'
-              }`}
-            >
-              Buscar no catálogo
-            </button>
-            <button
-              type="button"
-              onClick={() => setTab('meus-eventos')}
-              className={`border-b-2 px-3 py-2 text-sm font-medium ${
-                tab === 'meus-eventos'
-                  ? 'border-primary text-foreground'
-                  : 'text-muted-foreground border-transparent'
-              }`}
-            >
-              Meus eventos
-            </button>
+          <div className="border-border flex gap-1 border-b">
+            {TABS.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setTab(item.id)}
+                aria-current={tab === item.id}
+                className={`label-print hover:text-foreground -mb-px border-b-2 px-3 py-2.5 transition-colors ${
+                  tab === item.id
+                    ? 'border-primary text-foreground'
+                    : 'border-transparent'
+                }`}
+              >
+                {item.label}
+              </button>
+            ))}
           </div>
+
+          {cancelError && <Alert>{cancelError}</Alert>}
 
           {tab === 'buscar' ? (
             <CatalogSearch
@@ -165,13 +167,21 @@ export default function OrganizerPage() {
               error={eventsError}
               cancelingId={cancelingId}
               onEdit={setEditingEvent}
-              onCancelEvent={(event) => {
-                void handleCancelEvent(event);
-              }}
+              onCancelEvent={setCancelTarget}
             />
           )}
         </>
       )}
-    </main>
+
+      <ConfirmDialog
+        open={cancelTarget !== null}
+        onOpenChange={(open) => !open && setCancelTarget(null)}
+        title="Cancelar este evento?"
+        description={`"${cancelTarget?.title ?? ''}" sai do catálogo, e todas as reservas e ingressos dele são cancelados com reembolso. Não dá para desfazer.`}
+        confirmLabel="Cancelar evento"
+        pending={cancelingId !== null}
+        onConfirm={() => void handleCancelEvent()}
+      />
+    </AppShell>
   );
 }

@@ -1,19 +1,16 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
+import { AppShell } from '@/components/layout/AppShell';
+import { PageHeader } from '@/components/layout/PageHeader';
+import { TICKET_STATUS } from '@/components/tickets/ticket-status';
+import { Alert } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/auth-context';
 import { apiFetch, ApiError } from '@/lib/api-client';
 import type { TicketItem } from '@/lib/api-types';
-
-const dateFormatter = new Intl.DateTimeFormat('pt-BR', {
-  dateStyle: 'short',
-  timeStyle: 'short',
-});
-
-const statusLabel: Record<TicketItem['status'], string> = {
-  VALID: 'Válido',
-  USED: 'Utilizado',
-  CANCELLED: 'Cancelado',
-};
+import { formatDateTime, ticketSerial } from '@/lib/format';
 
 export default function TicketsPage() {
   const { token } = useAuth();
@@ -45,49 +42,76 @@ export default function TicketsPage() {
   }, [token]);
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-3xl flex-col gap-6 px-6 py-12">
-      <div className="space-y-2">
-        <p className="text-muted-foreground text-xs font-medium tracking-[0.2em] uppercase">
-          Meus Ingressos
-        </p>
-        <h1 className="text-3xl font-bold tracking-tight">Ingressos</h1>
-      </div>
+    <AppShell>
+      <PageHeader
+        label="Minha carteira"
+        title="Ingressos"
+        meta={
+          !loading && !error && tickets.length > 0
+            ? `${tickets.length} ${tickets.length === 1 ? 'ingresso emitido' : 'ingressos emitidos'}`
+            : undefined
+        }
+      />
 
-      {loading && <p className="text-muted-foreground text-sm">Carregando…</p>}
-      {error && <p className="text-destructive text-sm">{error}</p>}
+      {error && <Alert>{error}</Alert>}
+
+      {loading && (
+        <div className="flex flex-col gap-3">
+          {Array.from({ length: 3 }, (_, index) => (
+            <Skeleton key={index} className="h-24 w-full" />
+          ))}
+        </div>
+      )}
+
       {!loading && !error && tickets.length === 0 && (
-        <p className="text-muted-foreground text-sm">
-          Você ainda não tem ingressos.
-        </p>
+        <div className="border-border flex flex-col items-center gap-4 border border-dashed px-6 py-16 text-center">
+          <p className="text-muted-foreground text-sm">
+            Nenhum ingresso por aqui ainda.
+          </p>
+          <Button asChild>
+            <Link to="/eventos">Ver o catálogo</Link>
+          </Button>
+        </div>
       )}
 
       <div className="flex flex-col gap-3">
-        {tickets.map((ticket) => (
-          <Link
-            key={ticket.id}
-            to={`/ingressos/${ticket.id}`}
-            className="border-border bg-card hover:border-ring flex items-center gap-4 border p-4 transition-colors"
-          >
-            {ticket.event.imageUrl && (
-              <img
-                src={ticket.event.imageUrl}
-                alt=""
-                className="size-16 shrink-0 object-cover"
-              />
-            )}
-            <div className="flex-1 space-y-1">
-              <p className="font-medium">{ticket.event.title}</p>
-              <p className="text-muted-foreground text-sm">
-                {ticket.event.venue} ·{' '}
-                {dateFormatter.format(new Date(ticket.event.startsAt))}
-              </p>
-            </div>
-            <span className="text-muted-foreground text-xs font-medium tracking-[0.15em] uppercase">
-              {statusLabel[ticket.status]}
-            </span>
-          </Link>
-        ))}
+        {tickets.map((ticket) => {
+          const status = TICKET_STATUS[ticket.status];
+          return (
+            <Link
+              key={ticket.id}
+              to={`/ingressos/${ticket.id}`}
+              className="border-border bg-card hover:border-primary focus-visible:ring-ring/40 ease-sharp flex items-stretch border transition-[transform,border-color] duration-200 outline-none hover:-translate-y-0.5 focus-visible:ring-3"
+            >
+              {ticket.event.imageUrl && (
+                <img
+                  src={ticket.event.imageUrl}
+                  alt=""
+                  loading="lazy"
+                  className="w-20 shrink-0 object-cover"
+                />
+              )}
+
+              <div className="min-w-0 flex-1 space-y-1 p-4">
+                <p data-numeric className="label-print">
+                  Nº {ticketSerial(ticket.id)}
+                </p>
+                <p className="display-print truncate text-lg">
+                  {ticket.event.title}
+                </p>
+                <p className="text-muted-foreground truncate text-sm">
+                  {ticket.event.venue} · {formatDateTime(ticket.event.startsAt)}
+                </p>
+              </div>
+
+              {/* O canhoto: mesma divisão do ingresso, aqui só com o estado. */}
+              <div className="border-border flex shrink-0 items-center border-l border-dashed px-4">
+                <Badge tone={status.tone}>{status.label}</Badge>
+              </div>
+            </Link>
+          );
+        })}
       </div>
-    </main>
+    </AppShell>
   );
 }

@@ -1,34 +1,44 @@
 import { useEffect, useState } from 'react';
+import { ArrowLeft, Camera, Keyboard } from 'lucide-react';
+import { AppShell } from '@/components/layout/AppShell';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { QrScanner } from '@/components/gatekeeper/QrScanner';
+import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Field, Input } from '@/components/ui/field';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/auth-context';
 import { apiFetch, ApiError } from '@/lib/api-client';
 import type { EventItem, GateValidationResult } from '@/lib/api-types';
-
-const inputClass =
-  'border-input bg-background focus-visible:border-ring focus-visible:ring-ring/50 w-full rounded-lg border px-3 py-2 text-sm outline-none focus-visible:ring-3';
+import { formatDateTime } from '@/lib/format';
 
 // Precisa ser legível num relance, com fila esperando — não lido com
-// atenção (issue do Bloco 7).
-const resultConfig: Record<
+// atenção (issue do Bloco 7). Daí o veredito em corpo grande, a instrução
+// em uma linha e a cor vindo dos tokens de estado, não de um verde solto.
+const RESULT: Record<
   GateValidationResult,
-  { label: string; className: string }
+  { verdict: string; instruction: string; className: string }
 > = {
   valid: {
-    label: 'Ingresso válido',
-    className: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-600',
+    verdict: 'Pode entrar',
+    instruction: 'Ingresso válido, agora marcado como utilizado.',
+    className: 'border-success/50 bg-success/10 text-success',
   },
   already_used: {
-    label: 'Ingresso já utilizado',
-    className: 'border-amber-500/40 bg-amber-500/10 text-amber-600',
+    verdict: 'Já utilizado',
+    instruction: 'Este ingresso já passou pela portaria antes.',
+    className: 'border-warning/50 bg-warning/10 text-warning',
   },
   wrong_event: {
-    label: 'Ingresso de outro evento',
-    className: 'border-destructive/40 bg-destructive/10 text-destructive',
+    verdict: 'Outro evento',
+    instruction: 'O ingresso é válido, mas não para esta sessão.',
+    className: 'border-destructive/50 bg-destructive/10 text-destructive',
   },
   invalid: {
-    label: 'Ingresso inválido',
-    className: 'border-destructive/40 bg-destructive/10 text-destructive',
+    verdict: 'Não vale',
+    instruction: 'Código inválido, adulterado ou cancelado.',
+    className: 'border-destructive/50 bg-destructive/10 text-destructive',
   },
 };
 
@@ -39,7 +49,7 @@ const resultConfig: Record<
 type ReadMode = 'choice' | 'camera' | 'manual';
 
 export default function GatekeeperPage() {
-  const { token, logout } = useAuth();
+  const { token } = useAuth();
 
   const [events, setEvents] = useState<EventItem[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
@@ -108,29 +118,27 @@ export default function GatekeeperPage() {
 
   if (!selectedEvent) {
     return (
-      <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-6 px-6 py-12">
-        <div className="flex items-start justify-between gap-4">
-          <div className="space-y-2">
-            <p className="text-muted-foreground text-xs font-medium tracking-[0.2em] uppercase">
-              Portaria
-            </p>
-            <h1 className="text-3xl font-bold tracking-tight">
-              Qual evento você vai fiscalizar?
-            </h1>
-          </div>
-          <Button variant="secondary" onClick={logout}>
-            Sair
-          </Button>
-        </div>
+      <AppShell>
+        <PageHeader
+          label="Portaria"
+          title="Qual sessão você vai fiscalizar?"
+          meta="A escolha define contra qual evento cada QR Code é conferido."
+        />
+
+        {loadError && <Alert>{loadError}</Alert>}
 
         {loadingEvents && (
-          <p className="text-muted-foreground text-sm">Carregando…</p>
+          <div className="flex flex-col gap-3">
+            {Array.from({ length: 3 }, (_, index) => (
+              <Skeleton key={index} className="h-20 w-full" />
+            ))}
+          </div>
         )}
-        {loadError && <p className="text-destructive text-sm">{loadError}</p>}
+
         {!loadingEvents && !loadError && events.length === 0 && (
-          <p className="text-muted-foreground text-sm">
-            Nenhum evento publicado.
-          </p>
+          <div className="border-border text-muted-foreground border border-dashed px-6 py-16 text-center text-sm">
+            Nenhum evento publicado no momento.
+          </div>
         )}
 
         <div className="flex flex-col gap-3">
@@ -139,92 +147,128 @@ export default function GatekeeperPage() {
               key={event.id}
               type="button"
               onClick={() => setSelectedEvent(event)}
-              className="border-border bg-card hover:border-ring border p-4 text-left transition-colors"
+              className="border-border bg-card hover:border-primary focus-visible:ring-ring/40 ease-sharp space-y-1 border p-4 text-left transition-[transform,border-color] duration-200 outline-none hover:-translate-y-0.5 focus-visible:ring-3"
             >
-              <p className="font-medium">{event.title}</p>
-              <p className="text-muted-foreground text-sm">{event.venue}</p>
+              <p className="label-print">
+                {event.type === 'CINEMA' ? 'Cinema' : 'Show'} · {event.category}
+              </p>
+              <p className="display-print text-lg">{event.title}</p>
+              <p className="text-muted-foreground text-sm">
+                {event.venue} · {formatDateTime(event.startsAt)}
+              </p>
             </button>
           ))}
         </div>
-      </main>
+      </AppShell>
     );
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col gap-6 px-6 py-12">
-      <div className="space-y-2">
-        <p className="text-muted-foreground text-xs font-medium tracking-[0.2em] uppercase">
-          Fiscalizando
-        </p>
-        <h1 className="text-2xl font-bold tracking-tight">
-          {selectedEvent.title}
-        </h1>
-        <button
-          type="button"
-          className="text-muted-foreground text-xs underline"
-          onClick={() => setSelectedEvent(null)}
-        >
-          Trocar evento
-        </button>
-      </div>
+    <AppShell width="narrow">
+      <button
+        type="button"
+        onClick={() => setSelectedEvent(null)}
+        className="label-print hover:text-foreground focus-visible:ring-ring/40 -mx-1 inline-flex w-fit items-center gap-1.5 rounded-sm px-1 py-0.5 transition-colors outline-none focus-visible:ring-3"
+      >
+        <ArrowLeft className="size-3.5" aria-hidden />
+        Trocar sessão
+      </button>
+
+      <PageHeader size="md" label="Fiscalizando" title={selectedEvent.title} />
+
+      {error && <Alert>{error}</Alert>}
 
       {!result && readMode === 'choice' && (
-        <div className="flex gap-3">
-          <Button onClick={() => setReadMode('camera')}>
-            Escanear QR Code
+        <div className="grid grid-cols-2 gap-3">
+          <Button
+            size="lg"
+            className="h-auto flex-col gap-2 py-6"
+            onClick={() => setReadMode('camera')}
+          >
+            <Camera className="size-5" aria-hidden />
+            Escanear
           </Button>
-          <Button variant="outline" onClick={() => setReadMode('manual')}>
-            Digitar código
+          <Button
+            variant="outline"
+            size="lg"
+            className="h-auto flex-col gap-2 py-6"
+            onClick={() => setReadMode('manual')}
+          >
+            <Keyboard className="size-5" aria-hidden />
+            Digitar
           </Button>
         </div>
       )}
 
       {!result && readMode === 'camera' && !validating && (
-        <div className="space-y-3">
+        <Card className="space-y-4 p-4">
           <QrScanner onScan={(code) => void handleValidate(code)} />
-          <button
-            type="button"
-            className="text-muted-foreground block text-xs underline"
+          <Button
+            variant="ghost"
+            className="w-full"
             onClick={() => setReadMode('choice')}
           >
-            Cancelar
-          </button>
-        </div>
+            Cancelar leitura
+          </Button>
+        </Card>
       )}
 
       {!result && readMode === 'manual' && (
-        <form
-          className="flex gap-2"
-          onSubmit={(e) => {
-            e.preventDefault();
-            void handleValidate(manualCode);
-          }}
-        >
-          <input
-            autoFocus
-            className={inputClass}
-            placeholder="Código do ingresso"
-            value={manualCode}
-            onChange={(e) => setManualCode(e.target.value)}
-          />
-          <Button type="submit" disabled={validating || !manualCode.trim()}>
-            Validar
-          </Button>
-        </form>
+        <Card asChild>
+          <form
+            className="space-y-4 p-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              void handleValidate(manualCode);
+            }}
+          >
+            <Field label="Código do ingresso" htmlFor="manual-code">
+              <Input
+                id="manual-code"
+                autoFocus
+                value={manualCode}
+                onChange={(e) => setManualCode(e.target.value)}
+              />
+            </Field>
+            <div className="flex gap-2">
+              <Button
+                type="submit"
+                size="lg"
+                disabled={validating || !manualCode.trim()}
+              >
+                {validating ? 'Conferindo…' : 'Validar'}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="lg"
+                onClick={() => setReadMode('choice')}
+              >
+                Voltar
+              </Button>
+            </div>
+          </form>
+        </Card>
       )}
-
-      {error && <p className="text-destructive text-sm">{error}</p>}
 
       {result && (
         <div
-          className={`space-y-4 border p-8 text-center ${resultConfig[result].className}`}
+          className={`animate-fade-in space-y-2 border p-8 text-center ${RESULT[result].className}`}
         >
-          <p className="text-xl font-bold">{resultConfig[result].label}</p>
-          <Button variant="outline" onClick={handleNext}>
-            Nova leitura
-          </Button>
+          <p className="display-print text-3xl sm:text-4xl">
+            {RESULT[result].verdict}
+          </p>
+          <p className="text-foreground/80 text-sm">
+            {RESULT[result].instruction}
+          </p>
         </div>
       )}
-    </main>
+
+      {result && (
+        <Button size="lg" className="w-full" onClick={handleNext}>
+          Próxima leitura
+        </Button>
+      )}
+    </AppShell>
   );
 }

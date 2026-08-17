@@ -1,20 +1,22 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
+import { EventPoster } from '@/components/events/EventPoster';
 import { QuantitySelector } from '@/components/events/QuantitySelector';
 import { SeatMap } from '@/components/events/SeatMap';
+import { AppShell } from '@/components/layout/AppShell';
+import { BackLink } from '@/components/layout/BackLink';
+import { PageHeader } from '@/components/layout/PageHeader';
+import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { DataItem, DataList } from '@/components/ui/data-list';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/auth-context';
 import { apiFetch, ApiError } from '@/lib/api-client';
 import type { EventDetail, ReservationItem, Seat } from '@/lib/api-types';
+import { formatFullDateTime, formatPrice } from '@/lib/format';
 
-const dateFormatter = new Intl.DateTimeFormat('pt-BR', {
-  dateStyle: 'full',
-  timeStyle: 'short',
-});
-const priceFormatter = new Intl.NumberFormat('pt-BR', {
-  style: 'currency',
-  currency: 'BRL',
-});
+const TYPE_LABEL = { CINEMA: 'Cinema', SHOW: 'Show' } as const;
 
 export default function EventDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -89,85 +91,125 @@ export default function EventDetailPage() {
 
   if (loading) {
     return (
-      <main className="mx-auto flex min-h-screen max-w-3xl items-center justify-center px-6">
-        <p className="text-muted-foreground text-sm">Carregando…</p>
-      </main>
+      <AppShell>
+        <Skeleton className="aspect-[16/7] w-full" />
+        <Skeleton className="h-3 w-28" />
+        <Skeleton className="h-9 w-3/4" />
+        <Skeleton className="h-32 w-full" />
+      </AppShell>
     );
   }
 
   if (loadError || !event) {
     return (
-      <main className="mx-auto flex min-h-screen max-w-3xl items-center justify-center px-6">
-        <p className="text-destructive text-sm">
-          {loadError ?? 'Evento não encontrado.'}
-        </p>
-      </main>
+      <AppShell>
+        <BackLink to="/eventos" label="Catálogo" />
+        <Alert>{loadError ?? 'Evento não encontrado.'}</Alert>
+      </AppShell>
     );
   }
 
+  const isCinema = event.type === 'CINEMA';
   const canReserve =
     event.status === 'PUBLISHED' &&
-    (event.type === 'CINEMA' ? selectedSeat !== null : quantity > 0);
+    (isCinema ? selectedSeat !== null : quantity > 0);
+  const total = isCinema ? event.basePrice : event.basePrice * quantity;
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-3xl flex-col gap-6 px-6 py-12">
-      <div className="space-y-2">
-        <p className="text-muted-foreground text-xs font-medium tracking-[0.2em] uppercase">
-          {event.type === 'CINEMA' ? 'Cinema' : 'Show'} · {event.category}
-        </p>
-        <h1 className="text-3xl font-bold tracking-tight">{event.title}</h1>
-        <p className="text-muted-foreground text-sm">
-          {event.venue} · {dateFormatter.format(new Date(event.startsAt))}
-        </p>
-        <p className="font-medium tabular-nums">
-          {priceFormatter.format(event.basePrice)}
-        </p>
-      </div>
+    <AppShell>
+      <BackLink to="/eventos" label="Catálogo" />
+
+      <EventPoster
+        src={event.imageUrl}
+        type={event.type}
+        className="aspect-[16/7] rounded-3xl overflow-hidden shadow-xl"
+      />
+
+      <PageHeader
+        label={`${TYPE_LABEL[event.type]} · ${event.category}`}
+        title={event.title}
+      />
 
       {event.status === 'CANCELLED' && (
-        <p className="border-destructive/40 bg-destructive/10 text-destructive border p-3 text-sm">
-          Este evento foi cancelado pelo organizador.
-        </p>
+        <Alert>Este evento foi cancelado pelo organizador.</Alert>
       )}
 
-      {event.description && (
-        <p className="text-muted-foreground text-sm">{event.description}</p>
-      )}
+      <Card className="p-6">
+        <DataList>
+          <DataItem label="Local">{event.venue}</DataItem>
+          <DataItem label="Quando">
+            {formatFullDateTime(event.startsAt)}
+          </DataItem>
+          <DataItem label="Preço unitário">
+            <span data-numeric className="font-semibold">
+              {formatPrice(event.basePrice)}
+            </span>
+          </DataItem>
+          <DataItem label={isCinema ? 'Assentos livres' : 'Ingressos livres'}>
+            <span data-numeric>{event.availableTickets}</span> de{' '}
+            <span data-numeric>{event.totalCapacity}</span>
+          </DataItem>
+        </DataList>
+
+        {event.description && (
+          <p className="text-muted-foreground border-border/50 mt-6 border-t pt-6 text-sm sm:text-base leading-relaxed">
+            {event.description}
+          </p>
+        )}
+      </Card>
 
       {event.status === 'PUBLISHED' && (
-        <div className="bg-card border-border space-y-4 border p-6">
-          {event.type === 'CINEMA' ? (
-            <>
-              <p className="text-sm font-medium">Escolha um assento</p>
-              <SeatMap
-                seats={event.seats ?? []}
-                selectedSeatId={selectedSeat?.id ?? null}
-                onSelect={(seat) => setSelectedSeat(seat)}
-              />
-            </>
+        <Card className="space-y-5 p-6">
+          <h2 className="display-print text-xl">
+            {isCinema ? 'Escolha o assento' : 'Quantos ingressos?'}
+          </h2>
+
+          {isCinema ? (
+            <SeatMap
+              seats={event.seats ?? []}
+              selectedSeatId={selectedSeat?.id ?? null}
+              onSelect={(seat) => setSelectedSeat(seat)}
+            />
           ) : (
-            <>
-              <p className="text-sm font-medium">Quantos ingressos?</p>
-              <QuantitySelector
-                quantity={quantity}
-                max={Math.max(1, event.availableTickets)}
-                onChange={setQuantity}
-              />
-            </>
+            <QuantitySelector
+              quantity={quantity}
+              max={Math.max(1, event.availableTickets)}
+              onChange={setQuantity}
+            />
           )}
 
-          {reserveError && (
-            <p className="text-destructive text-sm">{reserveError}</p>
-          )}
+          {reserveError && <Alert>{reserveError}</Alert>}
 
-          <Button
-            disabled={!canReserve || reserving}
-            onClick={() => void handleReserve()}
-          >
-            {reserving ? 'Reservando…' : 'Reservar'}
-          </Button>
-        </div>
+          {/* O resumo fica colado no botão: o total é a última coisa lida
+              antes de reservar. */}
+          <div className="border-border/50 flex flex-wrap items-center justify-between gap-4 border-t pt-5">
+            <div>
+              <p className="label-print">
+                {isCinema
+                  ? selectedSeat
+                    ? `Assento ${selectedSeat.row}${selectedSeat.number}`
+                    : 'Nenhum assento escolhido'
+                  : 'Total'}
+              </p>
+              <p data-numeric className="display-print text-2xl">
+                {formatPrice(total)}
+              </p>
+            </div>
+            <Button
+              size="lg"
+              disabled={!canReserve || reserving}
+              onClick={() => void handleReserve()}
+            >
+              {reserving ? 'Reservando…' : 'Reservar'}
+            </Button>
+          </div>
+
+          <p className="text-muted-foreground text-xs">
+            A reserva segura o lugar por 15 minutos. Sem pagamento nesse prazo,
+            ele volta para o catálogo.
+          </p>
+        </Card>
       )}
-    </main>
+    </AppShell>
   );
 }

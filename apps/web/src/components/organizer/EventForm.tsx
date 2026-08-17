@@ -1,5 +1,8 @@
 import { useState, type FormEvent } from 'react';
+import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Field, Input, Textarea } from '@/components/ui/field';
 import { useAuth } from '@/contexts/auth-context';
 import { apiFetch, ApiError } from '@/lib/api-client';
 import type {
@@ -8,9 +11,6 @@ import type {
   EventType,
   ExternalSource,
 } from '@/lib/api-types';
-
-const inputClass =
-  'border-input bg-background focus-visible:border-ring focus-visible:ring-ring/50 w-full rounded-lg border px-3 py-2 text-sm outline-none focus-visible:ring-3';
 
 // datetime-local wants "YYYY-MM-DDTHH:mm" in local time, with no timezone
 // suffix — different shape than the ISO string the API sends/expects.
@@ -132,151 +132,123 @@ export function EventForm(props: EventFormProps) {
   }
 
   return (
-    <form
-      onSubmit={(event) => {
-        void handleSubmit(event);
-      }}
-      className="bg-card border-border space-y-4 border p-6"
-    >
-      <p className="text-muted-foreground text-xs font-medium tracking-[0.2em] uppercase">
-        {props.mode === 'create'
-          ? `Novo evento — ${eventType}`
-          : 'Editar evento'}
-      </p>
-
-      <div className="space-y-1.5">
-        <label htmlFor="title" className="text-sm font-medium">
-          Título
-        </label>
-        <input
-          id="title"
-          required
-          value={form.title}
-          onChange={(event) => update('title', event.target.value)}
-          className={inputClass}
-        />
-      </div>
-
-      <div className="space-y-1.5">
-        <label htmlFor="description" className="text-sm font-medium">
-          Descrição
-        </label>
-        <textarea
-          id="description"
-          required
-          rows={3}
-          value={form.description}
-          onChange={(event) => update('description', event.target.value)}
-          className={inputClass}
-        />
-      </div>
-
-      <div className="space-y-1.5">
-        <label htmlFor="imageUrl" className="text-sm font-medium">
-          URL da imagem
-        </label>
-        <input
-          id="imageUrl"
-          required
-          value={form.imageUrl}
-          onChange={(event) => update('imageUrl', event.target.value)}
-          className={inputClass}
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-1.5">
-          <label htmlFor="category" className="text-sm font-medium">
-            Categoria
-          </label>
-          <input
-            id="category"
-            required
-            value={form.category}
-            onChange={(event) => update('category', event.target.value)}
-            className={inputClass}
-          />
-        </div>
-        <div className="space-y-1.5">
-          <label htmlFor="venue" className="text-sm font-medium">
-            Local
-          </label>
-          <input
-            id="venue"
-            required
-            value={form.venue}
-            onChange={(event) => update('venue', event.target.value)}
-            className={inputClass}
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-1.5">
-          <label htmlFor="startsAt" className="text-sm font-medium">
-            Data e hora
-          </label>
-          <input
-            id="startsAt"
-            type="datetime-local"
-            required
-            value={form.startsAt}
-            onChange={(event) => update('startsAt', event.target.value)}
-            className={inputClass}
-          />
-        </div>
-        <div className="space-y-1.5">
-          <label htmlFor="basePrice" className="text-sm font-medium">
-            Preço (R$)
-          </label>
-          <input
-            id="basePrice"
-            type="number"
-            min="0.01"
-            step="0.01"
-            required
-            value={form.basePrice}
-            onChange={(event) => update('basePrice', event.target.value)}
-            className={inputClass}
-          />
-        </div>
-      </div>
-
-      {eventType === 'SHOW' && props.mode === 'create' && (
-        <div className="space-y-1.5">
-          <label htmlFor="totalCapacity" className="text-sm font-medium">
-            Capacidade da pista
-          </label>
-          <input
-            id="totalCapacity"
-            type="number"
-            min="1"
-            step="1"
-            required
-            value={form.totalCapacity}
-            onChange={(event) => update('totalCapacity', event.target.value)}
-            className={inputClass}
-          />
-        </div>
-      )}
-
-      {eventType === 'CINEMA' && props.mode === 'create' && (
-        <p className="text-muted-foreground text-xs">
-          Eventos CINEMA usam a sala fixa de 8×12 (96 assentos), gerada
-          automaticamente.
+    <Card asChild>
+      <form
+        onSubmit={(event) => {
+          void handleSubmit(event);
+        }}
+        className="space-y-5 p-6"
+      >
+        <p className="label-print">
+          {props.mode === 'create'
+            ? `Novo evento · ${eventType === 'CINEMA' ? 'Cinema' : 'Show'}`
+            : 'Editar evento'}
         </p>
-      )}
 
-      {error && <p className="text-destructive text-sm">{error}</p>}
+        <Field label="Título" htmlFor="title">
+          <Input
+            id="title"
+            required
+            value={form.title}
+            onChange={(event) => update('title', event.target.value)}
+          />
+        </Field>
 
-      <div className="flex gap-3">
-        <Button type="submit" disabled={submitting}>
-          {submitting ? 'Salvando…' : 'Salvar'}
-        </Button>
-        <Button type="button" variant="outline" onClick={onCancel}>
-          Cancelar
-        </Button>
-      </div>
-    </form>
+        <Field label="Descrição" htmlFor="description">
+          <Textarea
+            id="description"
+            required
+            rows={3}
+            value={form.description}
+            onChange={(event) => update('description', event.target.value)}
+          />
+        </Field>
+
+        <Field label="URL da imagem" htmlFor="imageUrl">
+          <Input
+            id="imageUrl"
+            required
+            value={form.imageUrl}
+            onChange={(event) => update('imageUrl', event.target.value)}
+          />
+        </Field>
+
+        <div className="grid gap-5 sm:grid-cols-2">
+          <Field label="Categoria" htmlFor="category">
+            <Input
+              id="category"
+              required
+              value={form.category}
+              onChange={(event) => update('category', event.target.value)}
+            />
+          </Field>
+          <Field label="Local" htmlFor="venue">
+            <Input
+              id="venue"
+              required
+              value={form.venue}
+              onChange={(event) => update('venue', event.target.value)}
+            />
+          </Field>
+        </div>
+
+        <div className="grid gap-5 sm:grid-cols-2">
+          <Field label="Data e hora" htmlFor="startsAt">
+            <Input
+              id="startsAt"
+              type="datetime-local"
+              required
+              value={form.startsAt}
+              onChange={(event) => update('startsAt', event.target.value)}
+            />
+          </Field>
+          <Field label="Preço (R$)" htmlFor="basePrice">
+            <Input
+              id="basePrice"
+              type="number"
+              min="0.01"
+              step="0.01"
+              required
+              data-numeric
+              value={form.basePrice}
+              onChange={(event) => update('basePrice', event.target.value)}
+            />
+          </Field>
+        </div>
+
+        {eventType === 'SHOW' && props.mode === 'create' && (
+          <Field label="Capacidade da pista" htmlFor="totalCapacity">
+            <Input
+              id="totalCapacity"
+              type="number"
+              min="1"
+              step="1"
+              required
+              data-numeric
+              value={form.totalCapacity}
+              onChange={(event) => update('totalCapacity', event.target.value)}
+            />
+          </Field>
+        )}
+
+        {eventType === 'CINEMA' && props.mode === 'create' && (
+          <p className="text-muted-foreground border-border border border-dashed p-3 text-xs">
+            Sessão de cinema usa a sala fixa de 8×12 (96 assentos), gerada
+            automaticamente com o evento.
+          </p>
+        )}
+
+        {error && <Alert>{error}</Alert>}
+
+        <div className="border-border flex gap-3 border-t border-dashed pt-5">
+          <Button type="submit" size="lg" disabled={submitting}>
+            {submitting ? 'Salvando…' : 'Salvar evento'}
+          </Button>
+          <Button type="button" variant="ghost" size="lg" onClick={onCancel}>
+            Descartar
+          </Button>
+        </div>
+      </form>
+    </Card>
   );
 }

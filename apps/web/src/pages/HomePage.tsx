@@ -1,70 +1,152 @@
+import {
+  ArrowRight,
+  Clapperboard,
+  Music,
+  QrCode,
+  Ticket,
+  LayoutDashboard,
+} from 'lucide-react';
 import { Link, Navigate } from 'react-router';
+import { AppShell } from '@/components/layout/AppShell';
+import { PageHeader } from '@/components/layout/PageHeader';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { useAuth } from '@/contexts/auth-context';
 
-export default function HomePage() {
-  const { user, logout } = useAuth();
+const ROLE_LABEL = {
+  CUSTOMER: 'Cliente',
+  ORGANIZER: 'Organizador',
+  GATEKEEPER: 'Portaria',
+} as const;
 
-  // Portaria não usa a tela de catálogo/compra do cliente — o foco dela é
-  // só a fiscalização, então nem passa por esta tela (apontamento do
-  // desenvolvedor, ver AI_USAGE.md).
+export default function HomePage() {
+  const { user } = useAuth();
+
   if (user?.role === 'GATEKEEPER') {
     return <Navigate to="/portaria" replace />;
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-2xl flex-col justify-center gap-8 px-6">
-      <div className="space-y-2">
-        <p className="text-muted-foreground text-xs font-medium tracking-[0.2em] uppercase">
-          Bloco 2 — autenticação
-        </p>
-        <h1 className="text-4xl font-bold tracking-tight text-balance">
-          Plataforma de Eventos e Ingressos
-        </h1>
-      </div>
+    <AppShell>
+      <PageHeader
+        label="Cinema & Shows"
+        title="Bilheteria & Ingressos"
+        meta="Plataforma de catálogo em tempo real, reserva com garantia de 15 minutos para pagamento e emissão instantânea com QR Code."
+      />
 
-      <div className="bg-card border-border space-y-4 border p-6">
-        {user ? (
-          <>
-            <p className="text-sm">
-              Logado como <span className="font-medium">{user.name}</span> —{' '}
-              <span className="text-muted-foreground">{user.role}</span>
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <Button asChild>
-                <Link to="/eventos">Ver eventos</Link>
-              </Button>
-              {user.role === 'CUSTOMER' && (
-                <Button asChild variant="outline">
-                  <Link to="/ingressos">Meus ingressos</Link>
-                </Button>
-              )}
-              {user.role === 'ORGANIZER' && (
-                <Button asChild variant="outline">
-                  <Link to="/organizador">Painel do organizador</Link>
-                </Button>
-              )}
-              <Button variant="secondary" onClick={logout}>
-                Sair
-              </Button>
+      <div className="grid gap-6">
+        {/* Painel Principal de Acesso */}
+        <Card className="p-6 sm:p-7">
+          <div className="space-y-6">
+            {user ? (
+              <div className="space-y-5">
+                <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-5">
+                  <div>
+                    <span className="font-mono text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-1">
+                      Sessão Ativa
+                    </span>
+                    <p className="text-lg font-bold text-foreground">
+                      {user.name}
+                    </p>
+                  </div>
+                  <Badge tone="info">{ROLE_LABEL[user.role]}</Badge>
+                </div>
+
+                <div className="flex flex-wrap gap-3 pt-1">
+                  <Button asChild size="lg">
+                    <Link to="/eventos" className="gap-2">
+                      Ver catálogo completo
+                      <ArrowRight className="size-4" aria-hidden />
+                    </Link>
+                  </Button>
+                  {user.role === 'CUSTOMER' && (
+                    <Button asChild variant="outline" size="lg">
+                      <Link to="/ingressos" className="gap-2">
+                        <Ticket className="size-4" />
+                        Meus ingressos
+                      </Link>
+                    </Button>
+                  )}
+                  {user.role === 'ORGANIZER' && (
+                    <Button asChild variant="outline" size="lg">
+                      <Link to="/organizador" className="gap-2">
+                        <LayoutDashboard className="size-4" />
+                        Painel do organizador
+                      </Link>
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-5">
+                <div>
+                  <span className="font-mono text-xs font-bold text-label uppercase tracking-wider block mb-1">
+                    Acesso Público
+                  </span>
+                  <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+                    O catálogo é aberto para consulta de sessões e horários.
+                    Faça login para reservar assentos ou publicar novos eventos.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap gap-3 pt-2">
+                  <Button asChild size="lg">
+                    <Link to="/eventos" className="gap-2">
+                      Ver eventos em cartaz
+                      <ArrowRight className="size-4" aria-hidden />
+                    </Link>
+                  </Button>
+                  <Button asChild variant="outline" size="lg">
+                    <Link to="/login">Entrar na conta</Link>
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </Card>
+
+        {/* Blocos de Estrutura do Sistema */}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="rounded-lg border border-border bg-card p-5 transition-colors hover:border-foreground/30">
+            <div className="size-9 rounded bg-secondary flex items-center justify-center text-foreground mb-3 font-mono font-bold text-sm">
+              <Clapperboard className="size-4.5" />
             </div>
-          </>
-        ) : (
-          <>
-            <p className="text-muted-foreground text-sm">
-              Você não está logado.
+            <h3 className="font-bold text-sm text-foreground mb-1">
+              Cinema & Sessões
+            </h3>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Seleção interativa de poltronas em mapa de sala numerado em tempo
+              real.
             </p>
-            <div className="flex flex-wrap gap-3">
-              <Button asChild>
-                <Link to="/eventos">Ver eventos</Link>
-              </Button>
-              <Button asChild variant="outline">
-                <Link to="/login">Entrar</Link>
-              </Button>
+          </div>
+
+          <div className="rounded-lg border border-border bg-card p-5 transition-colors hover:border-foreground/30">
+            <div className="size-9 rounded bg-secondary flex items-center justify-center text-foreground mb-3 font-mono font-bold text-sm">
+              <Music className="size-4.5" />
             </div>
-          </>
-        )}
+            <h3 className="font-bold text-sm text-foreground mb-1">
+              Shows & Concertos
+            </h3>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Venda por lote e capacidade controlada com concorrência segura.
+            </p>
+          </div>
+
+          <div className="rounded-lg border border-border bg-card p-5 transition-colors hover:border-foreground/30">
+            <div className="size-9 rounded bg-secondary flex items-center justify-center text-foreground mb-3 font-mono font-bold text-sm">
+              <QrCode className="size-4.5" />
+            </div>
+            <h3 className="font-bold text-sm text-foreground mb-1">
+              Validação na Portaria
+            </h3>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Ingressos emitidos com assinatura criptográfica para checagem
+              instantânea.
+            </p>
+          </div>
+        </div>
       </div>
-    </main>
+    </AppShell>
   );
 }

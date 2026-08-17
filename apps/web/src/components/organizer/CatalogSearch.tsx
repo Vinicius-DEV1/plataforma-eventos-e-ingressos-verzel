@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
+import { Search } from 'lucide-react';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useAuth } from '@/contexts/auth-context';
+import { Alert } from '@/components/ui/alert';
+import { Field, Input } from '@/components/ui/field';
+import { Skeleton } from '@/components/ui/skeleton';
 import { apiFetch, ApiError } from '@/lib/api-client';
 import type { CatalogItem, EventType } from '@/lib/api-types';
 
@@ -62,17 +66,20 @@ export function CatalogSearch({ onSelect }: CatalogSearchProps) {
   }, [type, debouncedQuery, token]);
 
   return (
-    <div className="space-y-4">
-      <div className="flex gap-2">
+    <div className="space-y-5">
+      {/* Fonte do catálogo como escolha explícita: o organizador precisa
+          saber de qual acervo veio o que está publicando. */}
+      <div className="border-input flex w-fit border">
         {(Object.keys(TYPE_LABEL) as EventType[]).map((option) => (
           <button
             key={option}
             type="button"
             onClick={() => setType(option)}
-            className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
+            aria-pressed={type === option}
+            className={`label-print px-3 py-2 transition-colors ${
               type === option
-                ? 'bg-primary text-primary-foreground border-transparent'
-                : 'border-input bg-background hover:bg-muted'
+                ? 'bg-primary text-primary-foreground'
+                : 'hover:bg-muted'
             }`}
           >
             {TYPE_LABEL[option]}
@@ -80,48 +87,78 @@ export function CatalogSearch({ onSelect }: CatalogSearchProps) {
         ))}
       </div>
 
-      <input
-        type="text"
-        placeholder={
+      <Field
+        label="Buscar"
+        htmlFor="catalog-query"
+        hint={
           type === 'CINEMA'
-            ? 'Buscar filme (vazio = em cartaz)'
-            : 'Buscar show/evento'
+            ? 'Campo vazio lista o que está em cartaz.'
+            : 'Campo vazio lista os próximos eventos.'
         }
-        value={query}
-        onChange={(event) => setQuery(event.target.value)}
-        className="border-input bg-background focus-visible:border-ring focus-visible:ring-ring/50 w-full rounded-lg border px-3 py-2 text-sm outline-none focus-visible:ring-3"
-      />
+      >
+        <div className="relative">
+          <Search
+            aria-hidden
+            className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"
+          />
+          <Input
+            id="catalog-query"
+            className="pl-9"
+            placeholder={type === 'CINEMA' ? 'Título do filme' : 'Nome do show'}
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+          />
+        </div>
+      </Field>
 
-      {error && <p className="text-destructive text-sm">{error}</p>}
-      {loading && <p className="text-muted-foreground text-sm">Buscando…</p>}
+      {error && <Alert>{error}</Alert>}
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        {results.map((item) => (
-          <button
-            key={item.externalId}
-            type="button"
-            onClick={() => onSelect(item, type)}
-            className="border-border bg-card hover:border-ring flex flex-col overflow-hidden border text-left transition-colors"
-          >
-            {item.imageUrl && (
-              <img
-                src={item.imageUrl}
-                alt=""
-                className="aspect-[2/3] w-full object-cover"
-              />
-            )}
-            <div className="space-y-1 p-2">
-              <p className="line-clamp-2 text-sm font-medium">{item.title}</p>
-              {item.date && (
-                <p className="text-muted-foreground text-xs">{item.date}</p>
-              )}
-            </div>
-          </button>
-        ))}
-      </div>
+      {loading && (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {Array.from({ length: 6 }, (_, index) => (
+            <Skeleton key={index} className="aspect-[2/3] w-full" />
+          ))}
+        </div>
+      )}
 
       {!loading && !error && results.length === 0 && (
-        <p className="text-muted-foreground text-sm">Nenhum resultado.</p>
+        <p className="text-muted-foreground text-sm">
+          Nenhum resultado para esta busca.
+        </p>
+      )}
+
+      {!loading && results.length > 0 && (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {results.map((item) => (
+            <button
+              key={item.externalId}
+              type="button"
+              onClick={() => onSelect(item, type)}
+              className="border-border bg-card hover:border-primary focus-visible:ring-ring/40 ease-sharp flex flex-col overflow-hidden border text-left transition-[transform,border-color] duration-200 outline-none hover:-translate-y-0.5 focus-visible:ring-3"
+            >
+              {item.imageUrl ? (
+                <img
+                  src={item.imageUrl}
+                  alt=""
+                  loading="lazy"
+                  className="aspect-[2/3] w-full object-cover"
+                />
+              ) : (
+                <div className="bg-muted flex aspect-[2/3] w-full items-center justify-center">
+                  <span className="label-print">Sem imagem</span>
+                </div>
+              )}
+              <div className="space-y-1 p-2.5">
+                <p className="line-clamp-2 text-sm font-medium">{item.title}</p>
+                {item.date && (
+                  <p data-numeric className="text-muted-foreground text-xs">
+                    {item.date}
+                  </p>
+                )}
+              </div>
+            </button>
+          ))}
+        </div>
       )}
     </div>
   );
