@@ -232,6 +232,27 @@ export async function cancelEvent(req: Request, res: Response) {
     return;
   }
 
+  try {
+    await cancelEventInTransaction(id);
+  } catch (err) {
+    if (err instanceof RefundNotAllowedError) {
+      res.status(503).json({
+        message:
+          'O provedor de pagamento ainda não liberou o estorno de uma das cobranças deste evento. Aguarde alguns instantes e tente novamente.',
+      });
+      return;
+    }
+    throw err;
+  }
+
+  res.status(204).send();
+}
+
+// Sinaliza a única falha esperada da cascata: a janela de processamento do
+// provedor entre confirmar uma cobrança e permitir estorná-la.
+class RefundNotAllowedError extends Error {}
+
+async function cancelEventInTransaction(id: string) {
   await prisma.$transaction(async (tx) => {
     // Lido antes do updateMany abaixo apagar o status PAID que identifica
     // quais reservas tinham pagamento a estornar.
@@ -274,15 +295,21 @@ export async function cancelEvent(req: Request, res: Response) {
     // aqui, o cancelamento partiu do organizador.
     for (const reservation of paidReservations) {
       if (!reservation.payment) continue;
-      await asaas.refundPayment(reservation.payment.asaasPaymentId);
+      try {
+        await asaas.refundPayment(reservation.payment.asaasPaymentId);
+      } catch {
+        // Uma cobrança recém-confirmada entre as reservas do evento faz a
+        // Asaas recusar o estorno, e a transação toda volta atrás: o evento
+        // continua publicado. Preferível a cancelar o evento deixando parte
+        // dos clientes sem reembolso.
+        throw new RefundNotAllowedError();
+      }
       await tx.payment.update({
         where: { id: reservation.payment.id },
         data: { status: PaymentStatus.REFUNDED },
       });
     }
   });
-
-  res.status(204).send();
 }
 
 // Organizer-scoped listing, including CANCELLED events — the public

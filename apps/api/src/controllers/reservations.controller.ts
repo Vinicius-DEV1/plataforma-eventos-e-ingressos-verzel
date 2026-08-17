@@ -254,7 +254,22 @@ export async function cancelReservation(req: Request, res: Response) {
       // Asaas sandbox — mesma cobrança criada no Bloco 5, não uma segunda
       // simulação isolada.
       if (existing.payment) {
-        await asaas.refundPayment(existing.payment.asaasPaymentId);
+        try {
+          await asaas.refundPayment(existing.payment.asaasPaymentId);
+        } catch {
+          // A Asaas recusa o estorno de uma cobrança recém-confirmada
+          // ("tente novamente em alguns instantes"), o que acontece quando o
+          // cliente paga e cancela em seguida. A falha derruba a transação
+          // inteira, e o cancelamento não acontece — o que é o comportamento
+          // certo, já que cancelar sem devolver o dinheiro seria pior. O que
+          // muda aqui é o que o cliente lê: 503 com explicação em vez do 500
+          // genérico do Express. Descoberto pela suíte de contrato
+          // (tests/integration/asaas-contract.test.ts).
+          throw new ReservationError(
+            503,
+            'O provedor de pagamento ainda não liberou o estorno desta cobrança. Aguarde alguns instantes e tente cancelar de novo.',
+          );
+        }
         await tx.payment.update({
           where: { id: existing.payment.id },
           data: { status: PaymentStatus.REFUNDED },

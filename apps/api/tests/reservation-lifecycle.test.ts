@@ -177,6 +177,50 @@ describe('ciclo de vida da reserva', () => {
     expect(pagamento.status).toBe(PaymentStatus.REFUNDED);
   });
 
+  it('responde 503 e mantém a reserva quando o provedor recusa o estorno', async () => {
+    // Cenário real, achado pela suíte de contrato: a Asaas recusa estornar
+    // uma cobrança recém-confirmada. Antes isso virava 500 genérico.
+    asaas.refundPayment.mockRejectedValue(
+      new Error('Asaas respondeu 400: invalid_action'),
+    );
+
+    const organizer = await createUser(Role.ORGANIZER);
+    const customer = await createUser(Role.CUSTOMER);
+    const event = await createShowEvent(organizer.id, {
+      startsAt: addDays(new Date(), 5),
+      availableTickets: 10,
+    });
+
+    const reserva = await request(app)
+      .post('/reservas/quantidade')
+      .set(...authHeader(customer.token))
+      .send({ eventId: event.id, quantity: 2 });
+
+    await request(app)
+      .post(`/pagamentos/${reserva.body.id as string}/processar`)
+      .set(...authHeader(customer.token))
+      .send({ method: 'CREDIT_CARD', card: CARD })
+      .expect(201);
+
+    const cancelamento = await request(app)
+      .post(`/reservas/${reserva.body.id as string}/cancelar`)
+      .set(...authHeader(customer.token));
+
+    expect(cancelamento.status).toBe(503);
+    expect(cancelamento.body.message).toMatch(/estorno/i);
+
+    // A transação voltou atrás por inteiro: nada de cancelar sem devolver o
+    // dinheiro, e nada de estoque devolvido em dobro.
+    const depois = await prisma.reservation.findUniqueOrThrow({
+      where: { id: reserva.body.id as string },
+    });
+    const evento = await prisma.event.findUniqueOrThrow({
+      where: { id: event.id },
+    });
+    expect(depois.status).toBe(ReservationStatus.PAID);
+    expect(evento.availableTickets).toBe(8);
+  });
+
   it('recusa o cancelamento a menos de 24 horas do evento', async () => {
     const organizer = await createUser(Role.ORGANIZER);
     const customer = await createUser(Role.CUSTOMER);
