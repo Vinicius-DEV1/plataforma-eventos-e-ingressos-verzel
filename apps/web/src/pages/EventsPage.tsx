@@ -8,10 +8,13 @@ import { EventCardSkeleton } from '@/components/events/EventCardSkeleton';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Combobox } from '@/components/ui/combobox';
+import { DateField } from '@/components/ui/date-field';
 import { Field, Input } from '@/components/ui/field';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { apiFetch, ApiError } from '@/lib/api-client';
-import type { EventItem } from '@/lib/api-types';
+import { cn } from '@/lib/utils';
+import type { EventFilterOptions, EventItem } from '@/lib/api-types';
 
 type Filters = {
   date: string;
@@ -43,9 +46,35 @@ function buildQuery(filters: Filters): string {
 export default function EventsPage() {
   const [events, setEvents] = useState<EventItem[]>([]);
   const [loading, setLoading] = useState(true);
+  // Distingue "abrindo a tela" de "refiltrando": só a primeira carga troca o
+  // conteúdo por esqueleto. Refiltrar mantém o resultado anterior no lugar,
+  // porque trocar a grade por seis esqueletos a cada tecla fazia a página
+  // inteira pular de altura.
+  const [firstLoad, setFirstLoad] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const debouncedFilters = useDebouncedValue(filters, 400);
+  const [options, setOptions] = useState<EventFilterOptions>({
+    categories: [],
+    venues: [],
+  });
+
+  // Carregado uma vez, fora do efeito de listagem: a lista de opções não pode
+  // encolher conforme o cliente filtra. Se falhar, os campos seguem
+  // funcionando como busca por texto.
+  useEffect(() => {
+    let cancelled = false;
+    apiFetch<EventFilterOptions>('/eventos/filtros')
+      .then((data) => {
+        if (!cancelled) setOptions(data);
+      })
+      .catch(() => {
+        // sem lista de sugestão, o filtro por texto continua de pé
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -66,7 +95,10 @@ export default function EventsPage() {
             : 'Não foi possível carregar os eventos.',
         );
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+          setFirstLoad(false);
+        }
       }
     }
     void load();
@@ -88,9 +120,11 @@ export default function EventsPage() {
         label="Catálogo"
         title="Em cartaz"
         meta={
-          !loading && !error
-            ? `${events.length} ${events.length === 1 ? 'evento publicado' : 'eventos publicados'}`
-            : undefined
+          // Some só enquanto não há número nenhum para mostrar: se sumisse a
+          // cada refiltragem, o cabeçalho encolheria e empurraria a página.
+          firstLoad || error
+            ? undefined
+            : `${events.length} ${events.length === 1 ? 'evento publicado' : 'eventos publicados'}`
         }
       />
 
@@ -114,27 +148,28 @@ export default function EventsPage() {
 
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           <Field label="Data" htmlFor="filter-date">
-            <Input
+            <DateField
               id="filter-date"
-              type="date"
               value={filters.date}
-              onChange={(e) => updateFilter('date', e.target.value)}
+              onChange={(value) => updateFilter('date', value)}
             />
           </Field>
           <Field label="Categoria" htmlFor="filter-category">
-            <Input
+            <Combobox
               id="filter-category"
-              placeholder="Ação, rock…"
+              options={options.categories}
+              placeholder="Todas"
               value={filters.category}
-              onChange={(e) => updateFilter('category', e.target.value)}
+              onChange={(value) => updateFilter('category', value)}
             />
           </Field>
           <Field label="Local" htmlFor="filter-venue">
-            <Input
+            <Combobox
               id="filter-venue"
-              placeholder="Sala, casa de show…"
+              options={options.venues}
+              placeholder="Todos"
               value={filters.venue}
-              onChange={(e) => updateFilter('venue', e.target.value)}
+              onChange={(value) => updateFilter('venue', value)}
             />
           </Field>
           <Field label="Preço mín." htmlFor="filter-min">
@@ -162,7 +197,7 @@ export default function EventsPage() {
 
       {error && <Alert>{error}</Alert>}
 
-      {loading && (
+      {loading && firstLoad && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }, (_, index) => (
             <EventCardSkeleton key={index} />
@@ -185,8 +220,14 @@ export default function EventsPage() {
         </div>
       )}
 
-      {!loading && events.length > 0 && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {!firstLoad && events.length > 0 && (
+        <div
+          aria-busy={loading}
+          className={cn(
+            'grid grid-cols-1 gap-4 transition-opacity duration-200 sm:grid-cols-2 lg:grid-cols-3',
+            loading && 'opacity-50',
+          )}
+        >
           <FeaturedEventCard event={events[0]} />
           {events.slice(1).map((event) => (
             <EventCard key={event.id} event={event} />
