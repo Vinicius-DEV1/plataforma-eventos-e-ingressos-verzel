@@ -16,19 +16,27 @@ export default tseslint.config(
     ],
   },
 
-  // Config files at each app root, and one-off scripts run standalone via
-  // tsx against a live server (not part of the compiled app), sit outside
-  // the tsconfig, which only covers src/ — so they get the rules that do
-  // not need type information.
+  // Config files at each app root, one-off scripts run standalone via tsx
+  // against a live server, and the test suite all sit outside tsconfig.json,
+  // which only covers src/ — so they get the rules that do not need type
+  // information.
   {
     files: [
       'apps/api/*.ts',
       'apps/api/scripts/**/*.ts',
       'apps/api/prisma/**/*.ts',
+      'apps/api/tests/**/*.ts',
     ],
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     languageOptions: {
       globals: globals.node,
+    },
+  },
+
+  {
+    files: ['apps/api/tests/**/*.ts'],
+    languageOptions: {
+      globals: { ...globals.node, ...globals.jest },
     },
   },
 

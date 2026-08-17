@@ -11,6 +11,9 @@
     "start": "node --env-file-if-exists=.env dist/server.js",
     "db:generate": "prisma generate",
     "db:seed": "prisma db seed",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
+    "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch",
+    "test:integration": "jest --config jest.integration.config.js",
     "test:concurrency:seat": "tsx --env-file-if-exists=.env scripts/test-seat-concurrency.ts",
     "test:concurrency:quantity": "tsx --env-file-if-exists=.env scripts/test-quantity-concurrency.ts"
   },
@@ -29,12 +32,17 @@
     "@types/bcrypt": "^6.0.0",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
+    "@types/jest": "^30.0.0",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^26.2.0",
     "@types/qrcode": "^1.5.6",
+    "@types/supertest": "^7.2.1",
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.8",
+    "jest": "^30.4.2",
     "prisma": "^7.9.1",
+    "supertest": "^7.2.2",
+    "ts-jest": "^29.4.12",
     "tsx": "^4.23.12"
   }
 }

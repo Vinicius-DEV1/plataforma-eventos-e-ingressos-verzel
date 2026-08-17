@@ -20,6 +20,27 @@ services:
       timeout: 5s
       retries: 10
 
+  # Banco exclusivo da suíte de testes, em outra porta e com profile próprio:
+  # `docker compose up` não sobe este serviço, só `--profile test` sobe. A
+  # suíte trunca as tabelas a cada teste, e isso não pode acontecer no banco
+  # de desenvolvimento.
+  postgres-test:
+    image: postgres:17-alpine
+    container_name: eventos-postgres-test
+    profiles: ['test']
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: eventos_test
+    ports:
+      - '5433:5432'
+    # Sem volume: o banco de teste é descartável de propósito.
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d eventos_test']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   api:
     build:
       # Root context: the Dockerfile needs the workspace manifests.

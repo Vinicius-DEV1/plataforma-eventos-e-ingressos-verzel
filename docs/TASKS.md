@@ -1023,41 +1023,35 @@ tela sem usar o botão do navegador.
 **Issues para cadastrar no GitHub**
 
 ```
-Título: [infra] Configurar ambiente de testes (Jest + ts-jest)
+Título: [infra] Ambiente de testes com PostgreSQL real
 Labels: infra
 
-Ambiente para a suíte da API. Os testes que importam aqui exercitam
-transações e concorrência, e mock de ORM não reproduz esse
-comportamento — por isso eles rodam contra um PostgreSQL real, em banco
+Os testes que importam aqui exercitam transação e disputa por linha, e mock
+de ORM não reproduz isso: eles rodam contra um Postgres de verdade, em banco
 separado do de desenvolvimento (docs/SPEC.md §6).
 
-- [ ] Configurar Jest com ts-jest em apps/api
-- [ ] Provisionar o banco de teste
-- [ ] Acrescentar a suíte ao workflow de CI
+- [ ] Jest + ts-jest em apps/api, com banco limpo a cada teste
+- [ ] Banco de teste no Docker Compose, fora do fluxo do dia a dia
+- [ ] Suíte no workflow de CI
 
-Pronto quando: a suíte roda com um único comando, contra um banco real,
-sem interferir no banco de desenvolvimento.
+Pronto quando: a suíte roda com um comando, contra banco real, sem tocar no
+banco de desenvolvimento.
 ```
 
 ```
-Título: [back-end] Testes de concorrência e regras críticas
+Título: [back-end] Testes de concorrência e das regras críticas
 Labels: back-end
 
-Cobertura das regras cuja falha só aparece em produção: disputa por
-lugar, venda acima da capacidade e ingresso forjado. A ordem abaixo é de
-prioridade, do mais crítico ao mais opcional (docs/SPEC.md §6).
+Cobertura das regras cuja falha só aparece em produção (docs/SPEC.md §6). A
+única fronteira mockada é o provedor de pagamento, que é HTTP para fora do
+sistema.
 
-- [ ] Dois clientes disputando o mesmo assento
-- [ ] Reservas simultâneas que somadas excedem a capacidade
-- [ ] Validação de QR com assinatura válida
-- [ ] Validação de QR com assinatura forjada
-- [ ] Cancelamento dentro do prazo
-- [ ] Cancelamento fora do prazo
-- [ ] Expiração de reserva não paga, com devolução ao estoque
-- [ ] Reserva de quantidade N gerando N ingressos
-- [ ] Cancelamento de evento em cascata
-- [ ] Pagamento recusado encerrando a reserva
-- [ ] Integração do fluxo feliz: criar evento e reservar
+- [ ] Disputa pelo mesmo assento e venda acima da capacidade
+- [ ] QR com assinatura válida, forjada, já usada e de outro evento
+- [ ] Cancelamento dentro e fora da janela de 24h
+- [ ] Expiração da reserva não paga, com devolução ao estoque
+- [ ] Emissão de N ingressos, pagamento recusado e cascata do organizador
+- [ ] Integração do fluxo feliz: publicar, reservar, pagar e validar
 
 Pronto quando: a suíte inteira passa localmente e no CI.
 ```

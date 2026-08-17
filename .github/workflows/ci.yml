@@ -46,3 +46,66 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  testes:
+    name: Suíte de testes da API
+    runs-on: ubuntu-latest
+
+    # Banco de verdade, não mock: os testes que importam aqui exercitam
+    # transação e disputa por linha, que só existem no PostgreSQL
+    # (docs/SPEC.md §6).
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: eventos_test
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d eventos_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5433/eventos_test?schema=public
+      JWT_SECRET: segredo-de-teste-do-ci
+      TZ: UTC
+      # No nível do job, e não do passo: o `if` de um passo não enxerga o
+      # `env` declarado nele mesmo.
+      ASAAS_API_KEY: ${{ secrets.ASAAS_API_KEY }}
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+        env:
+          HUSKY: 0
+
+      - name: Gerar Prisma Client
+        run: npm run db:generate --workspace @eventos/api
+
+      # As migrations também rodam no globalSetup do Jest; aqui elas ficam
+      # num passo próprio para uma migration quebrada aparecer como falha de
+      # migration, e não como falha misteriosa da suíte.
+      - name: Aplicar migrations no banco de teste
+        run: npx prisma migrate deploy
+        working-directory: apps/api
+
+      - name: Testes
+        run: npm test --workspace @eventos/api
+
+      # Contrato com a Asaas: só roda se a chave do sandbox estiver
+      # cadastrada nos secrets. Sem ela, o passo é pulado em vez de falhar —
+      # não ter credencial não é o mesmo que ter código quebrado.
+      - name: Contrato com a Asaas (sandbox)
+        if: env.ASAAS_API_KEY != ''
+        run: npm run test:integration --workspace @eventos/api
