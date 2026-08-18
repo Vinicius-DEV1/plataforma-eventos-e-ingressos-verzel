@@ -15,10 +15,12 @@
 
 ## Fluxo de Trabalho Adotado
 
-O desenvolvimento seguiu o plano em `docs/TASKS.md`: blocos sequenciais de
-tarefas atômicas, com um checkpoint obrigatório ao final de cada bloco em que
-eu testava manualmente as funcionalidades antes de autorizar o avanço. A IA
-não marcava uma tarefa como concluída por conta própria — cada item só era
+O `docs/TASKS.md` foi feito com bastante cuidado: gerar, analisar a ordem das
+tarefas, reorganizar e revisar levou dois dias, antes de qualquer linha de
+código. O desenvolvimento seguiu esse plano: blocos sequenciais de tarefas
+atômicas, com um checkpoint obrigatório ao final de cada bloco em que eu
+testava manualmente as funcionalidades antes de autorizar o avanço. A IA não
+marcava uma tarefa como concluída por conta própria — cada item só era
 validado após minha verificação.
 
 Como a ferramenta escreve arquivos e executa comandos sozinha, estabeleci três
@@ -39,16 +41,9 @@ Studio, checagens avulsas de lint e de tipo. Pedi para parar. Além do controle
 sobre o que entra no repositório, preciso saber rodar cada comando sozinho, e
 isso não se aprende vendo a ferramenta rodar por mim.
 
-Essa restrição é sobre comandos de terminal, não sobre editar arquivo. As
-chaves gratuitas do TMDb e do Ticketmaster, por exemplo, eu colei no chat e
-pedi para a IA salvar direto no `apps/api/.env` — um arquivo local, fora do
-Git (`.gitignore` cobre `.env`), então não há risco de ir para o
-repositório. A IA nunca reexibiu essas chaves depois de salvas.
-
-**Comentários no código só quando necessários.** O código vinha com blocos
-longos explicando o óbvio; pedi para enxugar, deixando comentário apenas onde
-há decisão não-óbvia ou armadilha conhecida. A justificativa longa foi para
-`DECISIONS.md`, que é o lugar dela.
+**Comentários no código só quando necessários.** Pedi para enxugar comentários
+que explicavam o óbvio, deixando só onde há decisão não-óbvia ou armadilha
+conhecida.
 
 **Toda edição precisa ser explicada no chat, não só feita.** No Bloco 2,
 percebi que a ferramenta escrevia bastante código (contexto de autenticação,
@@ -182,10 +177,13 @@ dois de propósito.
 **Direção de produto, do escopo às decisões de design.** Recebi três
 propostas de identidade visual (cinema noturno, ingresso impresso,
 editorial de alto contraste) e escolhi a segunda, a paleta e a fonte
-saíram dessa escolha. Ampliei sozinho o escopo do checkout do Bloco 5, que
-no plano original previa só uma tela genérica, para incluir PIX e cartão de
-teste reais, botão de confirmação manual visível para quem for avaliar o
-projeto, link de comprovante e notificações do Asaas desativadas.
+saíram dessa escolha. A proposta da IA foi só o ponto de partida: a partir
+dela pedi diversas personalizações próprias, até o resultado deixar de se
+parecer com a sugestão original. Ampliei sozinho o escopo do checkout do
+Bloco 5, que no plano original previa só uma tela genérica, para incluir
+PIX e cartão de teste reais, botão de confirmação manual visível para quem
+for avaliar o projeto, link de comprovante e notificações do Asaas
+desativadas.
 
 **Auditoria do próprio processo, inclusive da IA.** Numa entrega, a
 ferramenta afirmou que uma issue podia ser fechada; conferi item por item e
@@ -292,15 +290,6 @@ foi percebido e corrigido por mim, não deixado passar.
   deixa a arte do evento carregar a cor da tela. Do que estava pronto, mantive
   só o picote do ingresso. Detalhe em `DECISIONS.md`, "Identidade visual".
 
-- **Laranja da marca recusado no texto pequeno.** Pedi a medição de contraste
-  do acento: 3,33 sobre branco, abaixo do mínimo de 4,5 do WCAG AA para corpo
-  pequeno, justamente no tamanho em que ele mais aparecia. Em vez de mexer na
-  cor da marca, separei um token só para o texto miúdo.
-
-- **Cantos arredondados e sombra, decididos no celular.** A direção anterior
-  proibia os dois por coerência com a referência de papel. Testando na tela
-  pequena, card, campo, diálogo e barra superior liam todos no mesmo plano.
-  Hierarquia entre superfícies vale mais que fidelidade à metáfora.
 
 - **Limpeza depois da troca de direção.** Na revisão apareceram classes de CSS
   esvaziadas mas ainda com o nome antigo, e animações apontando para tokens que
@@ -375,6 +364,15 @@ foi percebido e corrigido por mim, não deixado passar.
   a IA testou a migration três vezes por caminhos diferentes antes de eu
   aceitar como pronta.
 
+- **Regra de negócio que eu pedi depois de notar o comportamento no app.**
+  Organizador e portaria conseguiam abrir a tela de reserva de um evento como
+  se fossem cliente. Pedi para investigar antes de corrigir: o back-end já
+  recusava a reserva com 403 para esses papéis em todas as rotas — o problema
+  era só a interface deixar chegar até o botão. A correção ficou no front,
+  escondendo o fluxo de reserva para quem não é `CUSTOMER` e protegendo a
+  rota de checkout com o mesmo componente de rota restrita por papel já usado
+  em `/organizador` e `/portaria`.
+
 ## Artefatos de Processo Versionados
 
 Como recomendado pelo desafio, os seguintes artefatos do processo de
@@ -410,22 +408,25 @@ lint com informação de tipo.
 
 ## Linha do Tempo
 
-**Dia 1 (14/08).** Análise do desafio, planejamento e escolha das
+**Dia 1 (12–13/08).** Análise do desafio, planejamento e escolha das
 tecnologias. Nasceram PRD.md, SPEC.md, DECISIONS.md e TASKS.md, antes de
 qualquer linha de código.
 
-**Dia 2 (15/08).** Modelagem de dados, autenticação, catálogo e gestão de
+**Dia 2 (14/08).** Setup do monorepo (Bloco 0): esqueleto dos dois apps,
+qualidade de código, CI, Docker Compose e Swagger.
+
+**Dia 3 (15/08).** Modelagem de dados, autenticação, catálogo e gestão de
 eventos, os dois fluxos de reserva (assento e quantidade) com controle de
 concorrência.
 
-**Dia 3 (16/08).** Pagamento simulado no sandbox da Asaas, emissão de
+**Dia 4 (16/08).** Pagamento simulado no sandbox da Asaas, emissão de
 ingresso com QR Code, portaria, cancelamento com estorno, busca e filtro.
 
-**Dia 4 (17/08).** Refinamento de UX — decidi a identidade visual comparando
+**Dia 5 (17/08).** Refinamento de UX — decidi a identidade visual comparando
 direções na tela, não no papel — e a suíte de testes automatizados, incluindo
 a suíte de contrato que fala com a Asaas de verdade.
 
-**Dia 5 (18/08).** Deploy em produção (Render: API, front e banco), README
+**Dia 6 (18/08).** Deploy em produção (Render: API, front e banco), README
 final e fechamento desta documentação.
 
 Cinco dias, do planejamento à entrega em produção.

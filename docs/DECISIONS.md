@@ -54,29 +54,17 @@ resumi-las numa linha esconderia o que importa.
 
 ### Prisma 7: quatro surpresas que aparecem no código
 
-A versão 7 mudou coisas que quem conhece as anteriores não espera:
-
-**O driver do banco não vem mais embutido.** A conexão exige um adapter
-explícito — daí a dependência `@prisma/adapter-pg` e o
-`new PrismaClient({ adapter })` em `src/config/prisma.ts`. Um
-`new PrismaClient()` sem argumento nem compila.
-
-**O client gerado é ESM por padrão** e usa `import.meta`, o que quebraria o
-CommonJS que a API adotou. Por isso o gerador está fixado em
-`moduleFormat = "cjs"`.
-
-**O client é gerado dentro de `src/`**, e não mais em `node_modules`. Isso
-explica três coisas que de outra forma pareceriam arbitrárias: a pasta está
-no `.gitignore`, está excluída do ESLint e do Prettier, e o `prisma generate`
-roda antes do `tsc` no build. Quem clonar o projeto precisa gerar o client
-antes de compilar — o script de build já cuida disso.
-
-**O runtime usa `import()` dinâmico**, o que o Jest bloqueia por padrão. Sem
-`NODE_OPTIONS=--experimental-vm-modules`, toda consulta da suíte falha com
-"a dynamic import callback was invoked without --experimental-vm-modules" —
-daí a flag nos scripts `test` e `test:watch`. O mesmo estilo `nodenext` do
-client obriga o Jest a mapear os imports com extensão `.js` de volta para os
-arquivos `.ts` gerados.
+- Driver não vem mais embutido: exige adapter explícito
+  (`@prisma/adapter-pg`, `new PrismaClient({ adapter })` em
+  `src/config/prisma.ts`) — sem isso, nem compila.
+- Client gerado é ESM por padrão e usaria `import.meta`, incompatível com o
+  CommonJS da API — por isso `moduleFormat = "cjs"` no gerador.
+- Client é gerado em `src/`, não em `node_modules`: por isso está no
+  `.gitignore`, fora do ESLint/Prettier, e `prisma generate` roda antes do
+  `tsc` no build.
+- Runtime usa `import()` dinâmico, que o Jest bloqueia por padrão — daí
+  `NODE_OPTIONS=--experimental-vm-modules` nos scripts `test`/`test:watch`,
+  e o mapeamento de imports `.js` para os `.ts` gerados.
 
 ### Identidade visual: editorial de alto contraste
 
@@ -99,11 +87,10 @@ visível.
 **Ação e perigo em matizes distintos.** Laranja para reservar, pagar e validar;
 carmim para cancelar e recusar. Nunca a mesma cor para as duas coisas.
 
-**Um token separado para o texto pequeno.** O laranja da marca dá 3,33 de
-contraste sobre branco: aprovado para superfície e título, reprovado para
-rótulo de 11px, que é onde ele mais aparece. Uma versão queimada dele
-(`--label`) cobre o texto miúdo do tema claro, com 5,39. No escuro o original
-já passa, e o token volta a ser ele.
+**Uma cor mais escura do laranja, só para texto pequeno.** No tema claro, o
+laranja da marca não atinge o contraste mínimo exigido (WCAG AA) para texto
+pequeno, só para título. Criei uma variante mais escura dele (`--label`) para
+esse caso; no tema escuro não é necessário, o laranja original já basta.
 
 **Geometria.** Cantos de 8px e sombras discretas: a interface é operada no
 celular e precisa de hierarquia visível entre card, campo, diálogo e barra
@@ -116,42 +103,20 @@ piscar claro a cada recarga. O padrão é o tema claro.
 
 ### Deploy no Render: o TLS que a migration escondia
 
-Conduzi o deploy eu mesmo pelo painel do Render, colando cada erro para
-diagnóstico antes de aceitar qualquer correção. Três problemas apareceram, e
-nenhum estava óbvio no primeiro erro.
+Conduzi o deploy eu mesmo pelo painel do Render. Três problemas apareceram:
 
-**O build do front falhava com "husky: not found".** O Render instala
-dependências antes de rodar o comando de build configurado, e essa instalação
-dispara o `prepare` da raiz do monorepo — que chama o Husky, dependência de
-desenvolvimento ausente nesse tipo de instalação. `HUSKY=0` como variável de
-ambiente não resolveu, porque o binário nem existe em disco para o código dele
-rodar e checar a variável. A correção ficou no próprio script:
-`"prepare": "husky || true"`, tolerante à ausência do binário em qualquer
-ambiente, não só no Render.
-
-**O seed em produção falhava com "acesso negado".** O erro (`P1010`,
-`DatabaseAccessDenied`) parecia permissão, mas as migrations tinham acabado de
-rodar contra o mesmo banco. Descartei minha primeira hipótese (conexões
-simultâneas — o seed criava 4 usuários com `Promise.all`) porque serializar as
-criações não resolveu, e o erro passou a acontecer já na primeira delas.
-Validei a causa real com um teste isolado, conectando direto com `pg` sem
-passar pelo Prisma: sem `ssl`, a conexão falha com "SSL/TLS required"; com
-`{ rejectUnauthorized: false }`, funciona. O Render exige TLS na conexão
-externa, o `pg` não negocia isso sozinho, e o Prisma traduz essa recusa de
-handshake em "acesso negado" — mensagem enganosa para a causa real. As
-migrations tinham funcionado porque o motor de migration do Prisma negocia TLS
-por conta própria; o adapter usado em runtime (`@prisma/adapter-pg`), não. Sem
-essa correção, a API publicada teria falhado em toda consulta ao banco, não só
-no seed — encontrado a tempo por estar rodando o seed manualmente antes de
-declarar o deploy pronto.
-
-**Configuração das variáveis `sync: false`.** Definidas no `render.yaml` para
-não versionar segredo nenhum, mas descobri na prática que o Render só cria
-essas variáveis automaticamente durante a tela inicial de "Deploy Blueprint" —
-um serviço adicionado depois, via `git push`, não ganha a variável sozinho.
-Precisei adicionar `VITE_API_URL`, `ASAAS_API_KEY`, `TMDB_API_KEY` e
-`TICKETMASTER_API_KEY` manualmente pelo painel depois que os dois serviços já
-estavam no ar.
+- **Build do front falhava** porque o Husky (ferramenta de hooks de commit)
+  não existe no ambiente de deploy. Corrigido tornando o script `prepare`
+  tolerante a essa ausência.
+- **Seed em produção era recusado** com um erro que parecia de permissão, mas
+  era falta de TLS na conexão com o banco — o Render exige conexão segura e
+  essa configuração não estava explícita no código. Corrigido, e a tempo:
+  sem isso, a API publicada falharia em qualquer consulta ao banco, não só
+  no seed.
+- **Variáveis de ambiente não apareceram sozinhas** nos serviços criados
+  depois do deploy inicial. Precisei cadastrar `VITE_API_URL`,
+  `ASAAS_API_KEY`, `TMDB_API_KEY` e `TICKETMASTER_API_KEY` manualmente pelo
+  painel.
 
 ## Convenções de Código
 
@@ -192,6 +157,7 @@ Nomear bem é preferível a explicar depois.
 | Testes com o provedor de pagamento | Duas suítes separadas: a principal com o provedor substituído, e uma de contrato que fala com o sandbox de verdade | As duas falham por motivos diferentes e precisam ser lidas diferente — vermelho na principal é erro do nosso código, vermelho na de contrato é mudança no provedor ou rede fora. Numa suíte só, uma queda de conexão apontaria para o teste de disputa de assento, que não tem pagamento nenhum no meio. A de contrato fica fora do `npm test` e roda no CI apenas se a chave existir |
 | Categoria como entidade própria | Tabela `Category`, com `Event.categoryId` opcional e `ON DELETE SET NULL` | Apontei uma falha de UX: categoria era texto livre, sem como listar o que já existe nem apagar uma criada errada. Virar entidade exige migration em produção, então validei em três camadas antes de aplicar: SQL bruto contra um cenário forjado no banco de testes, a suíte completa, e um smoke test HTTP contra a API dev com dados reais. `ON DELETE SET NULL` na própria constraint do banco resolve "apagar categoria não pode quebrar evento" sem lógica de cascata na aplicação |
 | Criação de categoria pelo formulário | `POST /categorias` idempotente por nome (sem diferenciar caixa) | Pedi que o campo aceitasse escolher uma categoria existente ou criar uma nova sem sair da tela. Idempotência resolve isso num único endpoint: o formulário chama sempre o mesmo POST, existindo ou não, sem precisar saber qual dos dois casos é o seu |
+| Reserva/compra restrita a `CUSTOMER` | Bloqueio na interface, não só no back-end | O back-end já recusava `ORGANIZER` e `GATEKEEPER` com 403 em todas as rotas de reserva, pagamento e ingresso — a falha era só de UX: nada impedia esses papéis de verem o mapa de assentos e tentarem reservar, topando com o erro só depois de clicar. Corrigido escondendo o fluxo de reserva na tela do evento e protegendo `/reservas/checkout` por papel, com o mesmo `PrivateRoute` já usado em `/organizador` e `/portaria` |
 | Estorno chamado dentro da transação do banco | Mantido, com a limitação assumida | Estornar fora da transação exigiria um estado intermediário no `Payment` ("cancelado, estorno pendente") e um mecanismo de reprocessamento, o que é desenho de sistema de pagamento e não cabe no escopo do desafio. O custo é a transação ficar aberta durante a chamada de rede, multiplicado por reserva paga no cancelamento em cascata de um evento. Em troca, cancelamento e estorno são atômicos: nunca existe reserva cancelada sem dinheiro devolvido |
 | Aviso de depreciação do `pg` nos testes | Não tratado, e o motivo registrado | O aviso dispara quando `client.query()` é chamado com a fila da conexão não vazia (`pg/lib/client.js`), e quem enfileira é o `@prisma/adapter-pg` dentro da transação — não há `Promise.all` em `apps/api/src`. Nada a corrigir do nosso lado, e sem efeito no comportamento: o `pg` 8 mantém o suporte, a remoção está anunciada para o `pg` 9. Ponto a reverificar quando o adapter ou o `pg` forem atualizados |
 | Contexto da portaria | Evento selecionado no início da sessão | O retorno "evento errado" só é possível se a validação ocorrer no contexto de um evento conhecido; o `eventId` acompanha cada requisição de validação. Ver `PRD.md` §3.9 |
