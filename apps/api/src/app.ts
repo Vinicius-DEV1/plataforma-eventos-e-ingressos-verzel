@@ -5,6 +5,7 @@ import { corsOptions } from './config/cors';
 import { swaggerSpec } from './config/swagger';
 import { authRouter } from './routes/auth.routes';
 import { catalogRouter } from './routes/catalog.routes';
+import { categoriesRouter } from './routes/categories.routes';
 import { eventsRouter } from './routes/events.routes';
 import { gatekeeperRouter } from './routes/gatekeeper.routes';
 import { healthRouter } from './routes/health.routes';
@@ -35,6 +36,7 @@ export function createApp(): Express {
   app.use(healthRouter);
   app.use(authRouter);
   app.use(catalogRouter);
+  app.use(categoriesRouter);
   app.use(eventsRouter);
   app.use(reservationsRouter);
   app.use(paymentsRouter);

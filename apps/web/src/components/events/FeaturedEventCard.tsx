@@ -29,9 +29,11 @@ export function FeaturedEventCard({ event }: { event: EventItem }) {
 
         <div className="flex flex-1 flex-col gap-4 p-5 sm:p-7">
           <div className="space-y-2">
-            <span className="font-mono text-xs font-bold text-label tracking-wider uppercase">
-              {event.category}
-            </span>
+            {event.category && (
+              <span className="font-mono text-xs font-bold text-label tracking-wider uppercase">
+                {event.category.name}
+              </span>
+            )}
             <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground text-balance transition-colors group-hover:text-primary">
               {event.title}
             </h2>

@@ -180,13 +180,27 @@ async function seedUsers() {
   return { organizer, customer1, customer2, gatekeeper };
 }
 
+// Upsert por nome: as mesmas categorias aparecem em vários eventos do seed
+// (ex: "Ação" em três filmes), e cada uma deve virar uma única linha na
+// tabela, exatamente como o organizador faria pelo formulário.
+async function resolveCategoryId(name: string): Promise<string> {
+  const category = await prisma.category.upsert({
+    where: { name },
+    update: {},
+    create: { name },
+  });
+  return category.id;
+}
+
 async function seedCinemaEvent(organizerId: string, input: CinemaEventInput) {
+  const categoryId = await resolveCategoryId(input.category);
+
   const event = await prisma.event.create({
     data: {
       title: input.title,
       description: `Evento semeado para testes: ${input.title}.`,
       type: EventType.CINEMA,
-      category: input.category,
+      categoryId,
       venue: input.venue,
       startsAt: addDays(now(), input.daysFromNow),
       basePrice: input.basePrice,
@@ -212,12 +226,14 @@ async function seedCinemaEvent(organizerId: string, input: CinemaEventInput) {
 }
 
 async function seedShowEvent(organizerId: string, input: ShowEventInput) {
+  const categoryId = await resolveCategoryId(input.category);
+
   return prisma.event.create({
     data: {
       title: input.title,
       description: `Evento semeado para testes: ${input.title}.`,
       type: EventType.SHOW,
-      category: input.category,
+      categoryId,
       venue: input.venue,
       startsAt: addDays(now(), input.daysFromNow),
       basePrice: input.basePrice,

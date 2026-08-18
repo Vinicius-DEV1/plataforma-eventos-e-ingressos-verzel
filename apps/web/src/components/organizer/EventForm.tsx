@@ -1,11 +1,14 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
+import { CategoryManager } from '@/components/organizer/CategoryManager';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Combobox } from '@/components/ui/combobox';
 import { Field, Input, Textarea } from '@/components/ui/field';
 import { useAuth } from '@/contexts/auth-context';
 import { apiFetch, ApiError } from '@/lib/api-client';
 import type {
+  Category,
   CatalogItem,
   EventItem,
   EventType,
@@ -47,7 +50,7 @@ export function EventForm(props: EventFormProps) {
           title: props.catalogItem.title,
           description: props.catalogItem.description,
           imageUrl: props.catalogItem.imageUrl,
-          category: '',
+          categoryName: '',
           venue: '',
           startsAt: props.catalogItem.date
             ? `${props.catalogItem.date}T20:00`
@@ -59,7 +62,7 @@ export function EventForm(props: EventFormProps) {
           title: props.event.title,
           description: props.event.description,
           imageUrl: props.event.imageUrl,
-          category: props.event.category,
+          categoryName: props.event.category?.name ?? '',
           venue: props.event.venue,
           startsAt: toDatetimeLocalValue(props.event.startsAt),
           basePrice: String(props.event.basePrice),
@@ -69,12 +72,50 @@ export function EventForm(props: EventFormProps) {
   const [form, setForm] = useState(initial);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [categoryOptions, setCategoryOptions] = useState<Category[]>([]);
+  // Incrementado pelo CategoryManager depois de uma exclusão, para recarregar
+  // a lista sem expor a função de busca fora do efeito que a possui.
+  const [categoriesVersion, setCategoriesVersion] = useState(0);
 
   const eventType =
     props.mode === 'create' ? props.eventType : props.event.type;
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadCategories() {
+      try {
+        const data = await apiFetch<{ items: Category[] }>('/categorias');
+        if (!cancelled) setCategoryOptions(data.items);
+      } catch {
+        // Sem lista de sugestão, o campo ainda funciona como texto livre —
+        // a categoria é criada normalmente ao salvar o evento.
+      }
+    }
+    void loadCategories();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [categoriesVersion]);
+
   function update<K extends keyof typeof initial>(key: K, value: string) {
     setForm((prev) => ({ ...prev, [key]: value }));
+  }
+
+  // Resolve o nome digitado para o id de uma categoria: acha a existente ou
+  // cria na hora (POST /categorias é idempotente por nome — ver
+  // categories.controller.ts). Vazio vira "sem categoria" (categoryId null).
+  async function resolveCategoryId(): Promise<string | null> {
+    const name = form.categoryName.trim();
+    if (!name) return null;
+
+    const category = await apiFetch<Category>('/categorias', {
+      method: 'POST',
+      token: token!,
+      body: JSON.stringify({ name }),
+    });
+    return category.id;
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -83,6 +124,8 @@ export function EventForm(props: EventFormProps) {
     setSubmitting(true);
 
     try {
+      const categoryId = await resolveCategoryId();
+
       let saved: EventItem;
       if (props.mode === 'create') {
         saved = await apiFetch<EventItem>('/eventos', {
@@ -93,7 +136,7 @@ export function EventForm(props: EventFormProps) {
             description: form.description,
             imageUrl: form.imageUrl,
             type: eventType,
-            category: form.category,
+            categoryId,
             venue: form.venue,
             startsAt: new Date(form.startsAt).toISOString(),
             basePrice: Number(form.basePrice),
@@ -112,7 +155,7 @@ export function EventForm(props: EventFormProps) {
             title: form.title,
             description: form.description,
             imageUrl: form.imageUrl,
-            category: form.category,
+            categoryId,
             venue: form.venue,
             startsAt: new Date(form.startsAt).toISOString(),
             basePrice: Number(form.basePrice),
@@ -158,7 +201,7 @@ export function EventForm(props: EventFormProps) {
           <Textarea
             id="description"
             required
-            rows={3}
+            rows={8}
             value={form.description}
             onChange={(event) => update('description', event.target.value)}
           />
@@ -174,14 +217,28 @@ export function EventForm(props: EventFormProps) {
         </Field>
 
         <div className="grid gap-5 sm:grid-cols-2">
-          <Field label="Categoria" htmlFor="category">
-            <Input
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between gap-2">
+              <label htmlFor="category" className="label-print">
+                Categoria
+              </label>
+              <CategoryManager
+                onCategoriesChanged={() =>
+                  setCategoriesVersion((version) => version + 1)
+                }
+              />
+            </div>
+            <Combobox
               id="category"
-              required
-              value={form.category}
-              onChange={(event) => update('category', event.target.value)}
+              options={categoryOptions.map((category) => category.name)}
+              placeholder="Ação, comédia, rock…"
+              value={form.categoryName}
+              onChange={(value) => update('categoryName', value)}
             />
-          </Field>
+            <p className="text-muted-foreground text-xs">
+              Escolha uma existente ou digite uma nova.
+            </p>
+          </div>
           <Field label="Local" htmlFor="venue">
             <Input
               id="venue"

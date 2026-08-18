@@ -13,12 +13,22 @@ export type EventType = 'CINEMA' | 'SHOW';
 export type EventStatus = 'PUBLISHED' | 'CANCELLED';
 export type ExternalSource = 'TMDB' | 'TICKETMASTER';
 
+export type Category = {
+  id: string;
+  name: string;
+};
+
+/// Vem só na listagem de gestão (GET /categorias), não no evento.
+export type CategoryWithCount = Category & { eventCount: number };
+
 export type EventItem = {
   id: string;
   title: string;
   description: string;
   type: EventType;
-  category: string;
+  /// Nulo quando o evento nunca teve categoria, ou quando a categoria que
+  /// ele tinha foi apagada — nos dois casos, sem quebrar o evento.
+  category: Category | null;
   venue: string;
   startsAt: string;
   basePrice: number;

@@ -27,6 +27,19 @@ export function formatPrice(amount: number): string {
   return price.format(amount);
 }
 
+const TYPE_LABEL = { CINEMA: 'Cinema', SHOW: 'Show' } as const;
+
+// "Cinema · Ação", ou só "Cinema" quando o evento não tem categoria (nunca
+// teve, ou a categoria foi apagada) — repetido em cartão, detalhe e lista do
+// organizador, então fica num lugar só.
+export function eventTypeCategoryLabel(event: {
+  type: keyof typeof TYPE_LABEL;
+  category: { name: string } | null;
+}): string {
+  const type = TYPE_LABEL[event.type];
+  return event.category ? `${type} · ${event.category.name}` : type;
+}
+
 // Numeração de série do ingresso, no formato de um bilhete impresso. O id é
 // longo demais para ler em voz alta na portaria; os últimos oito caracteres
 // já distinguem os ingressos de um mesmo evento.

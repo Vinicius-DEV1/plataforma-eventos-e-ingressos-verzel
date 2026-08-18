@@ -11,7 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/auth-context';
 import { apiFetch, ApiError } from '@/lib/api-client';
 import type { EventItem, GateValidationResult } from '@/lib/api-types';
-import { formatDateTime } from '@/lib/format';
+import { eventTypeCategoryLabel, formatDateTime } from '@/lib/format';
 
 // Precisa ser legível num relance, com fila esperando — não lido com
 // atenção (issue do Bloco 7). Daí o veredito em corpo grande, a instrução
@@ -149,9 +149,7 @@ export default function GatekeeperPage() {
               onClick={() => setSelectedEvent(event)}
               className="border-border bg-card hover:border-primary focus-visible:ring-ring/40 ease-sharp space-y-1 border p-4 text-left transition-[transform,border-color] duration-200 outline-none hover:-translate-y-0.5 focus-visible:ring-3"
             >
-              <p className="label-print">
-                {event.type === 'CINEMA' ? 'Cinema' : 'Show'} · {event.category}
-              </p>
+              <p className="label-print">{eventTypeCategoryLabel(event)}</p>
               <p className="display-print text-lg">{event.title}</p>
               <p className="text-muted-foreground text-sm">
                 {event.venue} · {formatDateTime(event.startsAt)}

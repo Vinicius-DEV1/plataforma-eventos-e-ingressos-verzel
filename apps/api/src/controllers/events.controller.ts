@@ -36,7 +36,10 @@ type CreateEventBody = {
   description?: string;
   imageUrl?: string;
   type?: EventType;
-  category?: string;
+  /// Opcional: um evento pode ser publicado sem categoria, e uma categoria
+  /// em uso pode ser apagada depois (Event.categoryId tem ON DELETE SET
+  /// NULL) — nunca é o campo que trava a criação ou a leitura de um evento.
+  categoryId?: string;
   venue?: string;
   startsAt?: string;
   basePrice?: number;
@@ -52,7 +55,7 @@ export async function createEvent(req: Request, res: Response) {
     description,
     imageUrl,
     type,
-    category,
+    categoryId,
     venue,
     startsAt,
     basePrice,
@@ -65,7 +68,6 @@ export async function createEvent(req: Request, res: Response) {
     !description ||
     !imageUrl ||
     !type ||
-    !category ||
     !venue ||
     !startsAt ||
     basePrice === undefined ||
@@ -74,7 +76,7 @@ export async function createEvent(req: Request, res: Response) {
   ) {
     res.status(400).json({
       message:
-        'title, description, imageUrl, type, category, venue, startsAt, basePrice, externalSource e externalId são obrigatórios.',
+        'title, description, imageUrl, type, venue, startsAt, basePrice, externalSource e externalId são obrigatórios.',
     });
     return;
   }
@@ -128,7 +130,7 @@ export async function createEvent(req: Request, res: Response) {
         description,
         imageUrl,
         type,
-        category,
+        categoryId: categoryId ?? null,
         venue,
         startsAt: startsAtDate,
         basePrice,
@@ -138,6 +140,7 @@ export async function createEvent(req: Request, res: Response) {
         externalId,
         organizerId: req.user!.id,
       },
+      include: { category: true },
     });
 
     if (type === EventType.CINEMA) {
@@ -154,7 +157,7 @@ type UpdateEventBody = {
   title?: string;
   description?: string;
   imageUrl?: string;
-  category?: string;
+  categoryId?: string | null;
   venue?: string;
   startsAt?: string;
   basePrice?: number;
@@ -185,7 +188,7 @@ export async function updateEvent(req: Request, res: Response) {
   if (body.title !== undefined) data.title = body.title;
   if (body.description !== undefined) data.description = body.description;
   if (body.imageUrl !== undefined) data.imageUrl = body.imageUrl;
-  if (body.category !== undefined) data.category = body.category;
+  if (body.categoryId !== undefined) data.categoryId = body.categoryId;
   if (body.venue !== undefined) data.venue = body.venue;
   if (body.basePrice !== undefined) {
     if (typeof body.basePrice !== 'number' || body.basePrice <= 0) {
@@ -207,7 +210,11 @@ export async function updateEvent(req: Request, res: Response) {
     data.startsAt = startsAtDate;
   }
 
-  const updated = await prisma.event.update({ where: { id }, data });
+  const updated = await prisma.event.update({
+    where: { id },
+    data,
+    include: { category: true },
+  });
   res.json(serializeEvent(updated));
 }
 
@@ -319,6 +326,7 @@ export async function listMyEvents(req: Request, res: Response) {
   const events = await prisma.event.findMany({
     where: { organizerId: req.user!.id },
     orderBy: { startsAt: 'asc' },
+    include: { category: true },
   });
 
   res.json({ items: events.map(serializeEvent) });
@@ -355,7 +363,9 @@ export async function listEvents(req: Request, res: Response) {
   }
 
   if (category) {
-    where.category = { contains: category, mode: 'insensitive' };
+    // Filtro público continua por nome (mesmo contrato de antes); a relação
+    // é o que muda por baixo.
+    where.category = { name: { contains: category, mode: 'insensitive' } };
   }
 
   if (venue) {
@@ -383,6 +393,7 @@ export async function listEvents(req: Request, res: Response) {
   const events = await prisma.event.findMany({
     where,
     orderBy: { startsAt: 'asc' },
+    include: { category: true },
   });
 
   res.json({ items: events.map(serializeEvent) });
@@ -395,15 +406,17 @@ export async function listEvents(req: Request, res: Response) {
 export async function listEventFilterOptions(_req: Request, res: Response) {
   const events = await prisma.event.findMany({
     where: { status: EventStatus.PUBLISHED },
-    select: { category: true, venue: true },
+    select: { venue: true, category: { select: { name: true } } },
   });
 
   const byLabel = (a: string, b: string) => a.localeCompare(b, 'pt-BR');
-  const unique = (values: string[]) =>
-    [...new Set(values.filter(Boolean))].sort(byLabel);
+  const unique = (values: (string | undefined)[]) =>
+    [
+      ...new Set(values.filter((value): value is string => Boolean(value))),
+    ].sort(byLabel);
 
   res.json({
-    categories: unique(events.map((event) => event.category)),
+    categories: unique(events.map((event) => event.category?.name)),
     venues: unique(events.map((event) => event.venue)),
   });
 }
@@ -427,7 +440,10 @@ export async function getEvent(req: Request, res: Response) {
     // returned by an expired reservation.
     await expireStaleReservations(tx, id);
 
-    const found = await tx.event.findUnique({ where: { id } });
+    const found = await tx.event.findUnique({
+      where: { id },
+      include: { category: true },
+    });
     if (!found) return null;
 
     if (found.type !== EventType.CINEMA) return { ...found, seats: [] };

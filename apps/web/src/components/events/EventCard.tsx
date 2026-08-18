@@ -2,9 +2,11 @@ import { Link } from 'react-router';
 import { EventPoster } from '@/components/events/EventPoster';
 import { Badge } from '@/components/ui/badge';
 import type { EventItem } from '@/lib/api-types';
-import { formatDateTime, formatPrice } from '@/lib/format';
-
-const TYPE_LABEL = { CINEMA: 'Cinema', SHOW: 'Show' } as const;
+import {
+  eventTypeCategoryLabel,
+  formatDateTime,
+  formatPrice,
+} from '@/lib/format';
 
 export function EventCard({ event }: { event: EventItem }) {
   const soldOut = event.availableTickets <= 0;
@@ -23,7 +25,7 @@ export function EventCard({ event }: { event: EventItem }) {
       <div className="flex flex-1 flex-col gap-2.5 p-4.5">
         <div className="flex items-center justify-between gap-2">
           <span className="font-mono text-[11px] font-bold tracking-wider text-label uppercase">
-            {TYPE_LABEL[event.type]} · {event.category}
+            {eventTypeCategoryLabel(event)}
           </span>
         </div>
 

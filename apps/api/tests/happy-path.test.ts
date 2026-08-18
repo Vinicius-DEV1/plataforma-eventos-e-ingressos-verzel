@@ -24,6 +24,15 @@ describe('fluxo feliz: publicar, reservar, pagar e validar', () => {
     const customer = await createUser(Role.CUSTOMER);
     const gatekeeper = await createUser(Role.GATEKEEPER);
 
+    // Categoria nova, criada pela mesma tela em que o organizador cadastra o
+    // evento: POST /categorias é idempotente por nome, o que permite chamar
+    // sempre do formulário sem saber se a categoria já existe.
+    const categoria = await request(app)
+      .post('/categorias')
+      .set(...authHeader(organizer.token))
+      .send({ name: 'Rock' });
+    expect([200, 201]).toContain(categoria.status);
+
     const criado = await request(app)
       .post('/eventos')
       .set(...authHeader(organizer.token))
@@ -32,7 +41,7 @@ describe('fluxo feliz: publicar, reservar, pagar e validar', () => {
         description: 'Publicado pelo teste de integração.',
         imageUrl: '/images/poster_rock.jpg',
         type: 'SHOW',
-        category: 'Rock',
+        categoryId: categoria.body.id as string,
         venue: 'Casa de show',
         startsAt: addDays(new Date(), 7).toISOString(),
         basePrice: 90,
@@ -41,6 +50,7 @@ describe('fluxo feliz: publicar, reservar, pagar e validar', () => {
         externalId: 'tm-fluxo-feliz',
       });
     expect(criado.status).toBe(201);
+    expect(criado.body.category).toMatchObject({ name: 'Rock' });
 
     const noCatalogo = await request(app).get('/eventos').expect(200);
     expect(

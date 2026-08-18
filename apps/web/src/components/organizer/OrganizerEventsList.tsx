@@ -4,7 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert } from '@/components/ui/alert';
 import type { EventItem } from '@/lib/api-types';
-import { formatDateTime, formatPrice } from '@/lib/format';
+import {
+  eventTypeCategoryLabel,
+  formatDateTime,
+  formatPrice,
+} from '@/lib/format';
 
 type OrganizerEventsListProps = {
   events: EventItem[];
@@ -55,9 +59,7 @@ export function OrganizerEventsList({
             className="border-border bg-card flex flex-wrap items-center justify-between gap-4 border p-4"
           >
             <div className="min-w-0 flex-1 space-y-1">
-              <p className="label-print">
-                {event.type === 'CINEMA' ? 'Cinema' : 'Show'} · {event.category}
-              </p>
+              <p className="label-print">{eventTypeCategoryLabel(event)}</p>
               <Link
                 to={`/eventos/${event.id}`}
                 className="display-print hover:text-primary block truncate text-lg transition-colors"

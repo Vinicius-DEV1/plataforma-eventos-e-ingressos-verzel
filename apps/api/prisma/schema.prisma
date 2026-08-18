@@ -69,12 +69,23 @@ model User {
   validatedTickets Ticket[]      @relation("TicketValidator")
 }
 
+model Category {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+
+  events Event[]
+}
+
 model Event {
   id               String         @id @default(cuid())
   title            String
   description      String
   type             EventType
-  category         String
+  /// Opcional: uma categoria apagada (Bloco de gestão de categorias) deixa
+  /// os eventos que a usavam sem categoria, em vez de bloquear a exclusão
+  /// ou quebrar a leitura desses eventos.
+  categoryId       String?
   venue            String
   startsAt         DateTime
   basePrice        Decimal        @db.Decimal(10, 2)
@@ -90,10 +101,12 @@ model Event {
   createdAt        DateTime       @default(now())
 
   organizer    User          @relation("EventOrganizer", fields: [organizerId], references: [id])
+  category     Category?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   seats        Seat[]
   reservations Reservation[]
 
   @@index([status, startsAt])
+  @@index([categoryId])
 }
 
 model Seat {

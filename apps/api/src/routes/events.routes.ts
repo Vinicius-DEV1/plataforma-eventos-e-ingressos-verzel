@@ -68,7 +68,7 @@ export const eventsRouter = Router();
  *         application/json:
  *           schema:
  *             type: object
- *             required: [title, description, imageUrl, type, category, venue, startsAt, basePrice, externalSource, externalId]
+ *             required: [title, description, imageUrl, type, venue, startsAt, basePrice, externalSource, externalId]
  *             properties:
  *               title:
  *                 type: string
@@ -79,8 +79,9 @@ export const eventsRouter = Router();
  *               type:
  *                 type: string
  *                 enum: [CINEMA, SHOW]
- *               category:
+ *               categoryId:
  *                 type: string
+ *                 description: Id de uma categoria de GET /categorias. Opcional.
  *               venue:
  *                 type: string
  *               startsAt:
@@ -217,8 +218,10 @@ eventsRouter.get('/eventos/filtros', listEventFilterOptions);
  *                 type: string
  *               imageUrl:
  *                 type: string
- *               category:
+ *               categoryId:
  *                 type: string
+ *                 nullable: true
+ *                 description: Id de uma categoria de GET /categorias, ou null para remover.
  *               venue:
  *                 type: string
  *               startsAt:

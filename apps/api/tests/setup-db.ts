@@ -3,7 +3,15 @@ import { prisma } from '../src/config/prisma';
 // Cada teste começa com o banco vazio. TRUNCATE ... CASCADE em vez de
 // deleteMany por tabela: é uma instrução só, e não depende de acertar a
 // ordem das chaves estrangeiras.
-const TABLES = ['Payment', 'Ticket', 'Reservation', 'Seat', 'Event', 'User'];
+const TABLES = [
+  'Payment',
+  'Ticket',
+  'Reservation',
+  'Seat',
+  'Event',
+  'Category',
+  'User',
+];
 
 beforeEach(async () => {
   await prisma.$executeRawUnsafe(

@@ -14,9 +14,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/auth-context';
 import { apiFetch, ApiError } from '@/lib/api-client';
 import type { EventDetail, ReservationItem, Seat } from '@/lib/api-types';
-import { formatFullDateTime, formatPrice } from '@/lib/format';
-
-const TYPE_LABEL = { CINEMA: 'Cinema', SHOW: 'Show' } as const;
+import {
+  eventTypeCategoryLabel,
+  formatFullDateTime,
+  formatPrice,
+} from '@/lib/format';
 
 export default function EventDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -125,10 +127,7 @@ export default function EventDetailPage() {
         className="aspect-[16/7] rounded-3xl overflow-hidden shadow-xl"
       />
 
-      <PageHeader
-        label={`${TYPE_LABEL[event.type]} · ${event.category}`}
-        title={event.title}
-      />
+      <PageHeader label={eventTypeCategoryLabel(event)} title={event.title} />
 
       {event.status === 'CANCELLED' && (
         <Alert>Este evento foi cancelado pelo organizador.</Alert>

@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
 import { AppShell } from '@/components/layout/AppShell';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { CatalogSearch } from '@/components/organizer/CatalogSearch';
 import { EventForm } from '@/components/organizer/EventForm';
+import { EventCreatedDialog } from '@/components/organizer/EventCreatedDialog';
 import { OrganizerEventsList } from '@/components/organizer/OrganizerEventsList';
 import { Alert } from '@/components/ui/alert';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
@@ -31,11 +33,13 @@ type PendingCreate = { catalogItem: CatalogItem; eventType: EventType };
 
 export default function OrganizerPage() {
   const { user, token } = useAuth();
+  const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>('buscar');
   const [pendingCreate, setPendingCreate] = useState<PendingCreate | null>(
     null,
   );
   const [editingEvent, setEditingEvent] = useState<EventItem | null>(null);
+  const [createdEvent, setCreatedEvent] = useState<EventItem | null>(null);
 
   const [events, setEvents] = useState<EventItem[]>([]);
   const [eventsLoading, setEventsLoading] = useState(true);
@@ -75,10 +79,18 @@ export default function OrganizerPage() {
     setEditingEvent(null);
   }
 
-  function handleSaved() {
+  function handleSaved(event: EventItem) {
+    // Só a criação ganha o diálogo de "publicado com sucesso" — editar um
+    // evento existente não muda o que fazer a seguir, então volta direto
+    // para a lista, como antes.
+    const wasCreate = pendingCreate !== null;
     closeForm();
-    setTab('meus-eventos');
     loadEvents();
+    if (wasCreate) {
+      setCreatedEvent(event);
+    } else {
+      setTab('meus-eventos');
+    }
   }
 
   async function handleCancelEvent() {
@@ -181,6 +193,18 @@ export default function OrganizerPage() {
         confirmLabel="Cancelar evento"
         pending={cancelingId !== null}
         onConfirm={() => void handleCancelEvent()}
+      />
+
+      <EventCreatedDialog
+        event={createdEvent}
+        onCreateAnother={() => {
+          setCreatedEvent(null);
+          setTab('buscar');
+        }}
+        onViewEvent={(event) => {
+          setCreatedEvent(null);
+          void navigate(`/eventos/${event.id}`);
+        }}
       />
     </AppShell>
   );
