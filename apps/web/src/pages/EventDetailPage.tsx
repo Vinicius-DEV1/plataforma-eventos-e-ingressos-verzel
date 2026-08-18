@@ -60,6 +60,7 @@ export default function EventDetailPage() {
       void navigate('/login');
       return;
     }
+    if (user.role !== 'CUSTOMER') return;
 
     setReserving(true);
     setReserveError(null);
@@ -112,6 +113,7 @@ export default function EventDetailPage() {
   }
 
   const isCinema = event.type === 'CINEMA';
+  const isNonCustomer = user !== null && user.role !== 'CUSTOMER';
   const canReserve =
     event.status === 'PUBLISHED' &&
     (isCinema ? selectedSeat !== null : quantity > 0);
@@ -157,7 +159,16 @@ export default function EventDetailPage() {
         )}
       </Card>
 
-      {event.status === 'PUBLISHED' && (
+      {event.status === 'PUBLISHED' && isNonCustomer && (
+        <Card className="p-6">
+          <Alert>
+            Ingressos são reservados por contas de cliente. Entre com uma conta
+            de cliente para comprar.
+          </Alert>
+        </Card>
+      )}
+
+      {event.status === 'PUBLISHED' && !isNonCustomer && (
         <Card className="space-y-5 p-6">
           <h2 className="display-print text-xl">
             {isCinema ? 'Escolha o assento' : 'Quantos ingressos?'}

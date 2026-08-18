@@ -20,7 +20,14 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/eventos" element={<EventsPage />} />
         <Route path="/eventos/:id" element={<EventDetailPage />} />
-        <Route path="/reservas/checkout" element={<CheckoutPage />} />
+        <Route
+          path="/reservas/checkout"
+          element={
+            <PrivateRoute roles={['CUSTOMER']}>
+              <CheckoutPage />
+            </PrivateRoute>
+          }
+        />
         <Route
           path="/ingressos"
           element={
