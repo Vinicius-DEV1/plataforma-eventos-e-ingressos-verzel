@@ -131,48 +131,51 @@ function signQrCode(ticketId: string, eventId: string): string {
 async function seedUsers() {
   const passwordHash = await bcrypt.hash(SEED_PASSWORD, 10);
 
-  const [organizer, customer1, customer2, gatekeeper] = await Promise.all([
-    prisma.user.upsert({
-      where: { email: 'organizador@teste.com' },
-      update: {},
-      create: {
-        name: 'Organizador Teste',
-        email: 'organizador@teste.com',
-        passwordHash,
-        role: Role.ORGANIZER,
-      },
-    }),
-    prisma.user.upsert({
-      where: { email: 'cliente1@teste.com' },
-      update: {},
-      create: {
-        name: 'Cliente Um',
-        email: 'cliente1@teste.com',
-        passwordHash,
-        role: Role.CUSTOMER,
-      },
-    }),
-    prisma.user.upsert({
-      where: { email: 'cliente2@teste.com' },
-      update: {},
-      create: {
-        name: 'Cliente Dois',
-        email: 'cliente2@teste.com',
-        passwordHash,
-        role: Role.CUSTOMER,
-      },
-    }),
-    prisma.user.upsert({
-      where: { email: 'portaria@teste.com' },
-      update: {},
-      create: {
-        name: 'Portaria Teste',
-        email: 'portaria@teste.com',
-        passwordHash,
-        role: Role.GATEKEEPER,
-      },
-    }),
-  ]);
+  // Sequencial, não Promise.all: cada upsert abre a própria transação, e o
+  // Postgres gratuito do Render limita conexões simultâneas o bastante para
+  // que quatro de uma vez sejam recusadas — o Prisma relata isso como
+  // "acesso negado" em vez de "limite de conexões" (P1010, adapter-pg). Como
+  // este script roda uma vez, o custo de serializar é irrelevante.
+  const organizer = await prisma.user.upsert({
+    where: { email: 'organizador@teste.com' },
+    update: {},
+    create: {
+      name: 'Organizador Teste',
+      email: 'organizador@teste.com',
+      passwordHash,
+      role: Role.ORGANIZER,
+    },
+  });
+  const customer1 = await prisma.user.upsert({
+    where: { email: 'cliente1@teste.com' },
+    update: {},
+    create: {
+      name: 'Cliente Um',
+      email: 'cliente1@teste.com',
+      passwordHash,
+      role: Role.CUSTOMER,
+    },
+  });
+  const customer2 = await prisma.user.upsert({
+    where: { email: 'cliente2@teste.com' },
+    update: {},
+    create: {
+      name: 'Cliente Dois',
+      email: 'cliente2@teste.com',
+      passwordHash,
+      role: Role.CUSTOMER,
+    },
+  });
+  const gatekeeper = await prisma.user.upsert({
+    where: { email: 'portaria@teste.com' },
+    update: {},
+    create: {
+      name: 'Portaria Teste',
+      email: 'portaria@teste.com',
+      passwordHash,
+      role: Role.GATEKEEPER,
+    },
+  });
 
   return { organizer, customer1, customer2, gatekeeper };
 }

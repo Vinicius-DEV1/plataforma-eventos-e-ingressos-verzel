@@ -16,7 +16,21 @@ function createClient(): PrismaClient {
     );
   }
 
-  return new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
+  return new PrismaClient({
+    adapter: new PrismaPg({
+      connectionString,
+      // O Render (e provedores gerenciados em geral) exige TLS na conexão
+      // externa, e o `pg` não negocia isso sozinho: sem este `ssl`, toda
+      // consulta falha com "SSL/TLS required", que o Prisma traduz de forma
+      // enganosa em "acesso negado" (código 28000) — não é permissão, é
+      // handshake. `rejectUnauthorized: false` porque o certificado é
+      // autoassinado pelo provedor, não uma CA pública.
+      ssl:
+        process.env.NODE_ENV === 'production'
+          ? { rejectUnauthorized: false }
+          : undefined,
+    }),
+  });
 }
 
 export const prisma = globalForPrisma.prisma ?? createClient();
