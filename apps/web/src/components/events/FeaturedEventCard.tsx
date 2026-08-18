@@ -3,12 +3,12 @@ import { Link } from 'react-router';
 import { EventPoster } from '@/components/events/EventPoster';
 import { Badge } from '@/components/ui/badge';
 import type { EventItem } from '@/lib/api-types';
-import { formatFullDateTime, formatPrice } from '@/lib/format';
+import { formatFullDateTime, formatPrice, isEventSoldOut } from '@/lib/format';
 
 const TYPE_LABEL = { CINEMA: 'Cinema', SHOW: 'Show' } as const;
 
 export function FeaturedEventCard({ event }: { event: EventItem }) {
-  const soldOut = event.availableTickets <= 0;
+  const soldOut = isEventSoldOut(event);
 
   return (
     <Link

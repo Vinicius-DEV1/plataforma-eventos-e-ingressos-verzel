@@ -40,6 +40,19 @@ export function eventTypeCategoryLabel(event: {
   return event.category ? `${type} · ${event.category.name}` : type;
 }
 
+// availableTickets só é significativo para SHOW; em CINEMA a contagem que
+// importa é a de assentos livres (availableSeats), calculada pela API a
+// partir das seats — ver comentário do schema (SPEC §1.2).
+export function isEventSoldOut(event: {
+  type: 'CINEMA' | 'SHOW';
+  availableTickets: number;
+  availableSeats?: number;
+}): boolean {
+  return event.type === 'CINEMA'
+    ? (event.availableSeats ?? 0) <= 0
+    : event.availableTickets <= 0;
+}
+
 // Numeração de série do ingresso, no formato de um bilhete impresso. O id é
 // longo demais para ler em voz alta na portaria; os últimos oito caracteres
 // já distinguem os ingressos de um mesmo evento.

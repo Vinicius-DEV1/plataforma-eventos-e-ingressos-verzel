@@ -31,6 +31,17 @@ function serializeEvent<T extends { basePrice: unknown }>(
   return { ...event, basePrice: Number(event.basePrice) };
 }
 
+// Mirrors availableTickets' role for SHOW: only meaningful for CINEMA, where
+// availability comes from counting free seats (SPEC §1.2) rather than a
+// stored counter. Flattens Prisma's `_count.seats` into a plain field so the
+// client doesn't need to know about the underlying relation shape.
+function serializeEventWithSeatCount<
+  T extends { basePrice: unknown; _count: { seats: number } },
+>(event: T) {
+  const { _count, ...rest } = event;
+  return { ...serializeEvent(rest), availableSeats: _count.seats };
+}
+
 type CreateEventBody = {
   title?: string;
   description?: string;
@@ -393,10 +404,15 @@ export async function listEvents(req: Request, res: Response) {
   const events = await prisma.event.findMany({
     where,
     orderBy: { startsAt: 'asc' },
-    include: { category: true },
+    include: {
+      category: true,
+      _count: {
+        select: { seats: { where: { status: SeatStatus.AVAILABLE } } },
+      },
+    },
   });
 
-  res.json({ items: events.map(serializeEvent) });
+  res.json({ items: events.map(serializeEventWithSeatCount) });
 }
 
 // Opções reais de filtro, lidas do catálogo publicado. Existe como endpoint

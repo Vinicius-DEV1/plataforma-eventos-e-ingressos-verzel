@@ -34,6 +34,9 @@ export type EventItem = {
   basePrice: number;
   totalCapacity: number;
   availableTickets: number;
+  /// Só vem na listagem (GET /eventos), calculado a partir das seats livres.
+  /// Só é significativo para eventos CINEMA — para SHOW use availableTickets.
+  availableSeats?: number;
   imageUrl: string;
   externalSource: ExternalSource;
   externalId: string;

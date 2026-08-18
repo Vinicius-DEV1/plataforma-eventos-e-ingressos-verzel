@@ -6,10 +6,11 @@ import {
   eventTypeCategoryLabel,
   formatDateTime,
   formatPrice,
+  isEventSoldOut,
 } from '@/lib/format';
 
 export function EventCard({ event }: { event: EventItem }) {
-  const soldOut = event.availableTickets <= 0;
+  const soldOut = isEventSoldOut(event);
 
   return (
     <Link
