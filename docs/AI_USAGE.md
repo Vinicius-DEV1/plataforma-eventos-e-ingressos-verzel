@@ -35,10 +35,9 @@ eu leio e executo. Isso vale inclusive para verificações de leitura.
 Essa regra começou restrita a git/GitHub, mas foi ampliada no Bloco 1: a
 ferramenta vinha rodando por conta própria tudo que classificava como "só
 verificação" — instalar dependências, rodar o próprio seed, abrir o Prisma
-Studio, checagens avulsas de lint e de tipo. Pedi para parar. Além do
-controle sobre o que entra no repositório, preciso saber rodar cada comando
-sozinho, porque posso ser questionado sobre o projeto numa entrevista técnica
-— e isso não se aprende vendo a IA rodar por mim.
+Studio, checagens avulsas de lint e de tipo. Pedi para parar. Além do controle
+sobre o que entra no repositório, preciso saber rodar cada comando sozinho, e
+isso não se aprende vendo a ferramenta rodar por mim.
 
 Essa restrição é sobre comandos de terminal, não sobre editar arquivo. As
 chaves gratuitas do TMDb e do Ticketmaster, por exemplo, eu colei no chat e
@@ -53,14 +52,13 @@ há decisão não-óbvia ou armadilha conhecida. A justificativa longa foi para
 
 **Toda edição precisa ser explicada no chat, não só feita.** No Bloco 2,
 percebi que a ferramenta escrevia bastante código (contexto de autenticação,
-rotas protegidas) e só listava os arquivos, sem explicar o que cada peça
-fazia ou por quê. Pedi para parar: preciso entender o projeto inteiro para
-poder defendê-lo numa entrevista técnica, não só ter certeza de que ele
-funciona. A primeira tentativa de explicação veio densa demais — um resumo
-arquivo por arquivo, tudo de uma vez, difícil de acompanhar. Funcionou melhor
-quando a explicação seguiu a ordem em que as coisas realmente acontecem
-(ex: "o usuário manda a senha, aqui ela vira hash, aqui é comparada, aqui
-nasce o token..."), com o trecho de código de cada passo, e parando em
+rotas protegidas) e só listava os arquivos, sem explicar o que cada peça fazia
+ou por quê. Pedi para parar: preciso entender o projeto inteiro, não só ter
+certeza de que ele funciona. A primeira tentativa de explicação veio densa
+demais — um resumo arquivo por arquivo, tudo de uma vez, difícil de acompanhar.
+Funcionou melhor quando a explicação seguiu a ordem em que as coisas realmente
+acontecem (ex: "o usuário manda a senha, aqui ela vira hash, aqui é comparada,
+aqui nasce o token..."), com o trecho de código de cada passo, e parando em
 pontos digestíveis para eu confirmar que entendi antes de continuar.
 
 ## Como Conduzi o Processo
@@ -282,8 +280,100 @@ foi percebido e corrigido por mim, não deixado passar.
   Pedi a criação de um Bloco 10 (Refinamento de UX), posicionado depois do
   Bloco 9 (Busca e Filtro) e antes dos Testes Automatizados — só depois que
   todas as telas já existirem, pra revisar o app inteiro de uma vez em vez
-  de retocar tela por tela no meio de cada bloco funcional. Ainda sem
-  tarefas atômicas definidas, escopo a detalhar quando o bloco começar.
+  de retocar tela por tela no meio de cada bloco funcional. O bloco virou
+  quatro issues e trinta e três tarefas atômicas: fundação visual e tema,
+  casca do app com retorno contextual e kit de componentes, aplicação nas dez
+  telas, e fechamento de movimento, foco e contraste.
+
+- **Identidade visual decidida com o app rodando.** Levei a direção de ingresso
+  impresso até o fim, com papel, grão e picote, e testei o app com pôster de
+  verdade no catálogo: a textura competia com o cartaz. Troquei por uma
+  superfície neutra de alto contraste com um único acento quente, que é a que
+  deixa a arte do evento carregar a cor da tela. Do que estava pronto, mantive
+  só o picote do ingresso. Detalhe em `DECISIONS.md`, "Identidade visual".
+
+- **Laranja da marca recusado no texto pequeno.** Pedi a medição de contraste
+  do acento: 3,33 sobre branco, abaixo do mínimo de 4,5 do WCAG AA para corpo
+  pequeno, justamente no tamanho em que ele mais aparecia. Em vez de mexer na
+  cor da marca, separei um token só para o texto miúdo.
+
+- **Cantos arredondados e sombra, decididos no celular.** A direção anterior
+  proibia os dois por coerência com a referência de papel. Testando na tela
+  pequena, card, campo, diálogo e barra superior liam todos no mesmo plano.
+  Hierarquia entre superfícies vale mais que fidelidade à metáfora.
+
+- **Limpeza depois da troca de direção.** Na revisão apareceram classes de CSS
+  esvaziadas mas ainda com o nome antigo, e animações apontando para tokens que
+  tinham deixado de existir — o diálogo de confirmação e a entrada das telas
+  haviam parado de animar sem ninguém notar. Mandei remover o que sobrou e
+  reapontar as animações para os tokens do sistema atual.
+
+- **Filtros de texto livre trocados por lista do que existe.** As telas de
+  catálogo pediam categoria e local digitados às cegas: o cliente só descobria
+  que "Rock" existe se acertasse a palavra. Pedi que os campos passassem a
+  abrir a lista real do catálogo, mantendo a digitação para filtrar essa
+  lista. A primeira implementação desabilitava o campo quando a lista não
+  carregava, o que derrubava justamente o texto livre que eu queria preservar;
+  apontei e voltou a ser um campo comum nesse caso.
+
+- **Bug de layout achado por mim, e não pela ferramenta.** Reclamei que a
+  listagem "se movia de forma estranha" ao mexer nos filtros. A causa não era
+  rede: a cada tecla a grade virava esqueleto e a contagem sumia do cabeçalho,
+  então a página encolhia e voltava duas vezes por letra. Definimos que
+  esqueleto é só para a primeira carga — refiltrar mantém o resultado anterior
+  no lugar, esmaecido. Na mesma passada apontei que o campo de data mostrava
+  "mm/dd/yyyy": o `<input type="date">` segue o idioma do navegador, não o do
+  app, e num Chrome em inglês o projeto inteiro em português exibia data
+  americana. Trocamos por um campo com máscara em pt-BR, mantendo o calendário
+  nativo num botão ao lado, que é o que importa no celular.
+
+- **Testes com a Asaas: questionei o mock e mandei separar em duas suítes.** A
+  suíte veio com o provedor substituído por uma dublê. Como o projeto já usa o
+  sandbox, pedi que os testes falassem com ele de verdade. Um dos argumentos
+  contra caiu na hora: no sandbox, aprovação e recusa são determinísticas pelo
+  número do cartão, e isso está documentado no próprio código. Ficou de pé o
+  que importava: com dublê, ninguém garante que a Asaas ainda aceita o que a
+  gente envia. Mandei separar em duas — `npm test` cobre o nosso código e não
+  toca a rede; `npm run test:integration` cobre o contrato com a Asaas e roda
+  sob demanda.
+
+- **A suíte de contrato achou uma regra da Asaas na primeira execução.** Rodei
+  e ela falhou: o provedor recusa estorno de cobrança recém-confirmada. O teste
+  passou a respeitar essa janela, e a mesma regra virou um problema a resolver
+  no produto, registrado à parte.
+
+- **Três problemas que a suíte revelou, tratados um a um.** Depois dos testes
+  passarem, pedi para não deixar as pendências para depois. O estorno recusado
+  pelo provedor virava 500 genérico: virou 503 com mensagem que diz o que
+  fazer, com um teste cobrindo esse caminho. A chamada de estorno dentro da
+  transação ficou como está, por decisão minha, com a limitação e o motivo
+  registrados em vez de escondidos. O aviso de depreciação do `pg` foi
+  rastreado até a linha que o dispara e é de biblioteca, não nosso.
+
+- **Deploy conduzido por mim, com a IA como par de diagnóstico.** Troquei o
+  plano de usar Vercel para o front por decisão minha na hora de fazer o
+  deploy — Render para tudo, uma conta a menos para gerenciar. Rodei o
+  Blueprint pelo painel, e cada erro que apareceu eu colei de volta para
+  investigação: falha do Husky no build do front, variáveis de ambiente que o
+  Render não criou sozinho, e o seed em produção recusando com "acesso
+  negado". Nesse último, quando a IA emendou uma primeira hipótese (conexões
+  simultâneas), pedi para não aceitar a correção sem provar a causa — o teste
+  isolado com `pg` puro confirmou que era ausência de TLS, não permissão.
+  Rodei eu mesmo as migrations e o seed em produção, e testei o fluxo completo
+  no ambiente publicado antes de considerar o bloco fechado. Detalhe técnico
+  dos três problemas em `DECISIONS.md`, "Deploy no Render".
+
+- **Falha de UX que eu encontrei usando o próprio painel do organizador.**
+  Categoria era um campo de texto livre: nada impedia digitar errado, nada
+  mostrava o que já existia, e não dava para apagar uma categoria criada por
+  engano. Pedi três coisas: campo com sugestão das categorias existentes e
+  criação rápida da que não existir, um modal de sucesso depois de publicar
+  (cadastrar outro ou ver o que acabou de criar), e a caixa de descrição
+  maior, porque a de 3 linhas escondia o que eu tinha digitado. A implementação
+  exigiu uma migration em produção — categoria virou tabela própria, não mais
+  texto solto — e pedi que fosse validada antes de eu aprovar, não só rodada:
+  a IA testou a migration três vezes por caminhos diferentes antes de eu
+  aceitar como pronta.
 
 ## Artefatos de Processo Versionados
 
@@ -320,15 +410,25 @@ lint com informação de tipo.
 
 ## Linha do Tempo
 
-Dias 1 e 2: análise do desafio, planejamento e escolha das tecnologias,
-estudo de como estruturar o processo. Foi quando nasceram PRD.md, SPEC.md,
-DECISIONS.md e TASKS.md, antes de qualquer linha de código.
+**Dia 1 (14/08).** Análise do desafio, planejamento e escolha das
+tecnologias. Nasceram PRD.md, SPEC.md, DECISIONS.md e TASKS.md, antes de
+qualquer linha de código.
 
-Dias 3 e 4 (em andamento): execução do plano, com a IA conduzindo o
-desenvolvimento enquanto reviso cada funcionalidade entregue, comparo com o
-planejado e corrijo pequenas lacunas que aparecem no caminho.
+**Dia 2 (15/08).** Modelagem de dados, autenticação, catálogo e gestão de
+eventos, os dois fluxos de reserva (assento e quantidade) com controle de
+concorrência.
 
-(Seção em atualização conforme os próximos dias do projeto acontecem.)
+**Dia 3 (16/08).** Pagamento simulado no sandbox da Asaas, emissão de
+ingresso com QR Code, portaria, cancelamento com estorno, busca e filtro.
+
+**Dia 4 (17/08).** Refinamento de UX — decidi a identidade visual comparando
+direções na tela, não no papel — e a suíte de testes automatizados, incluindo
+a suíte de contrato que fala com a Asaas de verdade.
+
+**Dia 5 (18/08).** Deploy em produção (Render: API, front e banco), README
+final e fechamento desta documentação.
+
+Cinco dias, do planejamento à entrega em produção.
 
 ## Nota Final
 

@@ -975,40 +975,40 @@ Pronto quando: a navegação inteira funciona por teclado.
 
 | Código | ID | Descrição da Tarefa Atômica | Pasta | Referência | Verificado? |
 |---|---|---|---|---|---|
-| 10.1 | 10.1.01 | Nova paleta em `index.css` nos dois temas (papel, tinta, azul de carimbo para ação, carmim para perigo, estados) | apps/web | DECISIONS.md — Identidade visual | [ ] |
-| 10.1 | 10.1.02 | Instalar `@fontsource-variable/bitter` e definir a escala tipográfica (título, texto, rótulo) | apps/web | DECISIONS.md — Identidade visual | [ ] |
-| 10.1 | 10.1.03 | Tokens de superfície (papel, filete, ausência de sombra) e de movimento (duração e curva) | apps/web | DECISIONS.md — Identidade visual | [ ] |
-| 10.1 | 10.1.04 | `ThemeProvider` com persistência em `localStorage`, padrão claro | apps/web | - | [ ] |
-| 10.1 | 10.1.05 | Aplicar o tema antes da primeira pintura, para não piscar na recarga | apps/web | - | [ ] |
-| 10.1 | 10.1.06 | Alternador de tema na barra superior | apps/web | - | [ ] |
-| 10.1 | 10.1.07 | Favicon próprio e remoção de `icons.svg` (sobra do scaffold) | apps/web | - | [ ] |
-| 10.1 | 10.1.08 | Testar: alternância, persistência e recarga sem flash | apps/web | - | [ ] |
-| 10.2 | 10.2.01 | `AppShell` com barra superior: marca, navegação por papel, alternador e sair | apps/web | - | [ ] |
-| 10.2 | 10.2.02 | Retorno contextual em todas as telas internas | apps/web | - | [ ] |
-| 10.2 | 10.2.03 | Componentes `Card`, `Field`, `Badge` de estado e `Skeleton` | apps/web | - | [ ] |
-| 10.2 | 10.2.04 | Diálogo de confirmação substituindo `window.confirm` no cancelamento de reserva e de evento | apps/web | SPEC.md §4.0, §4.1 | [ ] |
-| 10.2 | 10.2.05 | Aviso não bloqueante substituindo `alert` no painel do organizador | apps/web | - | [ ] |
-| 10.2 | 10.2.06 | Remover a classe de input duplicada em quatro arquivos | apps/web | - | [ ] |
-| 10.2 | 10.2.07 | Corrigir o rótulo "Bloco 2 — autenticação" na home e revisar os títulos de página | apps/web | - | [ ] |
-| 10.2 | 10.2.08 | Testar: voltar a partir de cada tela interna e as duas confirmações destrutivas | apps/web | - | [ ] |
-| 10.3 | 10.3.01 | Catálogo: filtros com rótulo visível, esqueleto de carregamento e estado vazio | apps/web | PRD.md §3.2 | [ ] |
-| 10.3 | 10.3.02 | Card de evento: hierarquia e alternativa quando `imageUrl` é nulo | apps/web | - | [ ] |
-| 10.3 | 10.3.03 | Detalhe do evento: hierarquia, aviso de evento cancelado e bloco de reserva | apps/web | SPEC.md §5.2 | [ ] |
-| 10.3 | 10.3.04 | `SeatMap`: alvo maior, indicação da tela/palco e legenda integrada | apps/web | PRD.md §3.6 | [ ] |
-| 10.3 | 10.3.05 | Checkout: contador de expiração em primeiro plano e desfechos do pagamento | apps/web | SPEC.md §5.5, PRD.md §3.10 | [ ] |
-| 10.3 | 10.3.06 | Lista de ingressos: linha com canhoto e estado por cor e palavra | apps/web | - | [ ] |
-| 10.3 | 10.3.07 | Detalhe do ingresso: forma de ingresso (picote, canhoto, serial) | apps/web | SPEC.md §5.6 | [ ] |
-| 10.3 | 10.3.08 | Ingresso compartilhado: mesma forma, sem as ações do dono | apps/web | SPEC.md §5.6 | [ ] |
-| 10.3 | 10.3.09 | Login no novo kit | apps/web | - | [ ] |
-| 10.3 | 10.3.10 | Painel do organizador: abas, listagem e formulário no novo kit | apps/web | SPEC.md §5.3 | [ ] |
-| 10.3 | 10.3.11 | Portaria: resultado em tokens do tema, alvo grande e leitura à distância | apps/web | SPEC.md §5.7 | [ ] |
-| 10.3 | 10.3.12 | Testar: percorrer as jornadas dos três papéis nos dois temas | apps/web | - | [ ] |
-| 10.4 | 10.4.01 | Transições de entrada e de troca de rota | apps/web | - | [ ] |
-| 10.4 | 10.4.02 | Respeitar `prefers-reduced-motion` | apps/web | - | [ ] |
-| 10.4 | 10.4.03 | Foco visível consistente em toda superfície interativa | apps/web | - | [ ] |
-| 10.4 | 10.4.04 | Verificar contraste AA nos dois temas | apps/web | - | [ ] |
-| 10.4 | 10.4.05 | Varredura final: nenhuma cor literal fora dos tokens e nenhuma classe utilitária duplicada | apps/web | - | [ ] |
-| 10.4 | 10.4.06 | Testar: navegação completa por teclado e com movimento reduzido | apps/web | - | [ ] |
+| 10.1 | 10.1.01 | Nova paleta em `index.css` nos dois temas (papel, tinta, azul de carimbo para ação, carmim para perigo, estados) | apps/web | DECISIONS.md — Identidade visual |[x] |
+| 10.1 | 10.1.02 | Instalar `@fontsource-variable/bitter` e definir a escala tipográfica (título, texto, rótulo) | apps/web | DECISIONS.md — Identidade visual |[x] |
+| 10.1 | 10.1.03 | Tokens de superfície (papel, filete, ausência de sombra) e de movimento (duração e curva) | apps/web | DECISIONS.md — Identidade visual |[x] |
+| 10.1 | 10.1.04 | `ThemeProvider` com persistência em `localStorage`, padrão claro | apps/web | - |[x] |
+| 10.1 | 10.1.05 | Aplicar o tema antes da primeira pintura, para não piscar na recarga | apps/web | - |[x] |
+| 10.1 | 10.1.06 | Alternador de tema na barra superior | apps/web | - |[x] |
+| 10.1 | 10.1.07 | Favicon próprio e remoção de `icons.svg` (sobra do scaffold) | apps/web | - |[x] |
+| 10.1 | 10.1.08 | Testar: alternância, persistência e recarga sem flash | apps/web | - |[x] |
+| 10.2 | 10.2.01 | `AppShell` com barra superior: marca, navegação por papel, alternador e sair | apps/web | - |[x] |
+| 10.2 | 10.2.02 | Retorno contextual em todas as telas internas | apps/web | - |[x] |
+| 10.2 | 10.2.03 | Componentes `Card`, `Field`, `Badge` de estado e `Skeleton` | apps/web | - |[x] |
+| 10.2 | 10.2.04 | Diálogo de confirmação substituindo `window.confirm` no cancelamento de reserva e de evento | apps/web | SPEC.md §4.0, §4.1 |[x] |
+| 10.2 | 10.2.05 | Aviso não bloqueante substituindo `alert` no painel do organizador | apps/web | - |[x] |
+| 10.2 | 10.2.06 | Remover a classe de input duplicada em quatro arquivos | apps/web | - |[x] |
+| 10.2 | 10.2.07 | Corrigir o rótulo "Bloco 2 — autenticação" na home e revisar os títulos de página | apps/web | - |[x] |
+| 10.2 | 10.2.08 | Testar: voltar a partir de cada tela interna e as duas confirmações destrutivas | apps/web | - |[x] |
+| 10.3 | 10.3.01 | Catálogo: filtros com rótulo visível, esqueleto de carregamento e estado vazio | apps/web | PRD.md §3.2 |[x] |
+| 10.3 | 10.3.02 | Card de evento: hierarquia e alternativa quando `imageUrl` é nulo | apps/web | - |[x] |
+| 10.3 | 10.3.03 | Detalhe do evento: hierarquia, aviso de evento cancelado e bloco de reserva | apps/web | SPEC.md §5.2 |[x] |
+| 10.3 | 10.3.04 | `SeatMap`: alvo maior, indicação da tela/palco e legenda integrada | apps/web | PRD.md §3.6 |[x] |
+| 10.3 | 10.3.05 | Checkout: contador de expiração em primeiro plano e desfechos do pagamento | apps/web | SPEC.md §5.5, PRD.md §3.10 |[x] |
+| 10.3 | 10.3.06 | Lista de ingressos: linha com canhoto e estado por cor e palavra | apps/web | - |[x] |
+| 10.3 | 10.3.07 | Detalhe do ingresso: forma de ingresso (picote, canhoto, serial) | apps/web | SPEC.md §5.6 |[x] |
+| 10.3 | 10.3.08 | Ingresso compartilhado: mesma forma, sem as ações do dono | apps/web | SPEC.md §5.6 |[x] |
+| 10.3 | 10.3.09 | Login no novo kit | apps/web | - |[x] |
+| 10.3 | 10.3.10 | Painel do organizador: abas, listagem e formulário no novo kit | apps/web | SPEC.md §5.3 |[x] |
+| 10.3 | 10.3.11 | Portaria: resultado em tokens do tema, alvo grande e leitura à distância | apps/web | SPEC.md §5.7 |[x] |
+| 10.3 | 10.3.12 | Testar: percorrer as jornadas dos três papéis nos dois temas | apps/web | - |[x] |
+| 10.4 | 10.4.01 | Transições de entrada e de troca de rota | apps/web | - |[x] |
+| 10.4 | 10.4.02 | Respeitar `prefers-reduced-motion` | apps/web | - |[x] |
+| 10.4 | 10.4.03 | Foco visível consistente em toda superfície interativa | apps/web | - |[x] |
+| 10.4 | 10.4.04 | Verificar contraste AA nos dois temas | apps/web | - |[x] |
+| 10.4 | 10.4.05 | Varredura final: nenhuma cor literal fora dos tokens e nenhuma classe utilitária duplicada | apps/web | - |[x] |
+| 10.4 | 10.4.06 | Testar: navegação completa por teclado e com movimento reduzido | apps/web | - |[x] |
 
 **Checkpoint de revisão:** dev percorre as três jornadas nos dois temas, em
 telas de celular e de desktop, e confirma que consegue voltar de qualquer
@@ -1060,21 +1060,21 @@ Pronto quando: a suíte inteira passa localmente e no CI.
 
 | Código | ID | Descrição da Tarefa Atômica | Pasta | Referência | Verificado? |
 |---|---|---|---|---|---|
-| 11.1 | 11.1.01 | Configurar Jest + `ts-jest` em `apps/api` | apps/api | DECISIONS.md — Testes | [ ] |
-| 11.1 | 11.1.02 | Configurar banco Postgres de teste (via Docker Compose) para testes transacionais | apps/api | SPEC.md §6 | [ ] |
-| 11.1 | 11.1.03 | Adicionar execução da suíte de testes ao workflow de CI | raiz | - | [ ] |
-| 11.2 | 11.2.01 | Teste: concorrência de reserva de assento | apps/api | SPEC.md §6 | [ ] |
-| 11.2 | 11.2.02 | Teste: concorrência de reserva por quantidade (overselling) | apps/api | SPEC.md §6 | [ ] |
-| 11.2 | 11.2.03 | Teste: validação de QR com assinatura válida | apps/api | SPEC.md §6 | [ ] |
-| 11.2 | 11.2.04 | Teste: validação de QR com assinatura forjada | apps/api | SPEC.md §6 | [ ] |
-| 11.2 | 11.2.05 | Teste: cancelamento dentro do prazo | apps/api | SPEC.md §6 | [ ] |
-| 11.2 | 11.2.06 | Teste: cancelamento fora do prazo | apps/api | SPEC.md §6 | [ ] |
-| 11.2 | 11.2.07 | Teste: expiração de reserva não paga após 15 min com devolução ao estoque | apps/api | SPEC.md §6, PRD.md §3.10 | [ ] |
-| 11.2 | 11.2.08 | Teste: reserva de quantidade N gera N ingressos | apps/api | SPEC.md §6, PRD.md §3.7 | [ ] |
-| 11.2 | 11.2.09 | Teste: cancelamento de evento em cascata (reservas + ingressos) | apps/api | SPEC.md §4.1, §6 | [ ] |
-| 11.2 | 11.2.10 | Teste: pagamento recusado encerra a reserva e devolve o estoque | apps/api | SPEC.md §4.3 | [ ] |
-| 11.2 | 11.2.11 | Teste de integração: criação de evento + reserva (fluxo feliz) | apps/api | SPEC.md §6 | [ ] |
-| 11.2 | 11.2.12 | Testar: rodar suíte completa e confirmar 100% passando | apps/api | - | [ ] |
+| 11.1 | 11.1.01 | Configurar Jest + `ts-jest` em `apps/api` | apps/api | DECISIONS.md — Testes |[x] |
+| 11.1 | 11.1.02 | Configurar banco Postgres de teste (via Docker Compose) para testes transacionais | apps/api | SPEC.md §6 |[x] |
+| 11.1 | 11.1.03 | Adicionar execução da suíte de testes ao workflow de CI | raiz | - |[x] |
+| 11.2 | 11.2.01 | Teste: concorrência de reserva de assento | apps/api | SPEC.md §6 |[x] |
+| 11.2 | 11.2.02 | Teste: concorrência de reserva por quantidade (overselling) | apps/api | SPEC.md §6 |[x] |
+| 11.2 | 11.2.03 | Teste: validação de QR com assinatura válida | apps/api | SPEC.md §6 |[x] |
+| 11.2 | 11.2.04 | Teste: validação de QR com assinatura forjada | apps/api | SPEC.md §6 |[x] |
+| 11.2 | 11.2.05 | Teste: cancelamento dentro do prazo | apps/api | SPEC.md §6 |[x] |
+| 11.2 | 11.2.06 | Teste: cancelamento fora do prazo | apps/api | SPEC.md §6 |[x] |
+| 11.2 | 11.2.07 | Teste: expiração de reserva não paga após 15 min com devolução ao estoque | apps/api | SPEC.md §6, PRD.md §3.10 |[x] |
+| 11.2 | 11.2.08 | Teste: reserva de quantidade N gera N ingressos | apps/api | SPEC.md §6, PRD.md §3.7 |[x] |
+| 11.2 | 11.2.09 | Teste: cancelamento de evento em cascata (reservas + ingressos) | apps/api | SPEC.md §4.1, §6 |[x] |
+| 11.2 | 11.2.10 | Teste: pagamento recusado encerra a reserva e devolve o estoque | apps/api | SPEC.md §4.3 |[x] |
+| 11.2 | 11.2.11 | Teste de integração: criação de evento + reserva (fluxo feliz) | apps/api | SPEC.md §6 |[x] |
+| 11.2 | 11.2.12 | Testar: rodar suíte completa e confirmar 100% passando | apps/api | - |[x] |
 
 **Checkpoint de revisão:** dev roda a suíte de testes localmente e confirma
 que todos passam.
@@ -1145,19 +1145,19 @@ apenas o README.
 
 | Código | ID | Descrição da Tarefa Atômica | Pasta | Referência | Verificado? |
 |---|---|---|---|---|---|
-| 12.1 | 12.1.01 | Finalizar `docker-compose.yml` (api + postgres, web opcional) | raiz | DECISIONS.md — Containerização | [ ] |
-| 12.1 | 12.1.02 | Deploy do back-end no Render (build command com `tsc`, start apontando para `dist/`) | apps/api | DECISIONS.md — Deploy Back, Linguagem | [ ] |
-| 12.1 | 12.1.03 | Configurar Postgres gerenciado no Render | infra | DECISIONS.md — Deploy Back | [ ] |
-| 12.1 | 12.1.04 | Deploy do front-end na Vercel | apps/web | DECISIONS.md — Deploy Front | [ ] |
-| 12.1 | 12.1.05 | Confirmar dados de teste semeados também em produção | infra | PRD.md §5 | [ ] |
-| 12.2 | 12.2.01 | README: pré-requisitos e setup local via Docker | raiz | - | [ ] |
-| 12.2 | 12.2.02 | README: variáveis de ambiente | raiz | - | [ ] |
-| 12.2 | 12.2.03 | README: como rodar o seed | raiz | - | [ ] |
-| 12.2 | 12.2.04 | README: links de deploy (produção) + link do Swagger (`/api-docs`) | raiz | - | [ ] |
-| 12.2 | 12.2.05 | README: aviso sobre cold start (~1 min) e sobre expiração do Postgres free do Render (30 dias + 14 de carência) | raiz | DECISIONS.md — Deploy Back | [ ] |
-| 12.2 | 12.2.06 | Revisar `docs/PRD.md`, `DECISIONS.md`, `SPEC.md` (ajustar se algo mudou na implementação) | docs | - | [ ] |
-| 12.2 | 12.2.07 | Preencher seções pendentes de `docs/AI_USAGE.md` | docs | - | [ ] |
-| 12.2 | 12.2.08 | Testar: percorrer fluxo completo em produção, do zero, como avaliador | raiz | - | [ ] |
+| 12.1 | 12.1.01 | Finalizar `docker-compose.yml` (api + postgres, web opcional) | raiz | DECISIONS.md — Containerização |[x] |
+| 12.1 | 12.1.02 | Deploy do back-end no Render (build command com `tsc`, start apontando para `dist/`) | apps/api | DECISIONS.md — Deploy Back, Linguagem |[x] |
+| 12.1 | 12.1.03 | Configurar Postgres gerenciado no Render | infra | DECISIONS.md — Deploy Back |[x] |
+| 12.1 | 12.1.04 | Deploy do front-end na Vercel | apps/web | DECISIONS.md — Deploy Front |[x] |
+| 12.1 | 12.1.05 | Confirmar dados de teste semeados também em produção | infra | PRD.md §5 |[x] |
+| 12.2 | 12.2.01 | README: pré-requisitos e setup local via Docker | raiz | - |[x] |
+| 12.2 | 12.2.02 | README: variáveis de ambiente | raiz | - |[x] |
+| 12.2 | 12.2.03 | README: como rodar o seed | raiz | - |[x] |
+| 12.2 | 12.2.04 | README: links de deploy (produção) + link do Swagger (`/api-docs`) | raiz | - |[x] |
+| 12.2 | 12.2.05 | README: aviso sobre cold start (~1 min) e sobre expiração do Postgres free do Render (30 dias + 14 de carência) | raiz | DECISIONS.md — Deploy Back |[x] |
+| 12.2 | 12.2.06 | Revisar `docs/PRD.md`, `DECISIONS.md`, `SPEC.md` (ajustar se algo mudou na implementação) | docs | - |[x] |
+| 12.2 | 12.2.07 | Preencher seções pendentes de `docs/AI_USAGE.md` | docs | - |[x] |
+| 12.2 | 12.2.08 | Testar: percorrer fluxo completo em produção, do zero, como avaliador | raiz | - |[x] |
 
 **Checkpoint de revisão final:** dev percorre o fluxo completo em produção,
 do zero, como se fosse o avaliador — sem nenhuma configuração manual além
@@ -1193,6 +1193,6 @@ Preenchido pelo desenvolvedor a cada checkpoint de bloco aprovado.
 | 7 — Portaria | 16/08/2026 | Vinicius | Back-end: `verifyTicketToken` reaproveitado do Bloco 6, `POST /portaria/validar` seguindo a ordem exata do `SPEC.md §3.2` (assinatura → evento → status), marcação como `USED` por update condicional dentro de transação (mesmo idioma de concorrência dos Blocos 4/5). Front-end: seleção do evento no início da sessão, dois botões explícitos (escanear câmera via `html5-qrcode` ou digitar manualmente) em vez de ligar a câmera sozinha — decisão revisada depois de um primeiro rascunho ser rejeitado, ver `AI_USAGE.md` e `DECISIONS.md`. Papel GATEKEEPER redireciona direto para `/portaria`, sem passar pela home do cliente. Testados os 4 retornos (válido, inválido, já utilizado, evento errado) pela interface. Fecha o loop emissão → validação. |
 | 8 — Cancelamento e Devolução | 16/08/2026 | Vinicius | `POST /reservas/:id/cancelar`: janela de 24h (`isWithinCancellationWindow`, já existia do Bloco 1), update condicional pra evitar duplo-clique, devolução de assento/estoque, cancelamento de todos os ingressos da reserva. Lacuna identificada por mim durante a revisão: a devolução não tocava no `Payment` nem estornava na Asaas — corrigido com `refundPayment` real na sandbox (`POST /payments/:id/refund`) e novo status `REFUNDED`, aplicado tanto aqui quanto no cancelamento em cascata do organizador (fecha dívida técnica aberta desde o Bloco 3). Front-end: botão "Cancelar reserva" no detalhe do ingresso, mensagem de bloqueio vinda direto do back (sem duplicar a regra de 24h no cliente). Testado: cancelamento dentro do prazo com estorno, fora do prazo bloqueado, e ingresso cancelado rejeitado na portaria. |
 | 9 — Busca e Filtro | 16/08/2026 | Vinicius | `GET /eventos` com os 5 query params do SPEC.md §5.2 (`date`, `category`, `venue`, `minPrice`, `maxPrice`), todos opcionais e combináveis — data normalizada pro dia inteiro em UTC, categoria/local por `contains` case-insensitive, preço por faixa. Front-end: barra de filtros na listagem, com debounce de 400ms. Testado isolado e combinado. |
-| 10 — Refinamento de UX | | | |
-| 11 — Testes Automatizados | | | |
-| 12 — Deploy e Documentação Final | | | |
+| 10 — Refinamento de UX | 17/08/2026 | Vinicius | Refinei a identidade visual pedindo três direções à IA e testando cada uma na tela antes de decidir — a de ingresso impresso (papel, grão, picote) chegou a ser implementada por inteiro e eu mesmo derrubei, porque a textura competia com o pôster do evento. Fechei numa superfície neutra de alto contraste com um único acento quente, dois registros tipográficos, e mantive só o picote do ingresso da direção anterior. Pedi barra superior, retorno contextual em toda tela interna e fim dos diálogos nativos do navegador. Alternador de tema com persistência, testado com F5 para garantir que não pisca. Corrigi por iniciativa própria, depois de usar o app: filtros do catálogo trocados por lista real de categorias/locais, campo de data em pt-BR (o nativo seguia o idioma do navegador) e o pulo de altura da listagem ao digitar num filtro. |
+| 11 — Testes Automatizados | 17/08/2026 | Vinicius | Pedi 13 testes contra PostgreSQL real, não mock, porque o que precisa ser provado é disputa por linha dentro de transação. Questionei a IA quando ela propôs simular o provedor de pagamento inteiro: já uso o sandbox da Asaas, então pedi uma segunda suíte que fala com ele de verdade. Essa suíte, na minha primeira execução, encontrou uma regra real do provedor que eu não conhecia (recusa de estorno em cobrança recém-confirmada) — mandei tratar isso no produto em vez de deixar pendente, com um teste cobrindo o caminho. Rodei as duas suítes eu mesmo em cada correção até ficarem verdes. |
+| 12 — Deploy e Documentação Final | 18/08/2026 | Vinicius | Decidi hospedar API e front juntos no Render (troquei o plano original de usar a Vercel para o front, para simplificar a conta que eu preciso gerenciar), com a configuração versionada em `render.yaml`. Conduzi o deploy pelo painel do Render, colando cada log de erro que apareceu para diagnóstico: falha do Husky no build do front (corrigido tornando o script `prepare` tolerante à ausência do binário), variáveis de ambiente que não foram criadas automaticamente pelo blueprint, e um erro de "acesso negado" ao rodar o seed em produção que na real era o `pg` não negociando TLS com o Postgres gerenciado — validei a causa com um teste de conexão direto antes de aceitar a correção. Rodei o seed e as migrations em produção da minha máquina, e testei o fluxo completo no ambiente publicado (login, reserva, pagamento, ingresso, portaria, catálogo externo) antes de considerar o bloco fechado. |

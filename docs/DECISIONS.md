@@ -24,7 +24,7 @@
 | Front-end | Vite + React (sem framework tipo Next.js) | O back-end já é servido separadamente por Express — um framework full-stack como Next.js adicionaria complexidade (SSR, rotas de API, Server Components) sem nenhum benefício real, já que a aplicação é 100% logada e não depende de SEO |
 | Roteamento (front) | React Router | Padrão maduro do ecossistema React sem framework full-stack; cobre rotas protegidas por papel e rotas dinâmicas sem fricção |
 | Estilização | Tailwind CSS + shadcn/ui, customizado | Tailwind acelera estilização mantendo consistência; shadcn/ui (construído sobre Radix UI) resolve componentes complexos (modal, dropdown, select) com acessibilidade pronta — porém com paleta, tipografia e componentes customizados para fugir da aparência padrão reconhecível ("AI slop"). Tailwind 4: a configuração é feita em CSS via `@theme`, sem `tailwind.config.js` |
-| Identidade visual | Tema "ingresso impresso": papel off-white, tinta quase preta, um acento vermelho, cantos retos, fonte Archivo | Escolhida entre três direções avaliadas. Detalhada mais adiante |
+| Identidade visual | Editorial de alto contraste: quase branco e quase preto, um acento laranja tangerina, geometria de 8px, Outfit no texto e mono nos dados | Terceira direção testada; as duas anteriores não se sustentaram na tela. Detalhada mais adiante |
 | Back-end | Node.js + Express | Framework leve e direto, adequado ao escopo do desafio sem overhead de convenções de frameworks maiores (ex: NestJS) |
 | ORM | Prisma 7 | Migrations automáticas, schema versionável e transações com update condicional — o que impede vender o mesmo lugar duas vezes. Detalhes da versão 7 mais adiante |
 | Banco de dados | PostgreSQL | Relacional, com suporte forte a transactions e constraints — necessário para garantir integridade em reservas concorrentes |
@@ -32,8 +32,7 @@
 | Expiração do token de sessão | 7 dias | Nenhum documento definia um prazo; escolhido como padrão razoável para um app de demonstração, sem fluxo de refresh token — expira, o usuário loga de novo |
 | Pagamento simulado | Asaas (sandbox) | Ambiente de testes de provedor real, já com familiaridade prévia |
 | Containerização | Docker + Docker Compose | Facilita reprodutibilidade do ambiente (API + Postgres) para o avaliador rodar localmente |
-| Deploy — Front | Vercel | Integração simples com Vite, free tier suficiente |
-| Deploy — Back + Banco | Render | Web Service + PostgreSQL gerenciado na mesma plataforma, reduzindo pontos de configuração externa |
+| Deploy — Front, Back e Banco | Render, tudo na mesma plataforma | Planejei Vercel para o front, e troquei por decisão minha na hora do deploy: uma conta a menos para gerenciar. Web Service (Docker), Static Site e PostgreSQL gerenciado, com o ambiente inteiro descrito em `render.yaml` — recriar o deploy do zero não depende de lembrar o que foi clicado no painel. Detalhe mais adiante |
 | Testes | Jest | Ver "Decisões Descartadas" — Vitest foi cogitado e perdeu para o Jest |
 | QR Code (geração) | Lib `qrcode` | Gera a imagem a partir do payload assinado |
 | QR Code (anti-forjamento) | JWT assinado no payload | Reaproveita a mesma abordagem já usada na autenticação — o conteúdo do QR (ex: `ticketId`, `eventId`) é assinado com a chave secreta do servidor; sem essa chave, não é possível forjar um QR que passe na validação |
@@ -53,7 +52,7 @@
 Três escolhas da tabela acima têm consequências espalhadas pelo código, e
 resumi-las numa linha esconderia o que importa.
 
-### Prisma 7: três surpresas que aparecem no código
+### Prisma 7: quatro surpresas que aparecem no código
 
 A versão 7 mudou coisas que quem conhece as anteriores não espera:
 
@@ -72,25 +71,87 @@ no `.gitignore`, está excluída do ESLint e do Prettier, e o `prisma generate`
 roda antes do `tsc` no build. Quem clonar o projeto precisa gerar o client
 antes de compilar — o script de build já cuida disso.
 
-### Identidade visual: por que ingresso impresso
+**O runtime usa `import()` dinâmico**, o que o Jest bloqueia por padrão. Sem
+`NODE_OPTIONS=--experimental-vm-modules`, toda consulta da suíte falha com
+"a dynamic import callback was invoked without --experimental-vm-modules" —
+daí a flag nos scripts `test` e `test:watch`. O mesmo estilo `nodenext` do
+client obriga o Jest a mapear os imports com extensão `.js` de volta para os
+arquivos `.ts` gerados.
 
-A escolha foi entre três direções: cinema noturno (fundo escuro com acento
-âmbar de marquise), ingresso impresso, e editorial de alto contraste. A
-segunda venceu por ser coerente com o domínio — bilheteria — e por dar ao
-produto uma cara própria, em vez do tema neutro que acompanha o shadcn.
+### Identidade visual: editorial de alto contraste
 
-O preset do gerador serviu só como base técnica. A paleta foi inteiramente
-substituída, e a fonte Geist que ele instala — muito associada ao visual
-padrão dessas ferramentas — deu lugar à Archivo, empacotada junto do projeto
-em vez de vir de CDN.
+Testei duas outras direções antes desta, uma delas de ingresso impresso, com
+papel, grão e picote. Nenhuma se sustentou na tela: com pôster de verdade no
+catálogo, a textura disputava atenção com a arte em vez de emoldurá-la.
 
-Duas decisões pequenas que sustentam a referência: cantos de 2px, porque
-arredondamento generoso descaracterizaria um bilhete de papel; e numerais de
-largura fixa em preços, assentos e horários, para os dígitos não dançarem a
-cada atualização — o contador de 15 minutos da reserva torna isso visível.
+A direção que ficou faz o contrário. Superfície neutra de altíssimo contraste
+(quase branco no tema claro, obsidiana no escuro) e uma única cor quente — a
+cor da tela vem do cartaz, e o laranja tangerina só aparece onde há ação ou
+estado.
 
-Existe um modo escuro definido com a mesma lógica invertida, ainda sem
-alternador na interface.
+**Tipografia em dois registros.** Outfit no texto, e monoespaçada em tudo que é
+dado gerado por máquina: rótulo, data, preço, assento e número de série do
+ingresso. A separação é semântica, não decorativa — o que está em mono é dado,
+não prosa. Numerais de largura fixa em todos eles, para os dígitos não dançarem
+a cada atualização; o contador de quinze minutos do checkout torna isso
+visível.
+
+**Ação e perigo em matizes distintos.** Laranja para reservar, pagar e validar;
+carmim para cancelar e recusar. Nunca a mesma cor para as duas coisas.
+
+**Um token separado para o texto pequeno.** O laranja da marca dá 3,33 de
+contraste sobre branco: aprovado para superfície e título, reprovado para
+rótulo de 11px, que é onde ele mais aparece. Uma versão queimada dele
+(`--label`) cobre o texto miúdo do tema claro, com 5,39. No escuro o original
+já passa, e o token volta a ser ele.
+
+**Geometria.** Cantos de 8px e sombras discretas: a interface é operada no
+celular e precisa de hierarquia visível entre card, campo, diálogo e barra
+superior.
+
+Da direção anterior ficou o picote do ingresso, único lugar em que a referência
+física descreve o objeto que está na tela. O modo escuro tem alternador, com a
+escolha guardada no navegador e aplicada antes da primeira pintura, para não
+piscar claro a cada recarga. O padrão é o tema claro.
+
+### Deploy no Render: o TLS que a migration escondia
+
+Conduzi o deploy eu mesmo pelo painel do Render, colando cada erro para
+diagnóstico antes de aceitar qualquer correção. Três problemas apareceram, e
+nenhum estava óbvio no primeiro erro.
+
+**O build do front falhava com "husky: not found".** O Render instala
+dependências antes de rodar o comando de build configurado, e essa instalação
+dispara o `prepare` da raiz do monorepo — que chama o Husky, dependência de
+desenvolvimento ausente nesse tipo de instalação. `HUSKY=0` como variável de
+ambiente não resolveu, porque o binário nem existe em disco para o código dele
+rodar e checar a variável. A correção ficou no próprio script:
+`"prepare": "husky || true"`, tolerante à ausência do binário em qualquer
+ambiente, não só no Render.
+
+**O seed em produção falhava com "acesso negado".** O erro (`P1010`,
+`DatabaseAccessDenied`) parecia permissão, mas as migrations tinham acabado de
+rodar contra o mesmo banco. Descartei minha primeira hipótese (conexões
+simultâneas — o seed criava 4 usuários com `Promise.all`) porque serializar as
+criações não resolveu, e o erro passou a acontecer já na primeira delas.
+Validei a causa real com um teste isolado, conectando direto com `pg` sem
+passar pelo Prisma: sem `ssl`, a conexão falha com "SSL/TLS required"; com
+`{ rejectUnauthorized: false }`, funciona. O Render exige TLS na conexão
+externa, o `pg` não negocia isso sozinho, e o Prisma traduz essa recusa de
+handshake em "acesso negado" — mensagem enganosa para a causa real. As
+migrations tinham funcionado porque o motor de migration do Prisma negocia TLS
+por conta própria; o adapter usado em runtime (`@prisma/adapter-pg`), não. Sem
+essa correção, a API publicada teria falhado em toda consulta ao banco, não só
+no seed — encontrado a tempo por estar rodando o seed manualmente antes de
+declarar o deploy pronto.
+
+**Configuração das variáveis `sync: false`.** Definidas no `render.yaml` para
+não versionar segredo nenhum, mas descobri na prática que o Render só cria
+essas variáveis automaticamente durante a tela inicial de "Deploy Blueprint" —
+um serviço adicionado depois, via `git push`, não ganha a variável sozinho.
+Precisei adicionar `VITE_API_URL`, `ASAAS_API_KEY`, `TMDB_API_KEY` e
+`TICKETMASTER_API_KEY` manualmente pelo painel depois que os dois serviços já
+estavam no ar.
 
 ## Convenções de Código
 
@@ -124,6 +185,15 @@ Nomear bem é preferível a explicar depois.
 | Compartilhamento de ingresso | Link exibe o ingresso completo, sem transferir titularidade | Atende ao requisito de compartilhamento sem entrar em revenda/transferência entre contas, explicitamente fora do escopo do desafio. Ver `PRD.md` §3.7 |
 | Pagamento recusado | Encerra a reserva, sem retentativa | Manter a reserva viva após uma recusa exigiria bloquear o lugar por tempo indeterminado, conflitando com a devolução imediata do estoque. Preferimos devolver o lugar ao mercado e deixar o cliente reservar novamente. Ver `SPEC.md` §4.3 |
 | Cancelamento de evento | Cascata com reembolso automático | Padrão de mercado: quando a falha é do organizador, o cliente não deve precisar agir nem ficar sujeito à janela de 24h. Ver `PRD.md` §3.11 |
+| Reembolso no cancelamento (cliente e organizador) | Estorno real na Asaas sandbox (`POST /payments/:id/refund`), não só uma marcação local | Mesmo padrão de integração verdadeira do Bloco 5 (PIX/cartão reais no sandbox) — "simulado" é o dinheiro da sandbox, não a chamada à API. Novo status `REFUNDED` no enum `PaymentStatus`. Ver `AI_USAGE.md` — "Auditoria do próprio processo" |
+| Opções dos filtros do catálogo | Endpoint próprio (`GET /eventos/filtros`) com as categorias e locais existentes | Derivar as opções da listagem já filtrada faria a lista encolher a cada filtro aplicado — escolher uma categoria apagaria as demais da lista. O custo é uma chamada a mais no carregamento da tela. Ver `SPEC.md` §5.2 |
+| Campo de data | Máscara própria em pt-BR, com o seletor nativo num botão ao lado | O `<input type="date">` renderiza no idioma do navegador, não no do app — num navegador em inglês, a interface em português exibia `mm/dd/yyyy`. O texto passa a ser da aplicação; o calendário nativo continua disponível, porque é o que serve no celular |
+| Banco dos testes | PostgreSQL real, em container próprio na porta 5433, atrás de um profile do Compose | O que a suíte precisa provar é update condicional resolvendo disputa por linha — mock de ORM devolveria o que eu mandasse e o teste passaria mesmo com a lógica errada. O profile mantém esse banco fora do `docker compose up` do dia a dia, e ele não tem volume: é descartável de propósito |
+| Testes com o provedor de pagamento | Duas suítes separadas: a principal com o provedor substituído, e uma de contrato que fala com o sandbox de verdade | As duas falham por motivos diferentes e precisam ser lidas diferente — vermelho na principal é erro do nosso código, vermelho na de contrato é mudança no provedor ou rede fora. Numa suíte só, uma queda de conexão apontaria para o teste de disputa de assento, que não tem pagamento nenhum no meio. A de contrato fica fora do `npm test` e roda no CI apenas se a chave existir |
+| Categoria como entidade própria | Tabela `Category`, com `Event.categoryId` opcional e `ON DELETE SET NULL` | Apontei uma falha de UX: categoria era texto livre, sem como listar o que já existe nem apagar uma criada errada. Virar entidade exige migration em produção, então validei em três camadas antes de aplicar: SQL bruto contra um cenário forjado no banco de testes, a suíte completa, e um smoke test HTTP contra a API dev com dados reais. `ON DELETE SET NULL` na própria constraint do banco resolve "apagar categoria não pode quebrar evento" sem lógica de cascata na aplicação |
+| Criação de categoria pelo formulário | `POST /categorias` idempotente por nome (sem diferenciar caixa) | Pedi que o campo aceitasse escolher uma categoria existente ou criar uma nova sem sair da tela. Idempotência resolve isso num único endpoint: o formulário chama sempre o mesmo POST, existindo ou não, sem precisar saber qual dos dois casos é o seu |
+| Estorno chamado dentro da transação do banco | Mantido, com a limitação assumida | Estornar fora da transação exigiria um estado intermediário no `Payment` ("cancelado, estorno pendente") e um mecanismo de reprocessamento, o que é desenho de sistema de pagamento e não cabe no escopo do desafio. O custo é a transação ficar aberta durante a chamada de rede, multiplicado por reserva paga no cancelamento em cascata de um evento. Em troca, cancelamento e estorno são atômicos: nunca existe reserva cancelada sem dinheiro devolvido |
+| Aviso de depreciação do `pg` nos testes | Não tratado, e o motivo registrado | O aviso dispara quando `client.query()` é chamado com a fila da conexão não vazia (`pg/lib/client.js`), e quem enfileira é o `@prisma/adapter-pg` dentro da transação — não há `Promise.all` em `apps/api/src`. Nada a corrigir do nosso lado, e sem efeito no comportamento: o `pg` 8 mantém o suporte, a remoção está anunciada para o `pg` 9. Ponto a reverificar quando o adapter ou o `pg` forem atualizados |
 | Contexto da portaria | Evento selecionado no início da sessão | O retorno "evento errado" só é possível se a validação ocorrer no contexto de um evento conhecido; o `eventId` acompanha cada requisição de validação. Ver `PRD.md` §3.9 |
 | Confirmação de pagamento | Polling como caminho principal | O webhook do Asaas não alcança `localhost`. Polling em `GET /pagamentos/:id` funciona em qualquer ambiente; o webhook fica ativo apenas em produção, e um endpoint de simulação cobre desenvolvimento e testes. Ver `SPEC.md` §5.5 |
 | Fuso horário | UTC no armazenamento e transporte | Regras sensíveis a tempo (janela de 24h, expiração de 15 min) precisam de referência única para não divergir conforme o fuso do cliente ou do servidor. Conversão apenas na apresentação. Ver `PRD.md` §3.13 |

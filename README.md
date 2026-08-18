@@ -7,11 +7,11 @@ de QR Code.
 
 ## Ambiente publicado
 
-|                     | Endereço                              |
-| ------------------- | ------------------------------------- |
-| Front-end           | _preencher após o deploy_             |
-| API                 | _preencher após o deploy_             |
-| Documentação da API | _preencher após o deploy_ `/api-docs` |
+|                     | Endereço                                       |
+| ------------------- | ---------------------------------------------- |
+| Front-end           | https://eventos-web-iar6.onrender.com          |
+| API                 | https://eventos-api-q8oq.onrender.com          |
+| Documentação da API | https://eventos-api-q8oq.onrender.com/api-docs |
 
 **Duas limitações do plano gratuito do Render, que afetam quem for testar:**
 
@@ -116,7 +116,8 @@ docker compose up --build
 
 Sobe API e banco juntos. O front continua fora do Compose de propósito: em
 desenvolvimento ele ganha recarga instantânea pelo servidor do Vite, que um
-container só atrapalharia, e em produção ele é estático e vai para a Vercel.
+container só atrapalharia, e em produção ele é servido como Static Site no
+Render, junto da API (blueprint em `render.yaml`).
 
 ## Variáveis de ambiente
 
